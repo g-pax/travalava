@@ -13,6 +13,12 @@ export function useCreateTrip() {
     mutationFn: async (input: TripCreateInput) => {
       const validated = TripCreateSchema.parse(input);
 
+      // Get current user
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
+      if (userError || !user) {
+        throw new Error("You must be logged in to create a trip");
+      }
+
       // Hash PIN if provided
       let pin_hash = null;
       if (validated.pin) {
@@ -28,11 +34,19 @@ export function useCreateTrip() {
           ...validated,
           pin_hash,
           pin: undefined, // Remove plain text PIN
+          client_mutation_id: clientMutationId,
         })
         .select()
         .single();
 
       if (tripError) throw tripError;
+
+      // Get user profile for display name
+      const { data: userProfile } = await supabase
+        .from("user_profiles")
+        .select("display_name")
+        .eq("id", user.id)
+        .single();
 
       // Create organizer member
       const { data: member, error: memberError } = await supabase
@@ -40,8 +54,9 @@ export function useCreateTrip() {
         .insert({
           trip_id: trip.id,
           role: "organizer",
-          display_name: "Organizer", // TODO: Get from user input
-          user_id: null, // Will be set when auth is implemented
+          display_name: userProfile?.display_name || user.user_metadata?.display_name || user.email?.split("@")[0] || "Organizer",
+          user_id: user.id,
+          client_mutation_id: clientMutationId,
         })
         .select()
         .single();

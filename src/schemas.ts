@@ -49,6 +49,34 @@ export const ActivityCreateSchema = z.object({
 
 export const ActivityUpdateSchema = ActivityCreateSchema.omit({ trip_id: true }).partial();
 
+// Authentication schemas
+export const SignUpSchema = z.object({
+  email: z.string().email("Please enter a valid email address"),
+  password: z.string().min(8, "Password must be at least 8 characters"),
+  confirmPassword: z.string(),
+  displayName: z.string().min(1, "Display name is required").max(50, "Display name must be 50 characters or less"),
+}).refine((data) => data.password === data.confirmPassword, {
+  message: "Passwords don't match",
+  path: ["confirmPassword"],
+});
+
+export const SignInSchema = z.object({
+  email: z.string().email("Please enter a valid email address"),
+  password: z.string().min(1, "Password is required"),
+});
+
+export const ResetPasswordSchema = z.object({
+  email: z.string().email("Please enter a valid email address"),
+});
+
+export const UpdatePasswordSchema = z.object({
+  password: z.string().min(8, "Password must be at least 8 characters"),
+  confirmPassword: z.string(),
+}).refine((data) => data.password === data.confirmPassword, {
+  message: "Passwords don't match",
+  path: ["confirmPassword"],
+});
+
 // Vote schemas
 export const VoteCastSchema = z.object({
   trip_id: TripIdSchema,
@@ -69,3 +97,7 @@ export type JoinTripInput = z.infer<typeof JoinTripSchema>;
 export type ActivityCreateInput = z.infer<typeof ActivityCreateSchema>;
 export type VoteCastInput = z.infer<typeof VoteCastSchema>;
 export type BlockCommitInput = z.infer<typeof BlockCommitSchema>;
+export type SignUpInput = z.infer<typeof SignUpSchema>;
+export type SignInInput = z.infer<typeof SignInSchema>;
+export type ResetPasswordInput = z.infer<typeof ResetPasswordSchema>;
+export type UpdatePasswordInput = z.infer<typeof UpdatePasswordSchema>;

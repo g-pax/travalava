@@ -1,14 +1,15 @@
 "use client";
 
+import { CheckCircle2, Clock, Users, Vote } from "lucide-react";
 import { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { useVoteTally } from "../hooks/use-votes";
-import { useVoteCast, useVoteRemove } from "../hooks/use-vote-mutation";
-import { Vote2, Clock, Users, CheckCircle2 } from "lucide-react";
 import { toast } from "sonner";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import type { BlockProposal } from "@/features/activities/hooks/use-proposals";
 import { formatCurrency, formatDuration } from "@/lib/utils";
+import { useVoteCast, useVoteRemove } from "../hooks/use-vote-mutation";
+import { useVoteTally } from "../hooks/use-votes";
 
 interface VotingPanelProps {
   block: {
@@ -18,20 +19,7 @@ interface VotingPanelProps {
     vote_close_ts: string | null;
   };
   tripId: string;
-  proposals: Array<{
-    id: string;
-    activity_id: string;
-    activity?: {
-      id: string;
-      title: string;
-      category?: string;
-      cost_amount?: number;
-      cost_currency?: string;
-      duration_min?: number;
-      notes?: string;
-      location?: any;
-    };
-  }>;
+  proposals: BlockProposal[];
   currentMemberId?: string;
   isOrganizer?: boolean;
 }
@@ -41,26 +29,38 @@ export function VotingPanel({
   tripId,
   proposals,
   currentMemberId,
-  isOrganizer = false
+  isOrganizer = false,
 }: VotingPanelProps) {
-  const { tally, data: votes, totalVotes, uniqueVoters, isLoading } = useVoteTally(block.id);
+  const {
+    tally,
+    data: votes,
+    totalVotes,
+    uniqueVoters,
+    isLoading,
+  } = useVoteTally(block.id);
   const voteCast = useVoteCast();
   const voteRemove = useVoteRemove();
 
-  const [selectedActivities, setSelectedActivities] = useState<Set<string>>(new Set());
+  const [selectedActivities, setSelectedActivities] = useState<Set<string>>(
+    new Set(),
+  );
 
   // Check voting window status
   const now = new Date();
   const voteOpenTs = block.vote_open_ts ? new Date(block.vote_open_ts) : null;
-  const voteCloseTs = block.vote_close_ts ? new Date(block.vote_close_ts) : null;
+  const voteCloseTs = block.vote_close_ts
+    ? new Date(block.vote_close_ts)
+    : null;
 
   const votingNotStarted = voteOpenTs && now < voteOpenTs;
   const votingEnded = voteCloseTs && now > voteCloseTs;
   const votingActive = !votingNotStarted && !votingEnded;
 
   // Get current user's votes
-  const userVotes = votes.filter(vote => vote.member_id === currentMemberId);
-  const userVotedActivityIds = new Set(userVotes.map(vote => vote.activity_id));
+  const userVotes = votes.filter((vote) => vote.member_id === currentMemberId);
+  const userVotedActivityIds = new Set(
+    userVotes.map((vote) => vote.activity_id),
+  );
 
   const handleVoteToggle = async (activityId: string) => {
     if (!currentMemberId) {
@@ -111,12 +111,12 @@ export function VotingPanel({
 
     try {
       // Cast votes for all selected activities
-      const promises = Array.from(selectedActivities).map(activityId =>
+      const promises = Array.from(selectedActivities).map((activityId) =>
         voteCast.mutateAsync({
           tripId,
           blockId: block.id,
           activityId,
-        })
+        }),
       );
 
       await Promise.all(promises);
@@ -132,7 +132,9 @@ export function VotingPanel({
     return (
       <Card>
         <CardContent className="p-6">
-          <div className="animate-pulse text-gray-500">Loading voting data...</div>
+          <div className="animate-pulse text-gray-500">
+            Loading voting data...
+          </div>
         </CardContent>
       </Card>
     );
@@ -143,7 +145,7 @@ export function VotingPanel({
       <CardHeader>
         <CardTitle className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Vote2 className="h-4 w-4" />
+            <Vote className="h-4 w-4" />
             Voting: {block.label}
           </div>
           <div className="flex items-center gap-2 text-sm text-gray-600">
@@ -159,13 +161,15 @@ export function VotingPanel({
           <div className="text-sm">
             {votingNotStarted && voteOpenTs && (
               <span className="text-amber-600">
-                Voting starts {voteOpenTs.toLocaleDateString()} at {voteOpenTs.toLocaleTimeString()}
+                Voting starts {voteOpenTs.toLocaleDateString()} at{" "}
+                {voteOpenTs.toLocaleTimeString()}
               </span>
             )}
             {votingActive && (
               <span className="text-green-600">
                 Voting is active
-                {voteCloseTs && ` until ${voteCloseTs.toLocaleDateString()} at ${voteCloseTs.toLocaleTimeString()}`}
+                {voteCloseTs &&
+                  ` until ${voteCloseTs.toLocaleDateString()} at ${voteCloseTs.toLocaleTimeString()}`}
               </span>
             )}
             {votingEnded && (
@@ -184,18 +188,24 @@ export function VotingPanel({
         ) : (
           <div className="space-y-3">
             {proposals.map((proposal) => {
-              const activityTally = tally.find(t => t.activityId === proposal.activity_id);
+              const activityTally = tally.find(
+                (t) => t.activityId === proposal.activity_id,
+              );
               const voteCount = activityTally?.voteCount || 0;
-              const hasUserVoted = userVotedActivityIds.has(proposal.activity_id);
+              const hasUserVoted = userVotedActivityIds.has(
+                proposal.activity_id,
+              );
               const isSelected = selectedActivities.has(proposal.activity_id);
 
               return (
                 <Card
                   key={proposal.id}
                   className={`border transition-colors ${
-                    hasUserVoted ? 'border-blue-300 bg-blue-50' :
-                    isSelected ? 'border-green-300 bg-green-50' :
-                    'border-gray-200'
+                    hasUserVoted
+                      ? "border-blue-300 bg-blue-50"
+                      : isSelected
+                        ? "border-green-300 bg-green-50"
+                        : "border-gray-200"
                   }`}
                 >
                   <CardContent className="p-4">
@@ -221,7 +231,7 @@ export function VotingPanel({
                             <span className="flex items-center gap-1">
                               {formatCurrency(
                                 proposal.activity.cost_amount,
-                                proposal.activity.cost_currency || "USD"
+                                proposal.activity.cost_currency || "USD",
                               )}
                             </span>
                           )}
@@ -242,12 +252,16 @@ export function VotingPanel({
 
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-2">
-                            <Badge variant={voteCount > 0 ? "default" : "secondary"}>
-                              {voteCount} {voteCount === 1 ? 'vote' : 'votes'}
+                            <Badge
+                              variant={voteCount > 0 ? "default" : "secondary"}
+                            >
+                              {voteCount} {voteCount === 1 ? "vote" : "votes"}
                             </Badge>
                             {voteCount > 0 && activityTally && (
                               <div className="text-xs text-gray-500">
-                                {activityTally.votes.map(vote => vote.member?.display_name).join(", ")}
+                                {activityTally.votes
+                                  .map((vote) => vote.member?.display_name)
+                                  .join(", ")}
                               </div>
                             )}
                           </div>
@@ -259,7 +273,9 @@ export function VotingPanel({
                                   size="sm"
                                   variant={isSelected ? "secondary" : "outline"}
                                   onClick={() => {
-                                    const newSelected = new Set(selectedActivities);
+                                    const newSelected = new Set(
+                                      selectedActivities,
+                                    );
                                     if (isSelected) {
                                       newSelected.delete(proposal.activity_id);
                                     } else {
@@ -274,8 +290,12 @@ export function VotingPanel({
                                 <Button
                                   size="sm"
                                   variant={hasUserVoted ? "default" : "outline"}
-                                  onClick={() => handleVoteToggle(proposal.activity_id)}
-                                  disabled={voteCast.isPending || voteRemove.isPending}
+                                  onClick={() =>
+                                    handleVoteToggle(proposal.activity_id)
+                                  }
+                                  disabled={
+                                    voteCast.isPending || voteRemove.isPending
+                                  }
                                   className="text-xs"
                                 >
                                   {hasUserVoted ? "Remove Vote" : "Vote"}
@@ -295,11 +315,11 @@ export function VotingPanel({
 
         {/* Bulk voting controls */}
         {votingActive && selectedActivities.size > 0 && (
-          <div className="flex items-center justify-between p-3 bg-green-50 rounded-lg border border-green-200">
+          <div className="flex flex-col items-center justify-between p-3 bg-green-50 rounded-lg border border-green-200">
             <span className="text-sm text-green-800">
               {selectedActivities.size} activities selected
             </span>
-            <div className="flex gap-2">
+            <div className="flex flex-col gap-2">
               <Button
                 variant="outline"
                 size="sm"

@@ -27,13 +27,11 @@ export function TripCreateForm({ onSuccess }: TripCreateFormProps) {
   const form = useForm<TripCreateInput>({
     resolver: zodResolver(TripCreateSchema),
     defaultValues: {
-      currency: "USD",
+      currency: "EUR",
       timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
       duplicate_policy: "soft_block",
     },
   });
-
-
 
   const onSubmit = async (values: TripCreateInput) => {
     try {

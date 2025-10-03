@@ -19,7 +19,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useBlockProposals } from "@/features/activities/hooks/use-proposals";
-import { useBlockCommit } from "@/features/voting/hooks/use-block-commit";
+import { useBlockCommitQuery } from "@/features/voting/hooks/use-block-commit";
+import { VotingPanel } from "@/features/voting/components/voting-panel";
+import { CommitPanel } from "@/features/voting/components/commit-panel";
+import { VotingWindowManager } from "@/features/voting/components/voting-window-manager";
 import { formatCurrency, formatDuration } from "@/lib/utils";
 import { useUpdateBlockLabel } from "../hooks/use-update-block-label";
 
@@ -52,7 +55,7 @@ export function BlockCard({
   const updateBlockLabel = useUpdateBlockLabel();
   const { data: proposals = [], isLoading: proposalsLoading } =
     useBlockProposals(block.id);
-  const { data: existingCommit } = useBlockCommit();
+  const { data: existingCommit } = useBlockCommitQuery(block.id);
 
   const handleSave = async () => {
     if (editLabel.trim() === "") {
@@ -153,6 +156,20 @@ export function BlockCard({
             <TabsTrigger value="voting" className="text-xs">
               <Vote className="h-3 w-3 mr-1" />
               Voting
+              {block.vote_open_ts && (
+                <Badge variant="secondary" className="ml-1 text-xs">
+                  {(() => {
+                    const now = new Date();
+                    const voteOpenTs = new Date(block.vote_open_ts);
+                    const voteCloseTs = block.vote_close_ts ? new Date(block.vote_close_ts) : null;
+
+                    if (now < voteOpenTs) return "Soon";
+                    if (voteCloseTs && now >= voteOpenTs && now <= voteCloseTs) return "Active";
+                    if (voteCloseTs && now > voteCloseTs) return "Ended";
+                    return "Open";
+                  })()}
+                </Badge>
+              )}
             </TabsTrigger>
             <TabsTrigger value="commit" className="text-xs">
               <Gavel className="h-3 w-3 mr-1" />
@@ -262,23 +279,33 @@ export function BlockCard({
           </TabsContent>
 
           <TabsContent value="voting" className="mt-4">
-            <div className="text-center py-6 text-gray-500">
-              <Vote className="h-8 w-8 mx-auto mb-2 opacity-50" />
-              <p>Voting functionality will be available here</p>
-              <p className="text-xs mt-1">
-                Cast votes for your preferred activities
-              </p>
+            <div className="space-y-4">
+              {/* Voting Window Management for Organizers */}
+              {isOrganizer && (
+                <VotingWindowManager
+                  block={block}
+                  tripId={tripId}
+                  isOrganizer={isOrganizer}
+                />
+              )}
+
+              {/* Voting Panel */}
+              <VotingPanel
+                block={block}
+                tripId={tripId}
+                proposals={proposals}
+                currentMemberId={currentMemberId}
+                isOrganizer={isOrganizer}
+              />
             </div>
           </TabsContent>
 
           <TabsContent value="commit" className="mt-4">
-            <div className="text-center py-6 text-gray-500">
-              <Gavel className="h-8 w-8 mx-auto mb-2 opacity-50" />
-              <p>Commit functionality will be available here</p>
-              <p className="text-xs mt-1">
-                Organizers can finalize block decisions
-              </p>
-            </div>
+            <CommitPanel
+              block={block}
+              tripId={tripId}
+              isOrganizer={isOrganizer}
+            />
           </TabsContent>
         </Tabs>
       </CardContent>

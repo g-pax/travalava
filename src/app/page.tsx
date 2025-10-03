@@ -1,8 +1,13 @@
 "use client";
 
-import { PlusCircle, Users } from "lucide-react";
+/**
+ * Home page that shows different content for authenticated and unauthenticated users
+ * - Landing page for guests with auth CTA
+ * - Dashboard for authenticated users with their trips
+ */
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { Calendar, MapPin, Plus, PlusCircle, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -11,27 +16,140 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { useAuth } from "@/lib/auth-context";
 import { TripCreateForm } from "@/features/trip/components/trip-create-form";
 
-export default function Home() {
+function LandingPage() {
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+      {/* Navigation */}
+      <nav className="flex items-center justify-between px-6 py-4">
+        <div className="flex items-center space-x-2">
+          <Calendar className="h-8 w-8 text-blue-600" />
+          <span className="text-xl font-bold text-gray-900">Travalava</span>
+        </div>
+        <div className="flex items-center space-x-4">
+          <Link href="/auth/login">
+            <Button variant="ghost">Sign In</Button>
+          </Link>
+          <Link href="/auth/register">
+            <Button>Get Started</Button>
+          </Link>
+        </div>
+      </nav>
+
+      {/* Hero Section */}
+      <div className="px-6 py-20">
+        <div className="mx-auto max-w-4xl text-center">
+          <h1 className="text-4xl font-bold tracking-tight text-gray-900 sm:text-6xl">
+            Plan Amazing Trips{" "}
+            <span className="text-blue-600">Together</span>
+          </h1>
+          <p className="mx-auto mt-6 max-w-2xl text-lg leading-8 text-gray-600">
+            Collaborate with friends and family to create the perfect itinerary.
+            Vote on activities, manage expenses, and make memories that last a lifetime.
+          </p>
+          <div className="mt-10 flex items-center justify-center gap-x-6">
+            <Link href="/auth/register">
+              <Button size="lg" className="px-8">
+                Start Planning
+              </Button>
+            </Link>
+            <Link href="/auth/login" className="text-sm font-semibold leading-6 text-gray-900">
+              Already have an account? <span aria-hidden="true">→</span>
+            </Link>
+          </div>
+        </div>
+      </div>
+
+      {/* Features */}
+      <div className="px-6 py-16">
+        <div className="mx-auto max-w-6xl">
+          <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
+            <Card>
+              <CardHeader>
+                <Users className="h-8 w-8 text-blue-600 mb-2" />
+                <CardTitle>Collaborative Planning</CardTitle>
+                <CardDescription>
+                  Invite friends and family to plan together. Everyone can contribute ideas and vote on activities.
+                </CardDescription>
+              </CardHeader>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <Calendar className="h-8 w-8 text-blue-600 mb-2" />
+                <CardTitle>Smart Scheduling</CardTitle>
+                <CardDescription>
+                  Organize your trip by days and time blocks. Vote on activities and let the group decide.
+                </CardDescription>
+              </CardHeader>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <MapPin className="h-8 w-8 text-blue-600 mb-2" />
+                <CardTitle>Location Integration</CardTitle>
+                <CardDescription>
+                  Add locations with Google Maps integration. Get directions and weather information.
+                </CardDescription>
+              </CardHeader>
+            </Card>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function UserDashboard() {
+  const { user, signOut } = useAuth();
   const router = useRouter();
+
+  const handleSignOut = async () => {
+    try {
+      await signOut();
+    } catch (error) {
+      console.error("Sign out error:", error);
+    }
+  };
 
   const handleTripCreated = (tripId: string) => {
     router.push(`/trip/${tripId}`);
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 py-12">
-      <div className="container mx-auto px-4">
-        <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">
-            Welcome to Travalava
-          </h1>
-          <p className="text-xl text-gray-600 mb-8">
-            Plan your perfect trip collaboratively with friends and family
+    <div className="min-h-screen bg-gray-50">
+      {/* Navigation */}
+      <nav className="bg-white shadow-sm border-b">
+        <div className="mx-auto max-w-6xl px-6 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-2">
+              <Calendar className="h-8 w-8 text-blue-600" />
+              <span className="text-xl font-bold text-gray-900">Travalava</span>
+            </div>
+            <div className="flex items-center space-x-4">
+              <span className="text-sm text-gray-600">
+                Welcome, {user?.user_metadata?.display_name || user?.email}
+              </span>
+              <Button variant="outline" onClick={handleSignOut}>
+                Sign Out
+              </Button>
+            </div>
+          </div>
+        </div>
+      </nav>
+
+      {/* Dashboard Content */}
+      <div className="mx-auto max-w-6xl px-6 py-8">
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-gray-900">Your Trips</h1>
+          <p className="mt-2 text-gray-600">
+            Create a new trip or continue planning an existing one.
           </p>
         </div>
 
+        {/* Trip Management */}
         <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
           <Card>
             <CardHeader>
@@ -74,4 +192,18 @@ export default function Home() {
       </div>
     </div>
   );
+}
+
+export default function HomePage() {
+  const { user, loading } = useAuth();
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-pulse text-gray-500">Loading...</div>
+      </div>
+    );
+  }
+
+  return user ? <UserDashboard /> : <LandingPage />;
 }

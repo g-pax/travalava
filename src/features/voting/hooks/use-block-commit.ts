@@ -95,7 +95,7 @@ export function useCommits(tripId: string) {
             notes,
             location
           ),
-          committed_by_member:trip_members!commits_committed_by_fkey(
+          committed_by_member:trip_members!commits_commited_by_fkey(
             id,
             display_name,
             role
@@ -129,7 +129,7 @@ export function useBlockCommitQuery(blockId: string) {
             notes,
             location
           ),
-          committed_by_member:trip_members!commits_committed_by_fkey(
+          committed_by_member:trip_members!commits_commited_by_fkey(
             id,
             display_name,
             role
