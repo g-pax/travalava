@@ -2,6 +2,7 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { Calendar, MapPin, Share2, Users } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -99,6 +100,28 @@ const TripPage = ({ params }: TripPageProps) => {
     <div className="min-h-screen bg-gray-50 py-12">
       <div className="container mx-auto px-4">
         <div className="max-w-4xl mx-auto">
+          <div className="relative mb-8 h-52 overflow-hidden rounded-3xl bg-gray-900 sm:h-64 md:h-80">
+            <Image
+              src="https://images.unsplash.com/photo-1706722533137-dd3c3f06c624?q=80&w=2340&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+              alt={`${trip.name} banner`}
+              fill
+              priority
+              sizes="(max-width: 768px) 100vw, 768px"
+              className="object-cover opacity-80"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
+            <div className="relative z-10 flex h-full flex-col justify-end p-6 text-white">
+              <h1 className="text-4xl font-bold tracking-tight md:text-5xl">
+                {trip.name}
+              </h1>
+              {trip.destination_text ? (
+                <p className="mt-3 text-lg font-medium text-white/90">
+                  {trip.destination_text}
+                </p>
+              ) : null}
+            </div>
+          </div>
+
           {/* Trip Header */}
           <Card className="mb-8">
             <CardHeader>
