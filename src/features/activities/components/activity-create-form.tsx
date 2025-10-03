@@ -28,12 +28,12 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { type ActivityCreateInput, ActivityCreateSchema } from "@/schemas";
-import { useCreateActivity } from "../hooks/use-activities";
+import { type Activity, useCreateActivity } from "../hooks/use-activities";
 
 interface ActivityCreateFormProps {
   tripId: string;
   tripCurrency: string;
-  onSuccess?: (activity: any) => void;
+  onSuccess?: (activity: Activity) => void;
   onCancel?: () => void;
 }
 

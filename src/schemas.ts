@@ -47,6 +47,8 @@ export const ActivityCreateSchema = z.object({
     .optional(),
 });
 
+export const ActivityUpdateSchema = ActivityCreateSchema.omit({ trip_id: true }).partial();
+
 // Vote schemas
 export const VoteCastSchema = z.object({
   trip_id: TripIdSchema,

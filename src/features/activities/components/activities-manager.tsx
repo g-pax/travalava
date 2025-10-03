@@ -101,35 +101,7 @@ export function ActivitiesManager({
         </DialogContent>
       </Dialog>
 
-      {/* Edit Activity Dialog */}
-      <Dialog
-        open={dialogState.type === "edit"}
-        onOpenChange={(open) => !open && handleCloseDialog()}
-      >
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>Edit Activity</DialogTitle>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="absolute right-4 top-4"
-              onClick={handleCloseDialog}
-            >
-              <X className="h-4 w-4" />
-            </Button>
-          </DialogHeader>
-          {dialogState.type === "edit" && (
-            <div className="text-center text-gray-500 py-8">
-              <p>
-                Activity editing form will be implemented in a future update.
-              </p>
-              <p className="text-sm mt-2">
-                For now, you can delete and recreate the activity.
-              </p>
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
+
 
       {/* Block Assignment Dialog */}
       <Dialog

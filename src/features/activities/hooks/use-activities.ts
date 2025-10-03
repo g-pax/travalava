@@ -11,6 +11,7 @@ import { supabase } from "@/lib/supabase";
 import type { ActivityCreateInput } from "@/schemas";
 
 export interface Activity {
+  src?: string | null;
   id: string;
   trip_id: string;
   title: string;
@@ -20,6 +21,7 @@ export interface Activity {
   duration_min: number | null;
   notes: string | null;
   link: string | null;
+  image_url?: string | null;
   location: {
     name: string;
     lat: number;
