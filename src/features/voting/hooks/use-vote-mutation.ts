@@ -1,13 +1,12 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/lib/supabase";
 import { nanoid } from "nanoid";
-import type { VoteCastInput } from "@/schemas";
+import { supabase } from "@/lib/supabase";
 
 interface VoteCastParams {
   tripId: string;
   blockId: string;
   activityId: string;
-  memberIdToVoteFor?: string;
+  memberId: string;
 }
 
 export function useVoteCast() {
@@ -17,17 +16,28 @@ export function useVoteCast() {
     mutationFn: async (params: VoteCastParams) => {
       const clientMutationId = nanoid();
 
-      const { data, error } = await supabase.functions.invoke("vote-cast", {
-        body: {
-          tripId: params.tripId,
-          blockId: params.blockId,
-          activityId: params.activityId,
-          memberIdToVoteFor: params.memberIdToVoteFor,
-        },
-        headers: {
-          "x-client-mutation-id": clientMutationId,
-        },
-      });
+      // const { data, error } = await supabase.functions.invoke("vote-cast", {
+      //   body: {
+      //     tripId: params.tripId,
+      //     blockId: params.blockId,
+      //     activityId: params.activityId,
+      //     memberIdToVoteFor: params.memberIdToVoteFor,
+      //   },
+      //   headers: {
+      //     "x-client-mutation-id": clientMutationId,
+      //   },
+      // });
+      const { data, error } = await supabase
+        .from("votes")
+        .insert({
+          trip_id: params.tripId,
+          block_id: params.blockId,
+          activity_id: params.activityId,
+          member_id: params.memberId || null,
+          client_mutation_id: clientMutationId,
+        })
+        .select()
+        .single();
 
       if (error) throw error;
       return data;
@@ -50,7 +60,12 @@ export function useVoteRemove() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (params: { tripId: string; blockId: string; activityId: string; memberId: string }) => {
+    mutationFn: async (params: {
+      tripId: string;
+      blockId: string;
+      activityId: string;
+      memberId: string;
+    }) => {
       const { error } = await supabase
         .from("votes")
         .delete()

@@ -4,31 +4,22 @@
  * ActivityEditForm handles updating existing activities with all attributes.
  * - Pre-populated with existing activity data
  * - Validated with Zod schema via react-hook-form resolver
- * - Supports photo uploads with compression
+ * - Photo uploads temporarily disabled
  * - Includes location support and Google Maps integration
  */
 import { zodResolver } from "@hookform/resolvers/zod";
-import imageCompression from "browser-image-compression";
-import {
-  Camera,
-  Clock,
-  DollarSign,
-  FileText,
-  Link2,
-  MapPin,
-  X,
-} from "lucide-react";
-import { useCallback, useEffect, useState } from "react";
-import { useDropzone } from "react-dropzone";
+/* Photo upload temporarily disabled */
+// import imageCompression from "browser-image-compression";
+import { Clock, DollarSign, FileText, Link2, MapPin } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+// import {
+//   Card,
+//   CardContent,
+//   CardDescription,
+//   CardHeader,
+//   CardTitle,
+// } from "@/components/ui/card";
 import {
   Dialog,
   DialogContent,
@@ -46,7 +37,7 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { type ActivityCreateInput, ActivityCreateSchema } from "@/schemas";
-import { supabase } from "@/lib/supabase";
+// import { supabase } from "@/lib/supabase";
 import { type Activity, useUpdateActivity } from "../hooks/use-activities";
 import { GoogleMapsIntegration } from "./google-maps-integration";
 
@@ -71,6 +62,7 @@ const ACTIVITY_CATEGORIES = [
   "other",
 ];
 
+/*
 const ACTIVITY_PHOTOS_BUCKET = "activity-photos";
 
 interface ActivityPhoto {
@@ -79,6 +71,20 @@ interface ActivityPhoto {
   file?: File;
   isNew?: boolean;
 }
+*/
+
+const isGoogleMapsLink = (link?: string | null) => {
+  if (!link) {
+    return false;
+  }
+
+  const normalized = link.toLowerCase();
+  return (
+    normalized.includes("maps.google.") ||
+    normalized.includes("maps.app.goo.gl") ||
+    normalized.includes("goo.gl/maps")
+  );
+};
 
 export function ActivityEditForm({
   activity,
@@ -89,8 +95,10 @@ export function ActivityEditForm({
   onOpenChange,
 }: ActivityEditFormProps) {
   const updateActivity = useUpdateActivity();
+  /*
   const [photos, setPhotos] = useState<ActivityPhoto[]>([]);
   const [uploadingPhotos, setUploadingPhotos] = useState(false);
+  */
 
   const form = useForm<ActivityCreateInput>({
     resolver: zodResolver(ActivityCreateSchema),
@@ -107,8 +115,11 @@ export function ActivityEditForm({
     },
   });
 
+  const googleMapsLink = isGoogleMapsLink(activity.link)
+    ? activity.link ?? undefined
+    : undefined;
 
-
+  /*
   // Load existing photos when component mounts
   useEffect(() => {
     let isMounted = true;
@@ -238,6 +249,7 @@ export function ActivityEditForm({
       return prev.filter((p) => p.id !== photoId);
     });
   };
+  */
 
   const handleLocationChange = (locationName: string) => {
     if (locationName.trim()) {
@@ -271,12 +283,14 @@ export function ActivityEditForm({
   };
 
   const handleCancel = () => {
+    /*
     // Clean up any temporary photo URLs
     photos.forEach((photo) => {
       if (photo.isNew && photo.url) {
         URL.revokeObjectURL(photo.url);
       }
     });
+    */
 
     onCancel?.();
     onOpenChange?.(false);
@@ -432,20 +446,15 @@ export function ActivityEditForm({
               onChange={(e) => handleLocationChange(e.target.value)}
             />
             {/* Google Maps Integration */}
-            {(activity.location ||
-              (activity.link && activity.link.includes("maps.google.com"))) && (
-                <div className="mt-2">
-                  <GoogleMapsIntegration
-                    location={activity.location}
-                    googleMapsLink={
-                      activity.link?.includes("maps.google.com")
-                        ? activity.link
-                        : undefined
-                    }
-                    activityTitle={activity.title}
-                  />
-                </div>
-              )}
+            {(activity.location || googleMapsLink) && (
+              <div className="mt-2">
+                <GoogleMapsIntegration
+                  location={activity.location}
+                  googleMapsLink={googleMapsLink}
+                  activityTitle={activity.title}
+                />
+              </div>
+            )}
           </div>
 
           {/* Notes */}
@@ -465,14 +474,14 @@ export function ActivityEditForm({
             />
           </div>
 
-          {/* Photo Upload */}
+          {/*
+            Photo upload UI temporarily disabled. Uncomment this block to restore photo management.
           <div className="space-y-2">
             <Label className="text-sm font-medium flex items-center gap-1">
               <Camera className="h-4 w-4" />
               Photos
             </Label>
 
-            {/* Existing Photos */}
             {photos.length > 0 && (
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-3">
                 {photos.map((photo) => (
@@ -494,7 +503,6 @@ export function ActivityEditForm({
               </div>
             )}
 
-            {/* Upload Area */}
             <div
               {...getRootProps()}
               className={`border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-colors ${isDragActive
@@ -520,12 +528,13 @@ export function ActivityEditForm({
               )}
             </div>
           </div>
+          */}
 
           {/* Form Actions */}
           <div className="flex gap-3 pt-4">
             <Button
               type="submit"
-              disabled={updateActivity.isPending || uploadingPhotos}
+              disabled={updateActivity.isPending}
               className="flex-1"
             >
               {updateActivity.isPending ? "Updating..." : "Update Activity"}
@@ -534,7 +543,7 @@ export function ActivityEditForm({
               type="button"
               variant="outline"
               onClick={handleCancel}
-              disabled={updateActivity.isPending || uploadingPhotos}
+              disabled={updateActivity.isPending}
             >
               Cancel
             </Button>

@@ -89,6 +89,7 @@ export function VotingPanel({
           tripId,
           blockId: block.id,
           activityId,
+          memberId: currentMemberId,
         });
         toast.success("Vote cast!");
       }
@@ -116,6 +117,7 @@ export function VotingPanel({
           tripId,
           blockId: block.id,
           activityId,
+          memberId: currentMemberId,
         }),
       );
 
