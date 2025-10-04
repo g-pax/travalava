@@ -141,10 +141,8 @@ CREATE POLICY "Trip members can view proposals" ON block_proposals
 CREATE POLICY "Trip members can create proposals" ON block_proposals
     FOR INSERT WITH CHECK (is_trip_member(trip_id, auth.uid()));
 
-CREATE POLICY "Trip members can delete their proposals" ON block_proposals
-    FOR DELETE USING (is_trip_member(trip_id, auth.uid()) AND created_by IN (
-        SELECT id FROM trip_members WHERE trip_id = block_proposals.trip_id AND user_id = auth.uid()
-    ));
+CREATE POLICY "Trip members can delete proposals" ON block_proposals
+    FOR DELETE USING (is_trip_member(trip_id, auth.uid()));
 
 -- Votes policies
 CREATE POLICY "Trip members can view votes" ON votes

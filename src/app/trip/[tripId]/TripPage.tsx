@@ -26,9 +26,7 @@ interface TripPageProps {
 
 const TripPage = ({ params }: TripPageProps) => {
   const { tripId } = params;
-
   const { data: currentMember } = useCurrentMember(tripId);
-
   const {
     data: trip,
     isLoading,
@@ -36,6 +34,7 @@ const TripPage = ({ params }: TripPageProps) => {
   } = useQuery({
     queryKey: ["trip", tripId],
     queryFn: async () => {
+      if (!tripId) throw new Error("Trip ID is required");
       const { data, error } = await supabase
         .from("trips")
         .select(`
@@ -47,13 +46,12 @@ const TripPage = ({ params }: TripPageProps) => {
           )
         `)
         .eq("id", tripId)
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
       return data;
     },
   });
-  console.log("🚀 ~ TripPage ~ trip:", trip);
 
   if (isLoading) {
     return (
@@ -213,7 +211,7 @@ const TripPage = ({ params }: TripPageProps) => {
                 <ActivitiesManager
                   tripId={tripId}
                   tripCurrency={trip.currency}
-                  currentUserId="current-user-id" // TODO: Get from auth context
+                  currentUserId={currentMember?.id || ""}
                 />
               </TabsContent>
             </Tabs>

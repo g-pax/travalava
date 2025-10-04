@@ -65,7 +65,7 @@ export function useActivity(activityId: string) {
         .from("activities")
         .select("*")
         .eq("id", activityId)
-        .single();
+        .maybeSingle();
 
       if (error) {
         throw new Error(`Failed to fetch activity: ${error.message}`);
@@ -98,7 +98,7 @@ export function useCreateActivity() {
           },
         ])
         .select()
-        .single();
+        .maybeSingle();
 
       if (error) {
         throw new Error(`Failed to create activity: ${error.message}`);
@@ -123,6 +123,13 @@ export function useCreateActivity() {
         const optimisticActivity: Activity = {
           id: `temp-${nanoid()}`,
           ...input,
+          category: input.category || null,
+          cost_amount: input.cost_amount || null,
+          cost_currency: input.cost_currency || null,
+          duration_min: input.duration_min || null,
+          notes: input.notes || null,
+          link: input.link || null,
+          location: input.location || null,
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),
         };
@@ -182,7 +189,7 @@ export function useUpdateActivity() {
         })
         .eq("id", id)
         .select()
-        .single();
+        .maybeSingle();
 
       if (error) {
         throw new Error(`Failed to update activity: ${error.message}`);

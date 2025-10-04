@@ -16,17 +16,6 @@ export function useVoteCast() {
     mutationFn: async (params: VoteCastParams) => {
       const clientMutationId = nanoid();
 
-      // const { data, error } = await supabase.functions.invoke("vote-cast", {
-      //   body: {
-      //     tripId: params.tripId,
-      //     blockId: params.blockId,
-      //     activityId: params.activityId,
-      //     memberIdToVoteFor: params.memberIdToVoteFor,
-      //   },
-      //   headers: {
-      //     "x-client-mutation-id": clientMutationId,
-      //   },
-      // });
       const { data, error } = await supabase
         .from("votes")
         .insert({
@@ -37,7 +26,7 @@ export function useVoteCast() {
           client_mutation_id: clientMutationId,
         })
         .select()
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
       return data;

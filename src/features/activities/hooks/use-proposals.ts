@@ -165,7 +165,7 @@ export function useCreateProposal() {
         .select("id")
         .eq("block_id", blockId)
         .eq("activity_id", activityId)
-        .single();
+        .maybeSingle();
 
       if (existing) {
         throw new Error("Activity is already proposed for this block");
@@ -196,7 +196,7 @@ export function useCreateProposal() {
             location
           )
         `)
-        .single();
+        .maybeSingle();
 
       if (error) {
         throw new Error(`Failed to create proposal: ${error.message}`);
@@ -321,7 +321,7 @@ export function useRemoveProposal() {
         .from("block_proposals")
         .select("block_id, trip_id, activity_id")
         .eq("id", proposalId)
-        .single();
+        .maybeSingle();
 
       if (!proposal) {
         throw new Error("Proposal not found");
@@ -332,7 +332,7 @@ export function useRemoveProposal() {
         .from("commits")
         .select("id")
         .eq("block_id", proposal.block_id)
-        .single();
+        .maybeSingle();
 
       if (commit) {
         throw new Error("Cannot remove proposal from committed block");
@@ -423,6 +423,7 @@ export function useRemoveProposal() {
       };
     },
     onError: (error, { proposalId }, context) => {
+      console.log("🚀 ~ useRemoveProposal ~ error:", error);
       if (!context?.proposal) return;
 
       // Rollback optimistic updates

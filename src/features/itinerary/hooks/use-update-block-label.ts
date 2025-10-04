@@ -1,8 +1,8 @@
 "use client";
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/lib/supabase";
 import { nanoid } from "nanoid";
+import { supabase } from "@/lib/supabase";
 
 interface UpdateBlockLabelInput {
   blockId: string;
@@ -22,7 +22,7 @@ export function useUpdateBlockLabel() {
         .update({ label })
         .eq("id", blockId)
         .select()
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
 

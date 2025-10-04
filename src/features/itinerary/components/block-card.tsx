@@ -7,7 +7,8 @@ import {
   Edit2,
   Gavel,
   MapPin,
-  MoreVertical,
+  Plus,
+  Trash2,
   Vote,
   X,
 } from "lucide-react";
@@ -18,11 +19,15 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useBlockProposals } from "@/features/activities/hooks/use-proposals";
-import { useBlockCommitQuery } from "@/features/voting/hooks/use-block-commit";
-import { VotingPanel } from "@/features/voting/components/voting-panel";
+import { ActivitySelectorDialog } from "@/features/activities/components/activity-selector-dialog";
+import {
+  useBlockProposals,
+  useRemoveProposal,
+} from "@/features/activities/hooks/use-proposals";
 import { CommitPanel } from "@/features/voting/components/commit-panel";
+import { VotingPanel } from "@/features/voting/components/voting-panel";
 import { VotingWindowManager } from "@/features/voting/components/voting-window-manager";
+import { useBlockCommitQuery } from "@/features/voting/hooks/use-block-commit";
 import { formatCurrency, formatDuration } from "@/lib/utils";
 import { useUpdateBlockLabel } from "../hooks/use-update-block-label";
 
@@ -35,7 +40,6 @@ interface BlockCardProps {
     vote_close_ts: string | null;
   };
   tripId: string;
-  dayId: string;
   currentMemberId?: string;
   isOrganizer?: boolean;
 }
@@ -43,7 +47,6 @@ interface BlockCardProps {
 export function BlockCard({
   block,
   tripId,
-  dayId,
   currentMemberId,
   isOrganizer = false,
 }: BlockCardProps) {
@@ -52,10 +55,13 @@ export function BlockCard({
   const [activeTab, setActiveTab] = useState<"proposals" | "voting" | "commit">(
     "proposals",
   );
+  const [showActivitySelector, setShowActivitySelector] = useState(false);
+
   const updateBlockLabel = useUpdateBlockLabel();
   const { data: proposals = [], isLoading: proposalsLoading } =
     useBlockProposals(block.id);
   const { data: existingCommit } = useBlockCommitQuery(block.id);
+  const removeProposal = useRemoveProposal();
 
   const handleSave = async () => {
     if (editLabel.trim() === "") {
@@ -90,10 +96,23 @@ export function BlockCard({
     }
   };
 
+  const handleRemoveProposal = async (proposalId: string) => {
+    if (!confirm("Remove this activity from the block?")) {
+      return;
+    }
+
+    try {
+      await removeProposal.mutateAsync({ proposalId });
+    } catch (error) {
+      // Error handled by mutation
+      console.error("Failed to remove proposal:", error);
+    }
+  };
+
   return (
-    <Card className="relative">
+    <Card className="relative flex flex-col h-full">
       <CardHeader className="pb-3">
-        <CardTitle className="flex items-center justify-between text-base">
+        <CardTitle className="flex items-center justify-between text-lg">
           {isEditing ? (
             <div className="flex items-center gap-2 w-full">
               <Input
@@ -103,149 +122,203 @@ export function BlockCard({
                 className="text-base font-semibold"
                 autoFocus
               />
-              <div className="flex gap-1">
+              <div className="flex gap-1 flex-shrink-0">
                 <Button
                   size="sm"
                   variant="ghost"
                   onClick={handleSave}
                   disabled={updateBlockLabel.isPending}
+                  className="h-8 w-8 p-0"
                 >
-                  <Check className="h-3 w-3" />
+                  <Check className="h-4 w-4" />
                 </Button>
                 <Button
                   size="sm"
                   variant="ghost"
                   onClick={handleCancel}
                   disabled={updateBlockLabel.isPending}
+                  className="h-8 w-8 p-0"
                 >
-                  <X className="h-3 w-3" />
+                  <X className="h-4 w-4" />
                 </Button>
               </div>
             </div>
           ) : (
             <>
-              <span>{block.label}</span>
+              <span className="font-semibold">{block.label}</span>
               <Button
                 size="sm"
                 variant="ghost"
                 onClick={() => setIsEditing(true)}
-                className="h-6 w-6 p-0"
+                className="h-8 w-8 p-0 flex-shrink-0"
               >
-                <Edit2 className="h-3 w-3" />
+                <Edit2 className="h-4 w-4" />
               </Button>
             </>
           )}
         </CardTitle>
       </CardHeader>
-      <CardContent className="pt-0">
+      <CardContent className="pt-0 flex-1 flex flex-col">
         <Tabs
           value={activeTab}
           onValueChange={(value) =>
             setActiveTab(value as "proposals" | "voting" | "commit")
           }
+          className="flex flex-col flex-1"
         >
-          <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="proposals" className="text-xs">
-              Proposals
+          <TabsList className="grid w-full grid-cols-3 h-auto">
+            <TabsTrigger
+              value="proposals"
+              className="text-xs sm:text-sm flex-col sm:flex-row gap-1 py-2"
+            >
+              <span className="hidden sm:inline">Proposals</span>
+              <span className="sm:hidden">Props</span>
               {proposals.length > 0 && (
-                <Badge variant="secondary" className="ml-1 text-xs">
+                <Badge
+                  variant="secondary"
+                  className="text-[10px] sm:text-xs px-1"
+                >
                   {proposals.length}
                 </Badge>
               )}
             </TabsTrigger>
-            <TabsTrigger value="voting" className="text-xs">
-              <Vote className="h-3 w-3 mr-1" />
-              Voting
+            <TabsTrigger
+              value="voting"
+              className="text-xs sm:text-sm flex-col sm:flex-row gap-1 py-2"
+            >
+              <div className="flex items-center gap-1">
+                <Vote className="h-3 w-3" />
+                <span>Voting</span>
+              </div>
               {block.vote_open_ts && (
-                <Badge variant="secondary" className="ml-1 text-xs">
+                <Badge
+                  variant="secondary"
+                  className="text-[10px] sm:text-xs px-1"
+                >
                   {(() => {
                     const now = new Date();
                     const voteOpenTs = new Date(block.vote_open_ts);
-                    const voteCloseTs = block.vote_close_ts ? new Date(block.vote_close_ts) : null;
+                    const voteCloseTs = block.vote_close_ts
+                      ? new Date(block.vote_close_ts)
+                      : null;
 
                     if (now < voteOpenTs) return "Soon";
-                    if (voteCloseTs && now >= voteOpenTs && now <= voteCloseTs) return "Active";
+                    if (voteCloseTs && now >= voteOpenTs && now <= voteCloseTs)
+                      return "Active";
                     if (voteCloseTs && now > voteCloseTs) return "Ended";
                     return "Open";
                   })()}
                 </Badge>
               )}
             </TabsTrigger>
-            <TabsTrigger value="commit" className="text-xs">
-              <Gavel className="h-3 w-3 mr-1" />
-              Commit
+            <TabsTrigger
+              value="commit"
+              className="text-xs sm:text-sm flex-col sm:flex-row gap-1 py-2"
+            >
+              <div className="flex items-center gap-1">
+                <Gavel className="h-3 w-3" />
+                <span>Commit</span>
+              </div>
               {existingCommit && (
-                <Badge variant="default" className="ml-1 text-xs bg-green-600">
+                <Badge
+                  variant="default"
+                  className="text-[10px] sm:text-xs px-1 bg-green-600"
+                >
                   ✓
                 </Badge>
               )}
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="proposals" className="mt-4">
+          <TabsContent value="proposals" className="mt-4 flex-1">
+            {/* Add Activity Button */}
+            <div className="mb-4">
+              <Button
+                onClick={() => setShowActivitySelector(true)}
+                variant="outline"
+                size="sm"
+                className="w-full gap-2"
+              >
+                <Plus className="h-4 w-4" />
+                Add Activity
+              </Button>
+            </div>
+
             {proposalsLoading ? (
-              <div className="min-h-[120px] flex items-center justify-center">
-                <div className="animate-pulse text-gray-500">
+              <div className="min-h-[140px] flex items-center justify-center">
+                <div className="animate-pulse text-muted-foreground text-sm">
                   Loading proposals...
                 </div>
               </div>
             ) : proposals.length === 0 ? (
-              <div className="min-h-[120px] border-2 border-dashed border-gray-200 rounded-lg p-4 text-center">
-                <div className="flex flex-col items-center justify-center h-full text-gray-500">
-                  <Clock className="h-6 w-6 mb-2 opacity-50" />
-                  <p className="text-sm">No activities yet</p>
-                  <p className="text-xs mt-1">
-                    Add activities to this time block
+              <div className="min-h-[140px] border-2 border-dashed border-gray-200 rounded-lg p-6 text-center">
+                <div className="flex flex-col items-center justify-center h-full text-muted-foreground">
+                  <Clock className="h-8 w-8 mb-3 opacity-40" />
+                  <p className="text-sm font-medium">No activities yet</p>
+                  <p className="text-xs mt-1.5">
+                    Click "Add Activity" above to get started
                   </p>
                 </div>
               </div>
             ) : (
               <div className="space-y-3">
                 {proposals.map((proposal) => (
-                  <Card key={proposal.id} className="border border-gray-200">
-                    <CardContent className="p-4">
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1 min-w-0">
-                          <h4 className="font-medium text-sm mb-2 truncate">
+                  <Card
+                    key={proposal.id}
+                    className="border border-gray-200 hover:border-gray-300 transition-colors"
+                  >
+                    <CardContent className="p-3 sm:p-4">
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="flex-1 min-w-0 space-y-2">
+                          <h4 className="font-semibold text-sm sm:text-base line-clamp-1">
                             {proposal.activity?.title}
                           </h4>
 
-                          <div className="flex flex-wrap gap-2 text-xs text-gray-600 mb-2">
+                          <div className="flex flex-wrap gap-1.5 sm:gap-2">
                             {proposal.activity?.category && (
-                              <Badge variant="secondary" className="text-xs">
+                              <Badge
+                                variant="secondary"
+                                className="text-[10px] sm:text-xs"
+                              >
                                 {proposal.activity.category}
                               </Badge>
                             )}
 
                             {proposal.activity?.cost_amount && (
-                              <div className="flex items-center gap-1">
+                              <div className="flex items-center gap-0.5 sm:gap-1 text-xs text-muted-foreground">
                                 <DollarSign className="h-3 w-3" />
-                                {formatCurrency(
-                                  proposal.activity.cost_amount,
-                                  proposal.activity.cost_currency || "USD",
-                                )}
+                                <span className="text-[10px] sm:text-xs">
+                                  {formatCurrency(
+                                    proposal.activity.cost_amount,
+                                    proposal.activity.cost_currency || "USD",
+                                  )}
+                                </span>
                               </div>
                             )}
 
                             {proposal.activity?.duration_min && (
-                              <div className="flex items-center gap-1">
+                              <div className="flex items-center gap-0.5 sm:gap-1 text-xs text-muted-foreground">
                                 <Clock className="h-3 w-3" />
-                                {formatDuration(proposal.activity.duration_min)}
+                                <span className="text-[10px] sm:text-xs">
+                                  {formatDuration(
+                                    proposal.activity.duration_min,
+                                  )}
+                                </span>
                               </div>
                             )}
                           </div>
 
                           {proposal.activity?.location && (
-                            <div className="flex items-center gap-1 text-xs text-gray-600 mb-2">
+                            <div className="flex items-center gap-1 text-xs text-muted-foreground">
                               <MapPin className="h-3 w-3 flex-shrink-0" />
-                              <span className="truncate">
+                              <span className="truncate text-[10px] sm:text-xs">
                                 {proposal.activity.location.name}
                               </span>
                             </div>
                           )}
 
                           {proposal.activity?.notes && (
-                            <p className="text-xs text-gray-600 line-clamp-2">
+                            <p className="text-xs text-muted-foreground line-clamp-2">
                               {proposal.activity.notes}
                             </p>
                           )}
@@ -254,9 +327,12 @@ export function BlockCard({
                         <Button
                           size="sm"
                           variant="ghost"
-                          className="h-6 w-6 p-0 ml-2"
+                          onClick={() => handleRemoveProposal(proposal.id)}
+                          disabled={removeProposal.isPending}
+                          className="h-8 w-8 p-0 flex-shrink-0 text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950"
+                          title="Remove activity"
                         >
-                          <MoreVertical className="h-3 w-3" />
+                          <Trash2 className="h-4 w-4" />
                         </Button>
                       </div>
                     </CardContent>
@@ -267,18 +343,20 @@ export function BlockCard({
 
             {/* Voting status */}
             {block.vote_open_ts && (
-              <div className="mt-3 text-xs text-gray-600">
-                <div className="flex items-center gap-1">
-                  <Clock className="h-3 w-3" />
-                  Voting: {new Date(block.vote_open_ts).toLocaleDateString()}
-                  {block.vote_close_ts &&
-                    ` - ${new Date(block.vote_close_ts).toLocaleDateString()}`}
+              <div className="mt-3 pt-3 border-t text-xs text-muted-foreground">
+                <div className="flex items-center gap-1.5">
+                  <Clock className="h-3.5 w-3.5" />
+                  <span>
+                    Voting: {new Date(block.vote_open_ts).toLocaleDateString()}
+                    {block.vote_close_ts &&
+                      ` - ${new Date(block.vote_close_ts).toLocaleDateString()}`}
+                  </span>
                 </div>
               </div>
             )}
           </TabsContent>
 
-          <TabsContent value="voting" className="mt-4">
+          <TabsContent value="voting" className="mt-4 flex-1">
             <div className="space-y-4">
               {/* Voting Window Management for Organizers */}
               {isOrganizer && (
@@ -300,7 +378,7 @@ export function BlockCard({
             </div>
           </TabsContent>
 
-          <TabsContent value="commit" className="mt-4">
+          <TabsContent value="commit" className="mt-4 flex-1">
             <CommitPanel
               block={block}
               tripId={tripId}
@@ -309,6 +387,17 @@ export function BlockCard({
           </TabsContent>
         </Tabs>
       </CardContent>
+
+      {/* Activity Selector Dialog */}
+      <ActivitySelectorDialog
+        open={showActivitySelector}
+        onOpenChange={setShowActivitySelector}
+        tripId={tripId}
+        blockId={block.id}
+        blockLabel={block.label}
+        currentMemberId={currentMemberId}
+        existingActivityIds={proposals.map((p) => p.activity_id)}
+      />
     </Card>
   );
 }

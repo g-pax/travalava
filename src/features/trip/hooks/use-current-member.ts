@@ -14,7 +14,9 @@ export function useCurrentMember(tripId: string) {
     queryKey: ["currentMember", tripId],
     queryFn: async (): Promise<CurrentMember | null> => {
       // Get current user
-      const { data: { user }, error: userError } = await supabase.auth.getUser();
+      const { data: userData, error: userError } =
+        await supabase.auth.getUser();
+      const { user } = userData;
       if (userError || !user) {
         return null;
       }
@@ -25,7 +27,7 @@ export function useCurrentMember(tripId: string) {
         .select("*")
         .eq("trip_id", tripId)
         .eq("user_id", user.id)
-        .single();
+        .maybeSingle();
 
       if (error) {
         console.error("Error fetching current member:", error);

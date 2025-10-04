@@ -1,5 +1,6 @@
 "use client";
 
+import { Calendar, MapPin, PlusCircle, Users } from "lucide-react";
 /**
  * Home page that shows different content for authenticated and unauthenticated users
  * - Landing page for guests with auth CTA
@@ -7,7 +8,6 @@
  */
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Calendar, MapPin, Plus, PlusCircle, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -16,8 +16,8 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { useAuth } from "@/lib/auth-context";
 import { TripCreateForm } from "@/features/trip/components/trip-create-form";
+import { useAuth } from "@/lib/auth-context";
 
 function LandingPage() {
   return (
@@ -42,12 +42,12 @@ function LandingPage() {
       <div className="px-6 py-20">
         <div className="mx-auto max-w-4xl text-center">
           <h1 className="text-4xl font-bold tracking-tight text-gray-900 sm:text-6xl">
-            Plan Amazing Trips{" "}
-            <span className="text-blue-600">Together</span>
+            Plan Amazing Trips <span className="text-blue-600">Together</span>
           </h1>
           <p className="mx-auto mt-6 max-w-2xl text-lg leading-8 text-gray-600">
             Collaborate with friends and family to create the perfect itinerary.
-            Vote on activities, manage expenses, and make memories that last a lifetime.
+            Vote on activities, manage expenses, and make memories that last a
+            lifetime.
           </p>
           <div className="mt-10 flex items-center justify-center gap-x-6">
             <Link href="/auth/register">
@@ -55,7 +55,10 @@ function LandingPage() {
                 Start Planning
               </Button>
             </Link>
-            <Link href="/auth/login" className="text-sm font-semibold leading-6 text-gray-900">
+            <Link
+              href="/auth/login"
+              className="text-sm font-semibold leading-6 text-gray-900"
+            >
               Already have an account? <span aria-hidden="true">→</span>
             </Link>
           </div>
@@ -71,7 +74,8 @@ function LandingPage() {
                 <Users className="h-8 w-8 text-blue-600 mb-2" />
                 <CardTitle>Collaborative Planning</CardTitle>
                 <CardDescription>
-                  Invite friends and family to plan together. Everyone can contribute ideas and vote on activities.
+                  Invite friends and family to plan together. Everyone can
+                  contribute ideas and vote on activities.
                 </CardDescription>
               </CardHeader>
             </Card>
@@ -81,7 +85,8 @@ function LandingPage() {
                 <Calendar className="h-8 w-8 text-blue-600 mb-2" />
                 <CardTitle>Smart Scheduling</CardTitle>
                 <CardDescription>
-                  Organize your trip by days and time blocks. Vote on activities and let the group decide.
+                  Organize your trip by days and time blocks. Vote on activities
+                  and let the group decide.
                 </CardDescription>
               </CardHeader>
             </Card>
@@ -91,7 +96,8 @@ function LandingPage() {
                 <MapPin className="h-8 w-8 text-blue-600 mb-2" />
                 <CardTitle>Location Integration</CardTitle>
                 <CardDescription>
-                  Add locations with Google Maps integration. Get directions and weather information.
+                  Add locations with Google Maps integration. Get directions and
+                  weather information.
                 </CardDescription>
               </CardHeader>
             </Card>

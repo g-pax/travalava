@@ -21,12 +21,12 @@ export function useJoinTrip() {
         .from("trips")
         .select("pin_hash, invite_token_version")
         .eq("id", tripId)
-        .single();
+        .maybeSingle();
 
       if (tripError) throw new Error("Trip not found");
 
       // Validate PIN if required
-      if (trip.pin_hash) {
+      if (trip?.pin_hash) {
         const isValidPin = await bcrypt.compare(pin, trip.pin_hash);
         if (!isValidPin) {
           throw new Error("Invalid PIN");
@@ -43,7 +43,7 @@ export function useJoinTrip() {
           user_id: null, // Will be set when auth is implemented
         })
         .select()
-        .single();
+        .maybeSingle();
 
       if (memberError) throw memberError;
 

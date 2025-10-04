@@ -14,7 +14,10 @@ export function useCreateTrip() {
       const validated = TripCreateSchema.parse(input);
 
       // Get current user
-      const { data: { user }, error: userError } = await supabase.auth.getUser();
+      const {
+        data: { user },
+        error: userError,
+      } = await supabase.auth.getUser();
       if (userError || !user) {
         throw new Error("You must be logged in to create a trip");
       }
@@ -37,7 +40,7 @@ export function useCreateTrip() {
           client_mutation_id: clientMutationId,
         })
         .select()
-        .single();
+        .maybeSingle();
 
       if (tripError) throw tripError;
 
@@ -46,7 +49,7 @@ export function useCreateTrip() {
         .from("user_profiles")
         .select("display_name")
         .eq("id", user.id)
-        .single();
+        .maybeSingle();
 
       // Create organizer member
       const { data: member, error: memberError } = await supabase
@@ -54,12 +57,16 @@ export function useCreateTrip() {
         .insert({
           trip_id: trip.id,
           role: "organizer",
-          display_name: userProfile?.display_name || user.user_metadata?.display_name || user.email?.split("@")[0] || "Organizer",
+          display_name:
+            userProfile?.display_name ||
+            user.user_metadata?.display_name ||
+            user.email?.split("@")[0] ||
+            "Organizer",
           user_id: user.id,
           client_mutation_id: clientMutationId,
         })
         .select()
-        .single();
+        .maybeSingle();
 
       if (memberError) throw memberError;
 

@@ -1,5 +1,6 @@
 "use client";
 
+import type { User } from "@supabase/supabase-js";
 /**
  * Authentication context and provider for managing user sessions
  * - Provides user state and authentication methods
@@ -8,18 +9,21 @@
  */
 import {
   createContext,
+  type ReactNode,
   useContext,
   useEffect,
   useState,
-  type ReactNode,
 } from "react";
-import { type User } from "@supabase/supabase-js";
 import { supabase } from "./supabase";
 
 interface AuthContextType {
   user: User | null;
   loading: boolean;
-  signUp: (email: string, password: string, displayName: string) => Promise<void>;
+  signUp: (
+    email: string,
+    password: string,
+    displayName: string,
+  ) => Promise<void>;
   signIn: (email: string, password: string) => Promise<void>;
   signOut: () => Promise<void>;
   resetPassword: (email: string) => Promise<void>;
@@ -43,6 +47,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: is fine
   useEffect(() => {
     // Get initial session
     const getInitialSession = async () => {
@@ -77,14 +82,15 @@ export function AuthProvider({ children }: AuthProviderProps) {
       .from("user_profiles")
       .select("id")
       .eq("id", user.id)
-      .single();
+      .maybeSingle();
 
     if (!existingProfile) {
       // Create user profile
       const { error } = await supabase.from("user_profiles").insert({
         id: user.id,
         email: user.email!,
-        display_name: user.user_metadata?.display_name || user.email!.split("@")[0],
+        display_name:
+          user.user_metadata?.display_name || user.email!.split("@")[0],
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
       });
@@ -95,7 +101,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
   };
 
-  const signUp = async (email: string, password: string, displayName: string) => {
+  const signUp = async (
+    email: string,
+    password: string,
+    displayName: string,
+  ) => {
     const { error } = await supabase.auth.signUp({
       email,
       password,

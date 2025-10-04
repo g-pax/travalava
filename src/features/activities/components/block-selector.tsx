@@ -54,12 +54,13 @@ function BlockCard({
 }) {
   return (
     <Card
-      className={`cursor-pointer transition-all ${disabled
-        ? "opacity-50 cursor-not-allowed"
-        : isSelected
-          ? "ring-2 ring-blue-500 bg-blue-50"
-          : "hover:bg-gray-50"
-        }`}
+      className={`cursor-pointer transition-all ${
+        disabled
+          ? "opacity-50 cursor-not-allowed"
+          : isSelected
+            ? "ring-2 ring-blue-500 bg-blue-50"
+            : "hover:bg-gray-50"
+      }`}
       onClick={() => !disabled && onSelect(block.id)}
     >
       <CardContent className="p-4">

@@ -1,17 +1,10 @@
 "use client";
 
-/**
- * VotingWindowManager allows organizers to set voting windows for blocks
- * - Set voting start and end times
- * - Manages timezone considerations
- * - Updates block voting windows
- */
-import { useState } from "react";
-import { Calendar, Clock, Play, Square } from "lucide-react";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Calendar, Clock } from "lucide-react";
+import { useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import {
   Dialog,
   DialogContent,
@@ -19,8 +12,20 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { toast } from "sonner";
-import { supabase } from "@/lib/supabase";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { type VotingWindowInput, VotingWindowSchema } from "@/schemas";
+import {
+  useClearVotingWindow,
+  useUpdateVotingWindow,
+} from "../hooks/use-voting-window";
+
+/**
+ * VotingWindowManager allows organizers to set voting windows for blocks
+ * - Set voting start and end times
+ * - Manages timezone considerations
+ * - Updates block voting windows
+ */
 
 interface VotingWindowManagerProps {
   block: {
@@ -39,89 +44,71 @@ export function VotingWindowManager({
   isOrganizer,
 }: VotingWindowManagerProps) {
   const [open, setOpen] = useState(false);
-  const [saving, setSaving] = useState(false);
-  const [voteOpenTime, setVoteOpenTime] = useState(
-    block.vote_open_ts
-      ? new Date(block.vote_open_ts).toISOString().slice(0, 16)
-      : ""
-  );
-  const [voteCloseTime, setVoteCloseTime] = useState(
-    block.vote_close_ts
-      ? new Date(block.vote_close_ts).toISOString().slice(0, 16)
-      : ""
-  );
+  const updateVotingWindow = useUpdateVotingWindow();
+  const clearVotingWindow = useClearVotingWindow();
+
+  const form = useForm<VotingWindowInput>({
+    resolver: zodResolver(VotingWindowSchema),
+    defaultValues: {
+      vote_open_ts: block.vote_open_ts
+        ? new Date(block.vote_open_ts).toISOString().slice(0, 16)
+        : "",
+      vote_close_ts: block.vote_close_ts
+        ? new Date(block.vote_close_ts).toISOString().slice(0, 16)
+        : "",
+    },
+  });
+
+  // Reset form when block changes or dialog opens
+  useEffect(() => {
+    if (open) {
+      form.reset({
+        vote_open_ts: block.vote_open_ts
+          ? new Date(block.vote_open_ts).toISOString().slice(0, 16)
+          : "",
+        vote_close_ts: block.vote_close_ts
+          ? new Date(block.vote_close_ts).toISOString().slice(0, 16)
+          : "",
+      });
+    }
+  }, [open, block.vote_open_ts, block.vote_close_ts, form]);
 
   const now = new Date();
   const voteOpenTs = block.vote_open_ts ? new Date(block.vote_open_ts) : null;
-  const voteCloseTs = block.vote_close_ts ? new Date(block.vote_close_ts) : null;
+  const voteCloseTs = block.vote_close_ts
+    ? new Date(block.vote_close_ts)
+    : null;
 
   const votingNotStarted = voteOpenTs && now < voteOpenTs;
-  const votingActive = voteOpenTs && voteCloseTs && now >= voteOpenTs && now <= voteCloseTs;
+  const votingActive =
+    voteOpenTs && voteCloseTs && now >= voteOpenTs && now <= voteCloseTs;
   const votingEnded = voteCloseTs && now > voteCloseTs;
 
-  const handleSave = async () => {
-    if (!voteOpenTime || !voteCloseTime) {
-      toast.error("Please set both start and end times");
-      return;
-    }
-
-    const openTime = new Date(voteOpenTime);
-    const closeTime = new Date(voteCloseTime);
-
-    if (openTime >= closeTime) {
-      toast.error("Start time must be before end time");
-      return;
-    }
-
-    setSaving(true);
+  const onSubmit = async (values: VotingWindowInput) => {
     try {
-      const { error } = await supabase
-        .from("blocks")
-        .update({
-          vote_open_ts: openTime.toISOString(),
-          vote_close_ts: closeTime.toISOString(),
-          updated_at: new Date().toISOString(),
-        })
-        .eq("id", block.id)
-        .eq("trip_id", tripId); // RLS check
-
-      if (error) throw error;
-
-      toast.success("Voting window updated!");
+      await updateVotingWindow.mutateAsync({
+        blockId: block.id,
+        tripId,
+        vote_open_ts: new Date(values.vote_open_ts).toISOString(),
+        vote_close_ts: new Date(values.vote_close_ts).toISOString(),
+      });
       setOpen(false);
-      // The parent component should refetch data
-      window.location.reload(); // Simple refresh for now
     } catch (error) {
-      toast.error("Failed to update voting window");
-      console.error("Voting window update error:", error);
-    } finally {
-      setSaving(false);
+      // Error handling is done in the hook
+      console.error("Error updating voting window:", error);
     }
   };
 
   const handleClearWindow = async () => {
-    setSaving(true);
     try {
-      const { error } = await supabase
-        .from("blocks")
-        .update({
-          vote_open_ts: null,
-          vote_close_ts: null,
-          updated_at: new Date().toISOString(),
-        })
-        .eq("id", block.id)
-        .eq("trip_id", tripId);
-
-      if (error) throw error;
-
-      toast.success("Voting window cleared!");
+      await clearVotingWindow.mutateAsync({
+        blockId: block.id,
+        tripId,
+      });
       setOpen(false);
-      window.location.reload();
     } catch (error) {
-      toast.error("Failed to clear voting window");
-      console.error("Clear voting window error:", error);
-    } finally {
-      setSaving(false);
+      // Error handling is done in the hook
+      console.error("Error clearing voting window:", error);
     }
   };
 
@@ -129,23 +116,29 @@ export function VotingWindowManager({
     return null;
   }
 
+  const isLoading = updateVotingWindow.isPending || clearVotingWindow.isPending;
+
   return (
     <div className="space-y-2">
       {/* Current status */}
       <div className="flex items-center gap-2 text-sm">
         <Clock className="h-4 w-4" />
         {!voteOpenTs ? (
-          <span className="text-gray-600">No voting window set</span>
+          <span className="text-gray-600 dark:text-gray-400">
+            No voting window set
+          </span>
         ) : votingNotStarted ? (
-          <span className="text-amber-600">
-            Voting starts {voteOpenTs.toLocaleDateString()} at {voteOpenTs.toLocaleTimeString()}
+          <span className="text-amber-600 dark:text-amber-500">
+            Voting starts {voteOpenTs.toLocaleDateString()} at{" "}
+            {voteOpenTs.toLocaleTimeString()}
           </span>
         ) : votingActive ? (
-          <span className="text-green-600">
-            Voting active until {voteCloseTs?.toLocaleDateString()} at {voteCloseTs?.toLocaleTimeString()}
+          <span className="text-green-600 dark:text-green-500">
+            Voting active until {voteCloseTs?.toLocaleDateString()} at{" "}
+            {voteCloseTs?.toLocaleTimeString()}
           </span>
         ) : votingEnded ? (
-          <span className="text-red-600">
+          <span className="text-red-600 dark:text-red-500">
             Voting ended {voteCloseTs?.toLocaleDateString()}
           </span>
         ) : null}
@@ -163,31 +156,41 @@ export function VotingWindowManager({
           <DialogHeader>
             <DialogTitle>Voting Window for "{block.label}"</DialogTitle>
           </DialogHeader>
-          <div className="space-y-4">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="vote_open">Voting Start Time</Label>
+              <Label htmlFor="vote_open_ts">Voting Start Time</Label>
               <Input
-                id="vote_open"
+                id="vote_open_ts"
                 type="datetime-local"
-                value={voteOpenTime}
-                onChange={(e) => setVoteOpenTime(e.target.value)}
+                {...form.register("vote_open_ts")}
                 min={new Date().toISOString().slice(0, 16)}
               />
+              {form.formState.errors.vote_open_ts && (
+                <p className="text-sm text-red-600 dark:text-red-400">
+                  {form.formState.errors.vote_open_ts.message}
+                </p>
+              )}
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="vote_close">Voting End Time</Label>
+              <Label htmlFor="vote_close_ts">Voting End Time</Label>
               <Input
-                id="vote_close"
+                id="vote_close_ts"
                 type="datetime-local"
-                value={voteCloseTime}
-                onChange={(e) => setVoteCloseTime(e.target.value)}
-                min={voteOpenTime}
+                {...form.register("vote_close_ts")}
+                min={form.watch("vote_open_ts")}
               />
+              {form.formState.errors.vote_close_ts && (
+                <p className="text-sm text-red-600 dark:text-red-400">
+                  {form.formState.errors.vote_close_ts.message}
+                </p>
+              )}
             </div>
 
-            <div className="text-sm text-gray-600 p-3 bg-blue-50 rounded-lg">
-              <p className="mb-1">💡 <strong>Tips:</strong></p>
+            <div className="text-sm text-gray-600 dark:text-gray-400 p-3 bg-blue-50 dark:bg-blue-950/30 rounded-lg">
+              <p className="mb-1">
+                💡 <strong>Tips:</strong>
+              </p>
               <ul className="text-xs space-y-1 list-disc list-inside">
                 <li>Give members enough time to review and vote</li>
                 <li>Consider time zones for remote members</li>
@@ -197,32 +200,34 @@ export function VotingWindowManager({
 
             <div className="flex gap-2">
               <Button
+                type="button"
                 variant="outline"
                 onClick={() => setOpen(false)}
                 className="flex-1"
-                disabled={saving}
+                disabled={isLoading}
               >
                 Cancel
               </Button>
               {(voteOpenTs || voteCloseTs) && (
                 <Button
+                  type="button"
                   variant="destructive"
                   onClick={handleClearWindow}
-                  disabled={saving}
+                  disabled={isLoading}
                   className="flex-1"
                 >
-                  Clear Window
+                  {clearVotingWindow.isPending ? "Clearing..." : "Clear Window"}
                 </Button>
               )}
               <Button
-                onClick={handleSave}
-                disabled={saving || !voteOpenTime || !voteCloseTime}
+                type="submit"
+                disabled={isLoading || !form.formState.isValid}
                 className="flex-1"
               >
-                {saving ? "Saving..." : "Save Window"}
+                {updateVotingWindow.isPending ? "Saving..." : "Save Window"}
               </Button>
             </div>
-          </div>
+          </form>
         </DialogContent>
       </Dialog>
     </div>
