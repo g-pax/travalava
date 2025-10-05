@@ -54,7 +54,9 @@ export default function ResetPasswordPage() {
       <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4 py-12">
         <Card className="w-full max-w-md">
           <CardHeader className="space-y-1">
-            <CardTitle className="text-2xl text-center">Check your email</CardTitle>
+            <CardTitle className="text-2xl text-center">
+              Check your email
+            </CardTitle>
             <CardDescription className="text-center">
               We've sent a password reset link to {form.getValues("email")}
             </CardDescription>
@@ -117,11 +119,7 @@ export default function ResetPasswordPage() {
               )}
             </div>
 
-            <Button
-              type="submit"
-              className="w-full"
-              disabled={isLoading}
-            >
+            <Button type="submit" className="w-full" disabled={isLoading}>
               {isLoading ? (
                 "Sending..."
               ) : (

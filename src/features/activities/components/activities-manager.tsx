@@ -101,8 +101,6 @@ export function ActivitiesManager({
         </DialogContent>
       </Dialog>
 
-
-
       {/* Block Assignment Dialog */}
       <Dialog
         open={dialogState.type === "assign"}

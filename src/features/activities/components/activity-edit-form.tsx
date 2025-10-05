@@ -12,6 +12,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 // import imageCompression from "browser-image-compression";
 import { Clock, DollarSign, FileText, Link2, MapPin } from "lucide-react";
 import { useForm } from "react-hook-form";
+import { ActionButton, FormLoadingOverlay } from "@/components/loading";
 import { Button } from "@/components/ui/button";
 // import {
 //   Card,
@@ -278,6 +279,24 @@ export function ActivityEditForm({
       onSuccess?.(updatedActivity);
       onOpenChange?.(false);
     } catch (error) {
+      // Clear any previous submission errors
+      form.clearErrors();
+
+      if (error instanceof Error) {
+        // Set field-specific errors if applicable
+        if (error.message.toLowerCase().includes("title")) {
+          form.setError("title", { message: error.message });
+        } else if (error.message.toLowerCase().includes("cost")) {
+          form.setError("cost_amount", { message: error.message });
+        } else if (error.message.toLowerCase().includes("duration")) {
+          form.setError("duration_min", { message: error.message });
+        } else if (
+          error.message.toLowerCase().includes("url") ||
+          error.message.toLowerCase().includes("link")
+        ) {
+          form.setError("link", { message: error.message });
+        }
+      }
       console.error("Failed to update activity:", error);
     }
   };
@@ -298,7 +317,7 @@ export function ActivityEditForm({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto relative">
         <DialogHeader>
           <DialogTitle>Edit Activity</DialogTitle>
         </DialogHeader>
@@ -532,13 +551,14 @@ export function ActivityEditForm({
 
           {/* Form Actions */}
           <div className="flex gap-3 pt-4">
-            <Button
+            <ActionButton
               type="submit"
-              disabled={updateActivity.isPending}
               className="flex-1"
+              isPending={updateActivity.isPending}
+              pendingText="Updating..."
             >
-              {updateActivity.isPending ? "Updating..." : "Update Activity"}
-            </Button>
+              Update Activity
+            </ActionButton>
             <Button
               type="button"
               variant="outline"
@@ -549,6 +569,12 @@ export function ActivityEditForm({
             </Button>
           </div>
         </form>
+
+        {/* Loading overlay for form submission */}
+        <FormLoadingOverlay
+          isVisible={updateActivity.isPending}
+          message="Updating activity..."
+        />
       </DialogContent>
     </Dialog>
   );

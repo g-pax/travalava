@@ -13,6 +13,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import { InlineLoader } from "@/components/loading";
 import { useActivities } from "../hooks/use-activities";
 import { useCreateProposal } from "../hooks/use-proposals";
 
@@ -104,11 +105,7 @@ export function ActivitySelectorDialog({
         {/* Activities List */}
         <div className="flex-1 overflow-y-auto space-y-2 pr-2">
           {isLoading ? (
-            <div className="flex items-center justify-center py-8">
-              <div className="animate-pulse text-muted-foreground">
-                Loading activities...
-              </div>
-            </div>
+            <InlineLoader message="Loading activities..." />
           ) : filteredActivities.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-8 text-center">
               <p className="text-muted-foreground">

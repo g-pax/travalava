@@ -38,6 +38,10 @@ export function useActivities(tripId: string) {
   return useQuery({
     queryKey: ["activities", tripId],
     queryFn: async (): Promise<Activity[]> => {
+      if (!tripId) {
+        throw new Error("Trip ID is required");
+      }
+
       const { data, error } = await supabase
         .from("activities")
         .select("*")
@@ -50,7 +54,8 @@ export function useActivities(tripId: string) {
 
       return data || [];
     },
-    enabled: !!tripId,
+    enabled: !!tripId && tripId !== "undefined" && tripId !== "null",
+    staleTime: 1000 * 60 * 2, // 2 minutes for activities
   });
 }
 
@@ -61,6 +66,10 @@ export function useActivity(activityId: string) {
   return useQuery({
     queryKey: ["activity", activityId],
     queryFn: async (): Promise<Activity> => {
+      if (!activityId) {
+        throw new Error("Activity ID is required");
+      }
+
       const { data, error } = await supabase
         .from("activities")
         .select("*")
@@ -71,9 +80,15 @@ export function useActivity(activityId: string) {
         throw new Error(`Failed to fetch activity: ${error.message}`);
       }
 
+      if (!data) {
+        throw new Error("Activity not found");
+      }
+
       return data;
     },
-    enabled: !!activityId,
+    enabled:
+      !!activityId && activityId !== "undefined" && activityId !== "null",
+    staleTime: 1000 * 60 * 5, // 5 minutes for individual activity
   });
 }
 

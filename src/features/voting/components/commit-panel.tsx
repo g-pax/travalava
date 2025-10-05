@@ -23,6 +23,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { formatCurrency, formatDuration } from "@/lib/utils";
+import { InlineLoader } from "@/components/loading";
 import { useBlockCommit, useBlockCommitQuery } from "../hooks/use-block-commit";
 import { useVoteTally } from "../hooks/use-votes";
 
@@ -152,9 +153,7 @@ export function CommitPanel({ block, tripId, isOrganizer }: CommitPanelProps) {
     return (
       <Card>
         <CardContent className="p-6">
-          <div className="animate-pulse text-gray-500">
-            Loading commit data...
-          </div>
+          <InlineLoader message="Loading vote data..." />
         </CardContent>
       </Card>
     );

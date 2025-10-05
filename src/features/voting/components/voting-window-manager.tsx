@@ -4,6 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Calendar, Clock } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
+import { ActionButton } from "@/components/loading";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -209,23 +210,26 @@ export function VotingWindowManager({
                 Cancel
               </Button>
               {(voteOpenTs || voteCloseTs) && (
-                <Button
+                <ActionButton
                   type="button"
                   variant="destructive"
                   onClick={handleClearWindow}
-                  disabled={isLoading}
                   className="flex-1"
+                  isPending={clearVotingWindow.isPending}
+                  pendingText="Clearing..."
                 >
-                  {clearVotingWindow.isPending ? "Clearing..." : "Clear Window"}
-                </Button>
+                  Clear Window
+                </ActionButton>
               )}
-              <Button
+              <ActionButton
                 type="submit"
-                disabled={isLoading || !form.formState.isValid}
+                disabled={!form.formState.isValid}
                 className="flex-1"
+                isPending={updateVotingWindow.isPending}
+                pendingText="Saving..."
               >
-                {updateVotingWindow.isPending ? "Saving..." : "Save Window"}
-              </Button>
+                Save Window
+              </ActionButton>
             </div>
           </form>
         </DialogContent>

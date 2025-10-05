@@ -41,7 +41,10 @@ function parseGoogleMapsUrl(url: string) {
     const urlObj = new URL(url);
 
     // Handle various Google Maps URL formats
-    if (urlObj.hostname.includes('maps.google') || urlObj.hostname.includes('goo.gl')) {
+    if (
+      urlObj.hostname.includes("maps.google") ||
+      urlObj.hostname.includes("goo.gl")
+    ) {
       // Try to extract coordinates from the URL
       const coordMatch = url.match(/@(-?\d+\.\d+),(-?\d+\.\d+)/);
       if (coordMatch) {
@@ -58,7 +61,7 @@ function parseGoogleMapsUrl(url: string) {
 
       if (searchMatch || placeMatch) {
         return {
-          query: decodeURIComponent(searchMatch?.[1] || placeMatch?.[1] || ''),
+          query: decodeURIComponent(searchMatch?.[1] || placeMatch?.[1] || ""),
           isValid: true,
         };
       }
@@ -73,7 +76,10 @@ function parseGoogleMapsUrl(url: string) {
 /**
  * Generate Google Maps embed URL
  */
-function getEmbedUrl(location?: { lat: number; lon: number; name: string }, googleMapsLink?: string) {
+function getEmbedUrl(
+  location?: { lat: number; lon: number; name: string },
+  googleMapsLink?: string,
+) {
   if (googleMapsLink) {
     const parsed = parseGoogleMapsUrl(googleMapsLink);
     if (parsed.isValid) {
@@ -96,7 +102,10 @@ function getEmbedUrl(location?: { lat: number; lon: number; name: string }, goog
 /**
  * Generate directions URL
  */
-function getDirectionsUrl(location?: { lat: number; lon: number; name: string }, googleMapsLink?: string) {
+function getDirectionsUrl(
+  location?: { lat: number; lon: number; name: string },
+  googleMapsLink?: string,
+) {
   if (googleMapsLink) {
     return googleMapsLink;
   }
@@ -240,17 +249,13 @@ export function CompactGoogleMapsIntegration({
           className="inline-flex items-center gap-1 text-blue-600 hover:text-blue-800 transition-colors"
         >
           <MapPin className="h-4 w-4" />
-          <span className="truncate">
-            {location?.name || "View Location"}
-          </span>
+          <span className="truncate">{location?.name || "View Location"}</span>
           <ExternalLink className="h-3 w-3 flex-shrink-0" />
         </a>
       ) : (
         <div className="inline-flex items-center gap-1 text-gray-600">
           <MapPin className="h-4 w-4" />
-          <span className="truncate">
-            {location?.name || "Location"}
-          </span>
+          <span className="truncate">{location?.name || "Location"}</span>
         </div>
       )}
     </div>

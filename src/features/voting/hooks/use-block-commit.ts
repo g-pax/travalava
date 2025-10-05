@@ -353,6 +353,10 @@ export function useBlockCommitQuery(blockId: string) {
   return useQuery({
     queryKey: ["commit", blockId],
     queryFn: async () => {
+      if (!blockId) {
+        throw new Error("Block ID is required");
+      }
+
       const { data, error } = await supabase
         .from("commits")
         .select(`
@@ -379,6 +383,7 @@ export function useBlockCommitQuery(blockId: string) {
       if (error) throw error;
       return data;
     },
-    enabled: !!blockId,
+    enabled: !!blockId && blockId !== "undefined" && blockId !== "null",
+    staleTime: 1000 * 60 * 10, // 10 minutes since commits don't change often
   });
 }

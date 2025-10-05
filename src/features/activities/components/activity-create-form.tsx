@@ -9,6 +9,7 @@ import { Clock, DollarSign, FileText, Link2, MapPin } from "lucide-react";
  * - Includes location support and currency handling
  */
 import { useForm } from "react-hook-form";
+import { ActionButton } from "@/components/loading";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -71,6 +72,24 @@ export function ActivityCreateForm({
       onSuccess?.(activity);
       form.reset({ trip_id: tripId, cost_currency: tripCurrency });
     } catch (error) {
+      // Clear any previous submission errors
+      form.clearErrors();
+
+      if (error instanceof Error) {
+        // Set field-specific errors if applicable
+        if (error.message.toLowerCase().includes("title")) {
+          form.setError("title", { message: error.message });
+        } else if (error.message.toLowerCase().includes("cost")) {
+          form.setError("cost_amount", { message: error.message });
+        } else if (error.message.toLowerCase().includes("duration")) {
+          form.setError("duration_min", { message: error.message });
+        } else if (
+          error.message.toLowerCase().includes("url") ||
+          error.message.toLowerCase().includes("link")
+        ) {
+          form.setError("link", { message: error.message });
+        }
+      }
       console.error("Failed to create activity:", error);
     }
   };
@@ -259,13 +278,14 @@ export function ActivityCreateForm({
 
           {/* Form Actions */}
           <div className="flex gap-3 pt-4">
-            <Button
+            <ActionButton
               type="submit"
-              disabled={createActivity.isPending}
               className="flex-1"
+              isPending={createActivity.isPending}
+              pendingText="Creating..."
             >
-              {createActivity.isPending ? "Creating..." : "Create Activity"}
-            </Button>
+              Create Activity
+            </ActionButton>
             {onCancel && (
               <Button
                 type="button"

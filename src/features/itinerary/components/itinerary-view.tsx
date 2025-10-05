@@ -5,6 +5,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { Accordion } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
+import { ItineraryLoader, ActionButton } from "@/components/loading";
 import {
   Card,
   CardContent,
@@ -98,16 +99,7 @@ export function ItineraryView({
   );
 
   if (isLoading) {
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle>Itinerary</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="text-center py-8">Loading itinerary...</div>
-        </CardContent>
-      </Card>
-    );
+    return <ItineraryLoader />;
   }
 
   if (error) {
@@ -141,14 +133,15 @@ export function ItineraryView({
               No itinerary created yet. Generate days and time blocks to start
               planning!
             </p>
-            <Button
+            <ActionButton
               onClick={handleCreateDays}
-              disabled={createDays.isPending}
               className="gap-2"
+              isPending={createDays.isPending}
+              pendingText="Creating..."
             >
               <Plus className="h-4 w-4" />
-              {createDays.isPending ? "Creating..." : "Create Itinerary"}
-            </Button>
+              Create Itinerary
+            </ActionButton>
           </div>
         </CardContent>
       </Card>

@@ -3,7 +3,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
+import { ActionButton } from "@/components/loading";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -37,9 +37,30 @@ export function TripCreateForm({ onSuccess }: TripCreateFormProps) {
     try {
       const result = await createTrip.mutateAsync(values);
       toast.success("Trip created successfully!");
+      form.reset();
       onSuccess?.(result.trip.id);
     } catch (error) {
-      toast.error("Failed to create trip. Please try again.");
+      // Clear any previous submission errors
+      form.clearErrors();
+
+      if (error instanceof Error) {
+        toast.error(error.message);
+
+        // Set field-specific errors if applicable
+        if (error.message.toLowerCase().includes("name")) {
+          form.setError("name", { message: error.message });
+        } else if (error.message.toLowerCase().includes("destination")) {
+          form.setError("destination_text", { message: error.message });
+        } else if (error.message.toLowerCase().includes("date")) {
+          if (error.message.toLowerCase().includes("start")) {
+            form.setError("start_date", { message: error.message });
+          } else if (error.message.toLowerCase().includes("end")) {
+            form.setError("end_date", { message: error.message });
+          }
+        }
+      } else {
+        toast.error("Failed to create trip. Please try again.");
+      }
       console.error("Create trip error:", error);
     }
   };
@@ -154,9 +175,14 @@ export function TripCreateForm({ onSuccess }: TripCreateFormProps) {
         </p>
       </div>
 
-      <Button type="submit" className="w-full" disabled={createTrip.isPending}>
-        {createTrip.isPending ? "Creating..." : "Create Trip"}
-      </Button>
+      <ActionButton
+        type="submit"
+        className="w-full"
+        isPending={createTrip.isPending}
+        pendingText="Creating..."
+      >
+        Create Trip
+      </ActionButton>
     </form>
   );
 }

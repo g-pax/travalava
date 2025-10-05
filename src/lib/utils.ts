@@ -10,8 +10,8 @@ export function cn(...inputs: ClassValue[]) {
  */
 export function formatCurrency(amount: number, currency: string): string {
   try {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
+    return new Intl.NumberFormat("en-US", {
+      style: "currency",
       currency: currency,
     }).format(amount);
   } catch {
@@ -44,10 +44,10 @@ export function formatDuration(minutes: number): string {
 export function formatDate(dateString: string): string {
   try {
     const date = new Date(dateString);
-    return new Intl.DateTimeFormat('en-US', {
-      weekday: 'long',
-      month: 'long',
-      day: 'numeric',
+    return new Intl.DateTimeFormat("en-US", {
+      weekday: "long",
+      month: "long",
+      day: "numeric",
     }).format(date);
   } catch {
     return dateString;

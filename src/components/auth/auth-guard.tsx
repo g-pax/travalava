@@ -9,6 +9,7 @@ import { usePathname, useRouter } from "next/navigation";
  */
 import { useEffect } from "react";
 import { useAuth } from "@/lib/auth-context";
+import { AuthLoader } from "@/components/loading";
 
 interface AuthGuardProps {
   children: React.ReactNode;
@@ -35,11 +36,7 @@ export function AuthGuard({
 
   // Show loading state
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-pulse text-gray-500">Loading...</div>
-      </div>
-    );
+    return <AuthLoader />;
   }
 
   // If auth is required but user is not authenticated, don't render children
@@ -72,11 +69,7 @@ export function RequireGuest({ children }: { children: React.ReactNode }) {
   }, [user, loading, router]);
 
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-pulse text-gray-500">Loading...</div>
-      </div>
-    );
+    return <AuthLoader />;
   }
 
   if (user) {

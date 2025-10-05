@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/card";
 import { TripCreateForm } from "@/features/trip/components/trip-create-form";
 import { useAuth } from "@/lib/auth-context";
+import { AuthLoader } from "@/components/loading";
 
 function LandingPage() {
   return (
@@ -204,11 +205,7 @@ export default function HomePage() {
   const { user, loading } = useAuth();
 
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-pulse text-gray-500">Loading...</div>
-      </div>
-    );
+    return <AuthLoader />;
   }
 
   return user ? <UserDashboard /> : <LandingPage />;

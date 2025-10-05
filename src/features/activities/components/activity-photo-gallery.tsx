@@ -44,7 +44,9 @@ export function ActivityPhotoPreview({
   activityTitle: string;
   maxDisplay?: number;
 }) {
-  const [selectedPhoto, setSelectedPhoto] = useState<ActivityPhoto | null>(null);
+  const [selectedPhoto, setSelectedPhoto] = useState<ActivityPhoto | null>(
+    null,
+  );
 
   if (photos.length === 0) {
     return null;
@@ -57,7 +59,9 @@ export function ActivityPhotoPreview({
     <div className="space-y-2">
       <div className="flex items-center gap-2 text-sm font-medium text-gray-700">
         <Camera className="h-4 w-4" />
-        <span>{photos.length} {photos.length === 1 ? 'photo' : 'photos'}</span>
+        <span>
+          {photos.length} {photos.length === 1 ? "photo" : "photos"}
+        </span>
       </div>
 
       <div className="flex gap-2 overflow-x-auto">
@@ -87,7 +91,10 @@ export function ActivityPhotoPreview({
 
       {/* Photo Viewer Dialog */}
       {selectedPhoto && (
-        <Dialog open={!!selectedPhoto} onOpenChange={() => setSelectedPhoto(null)}>
+        <Dialog
+          open={!!selectedPhoto}
+          onOpenChange={() => setSelectedPhoto(null)}
+        >
           <DialogContent className="max-w-4xl">
             <DialogHeader>
               <DialogTitle>{activityTitle} - Photo</DialogTitle>
@@ -118,7 +125,9 @@ export function ActivityPhotoGallery({
   readonly = false,
   showUpload = true,
 }: ActivityPhotoGalleryProps) {
-  const [selectedPhoto, setSelectedPhoto] = useState<ActivityPhoto | null>(null);
+  const [selectedPhoto, setSelectedPhoto] = useState<ActivityPhoto | null>(
+    null,
+  );
 
   return (
     <div className="space-y-4">
@@ -181,7 +190,10 @@ export function ActivityPhotoGallery({
 
       {/* Photo Viewer Dialog */}
       {selectedPhoto && (
-        <Dialog open={!!selectedPhoto} onOpenChange={() => setSelectedPhoto(null)}>
+        <Dialog
+          open={!!selectedPhoto}
+          onOpenChange={() => setSelectedPhoto(null)}
+        >
           <DialogContent className="max-w-4xl">
             <DialogHeader>
               <DialogTitle>{activityTitle} - Photo</DialogTitle>

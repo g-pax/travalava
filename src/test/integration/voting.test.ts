@@ -30,7 +30,7 @@ describe("Voting Integration Tests", () => {
         destination_text: "Test City",
         start_date: "2025-01-01",
         end_date: "2025-01-03",
-        currency: "USD"
+        currency: "USD",
       })
       .select()
       .single();
@@ -45,7 +45,7 @@ describe("Voting Integration Tests", () => {
         trip_id: testTripId,
         role: "organizer",
         display_name: "Test Organizer",
-        user_id: "test-user-id"
+        user_id: "test-user-id",
       })
       .select()
       .single();
@@ -58,7 +58,7 @@ describe("Voting Integration Tests", () => {
       .from("days")
       .insert({
         trip_id: testTripId,
-        date: "2025-01-01"
+        date: "2025-01-01",
       })
       .select()
       .single();
@@ -74,7 +74,7 @@ describe("Voting Integration Tests", () => {
         label: "Morning",
         position: 1,
         vote_open_ts: new Date("2025-01-01T00:00:00Z").toISOString(),
-        vote_close_ts: new Date("2025-01-01T23:59:59Z").toISOString()
+        vote_close_ts: new Date("2025-01-01T23:59:59Z").toISOString(),
       })
       .select()
       .single();
@@ -89,10 +89,10 @@ describe("Voting Integration Tests", () => {
         trip_id: testTripId,
         title: "Test Activity",
         category: "Culture",
-        cost_amount: 25.00,
+        cost_amount: 25.0,
         cost_currency: "USD",
         duration_min: 120,
-        notes: "Test activity for voting"
+        notes: "Test activity for voting",
       })
       .select()
       .single();
@@ -101,14 +101,12 @@ describe("Voting Integration Tests", () => {
     testActivityId = activity.id;
 
     // Create test proposal
-    await supabase
-      .from("block_proposals")
-      .insert({
-        trip_id: testTripId,
-        block_id: testBlockId,
-        activity_id: testActivityId,
-        created_by: testMemberId
-      });
+    await supabase.from("block_proposals").insert({
+      trip_id: testTripId,
+      block_id: testBlockId,
+      activity_id: testActivityId,
+      created_by: testMemberId,
+    });
   });
 
   afterAll(async () => {
@@ -129,8 +127,8 @@ describe("Voting Integration Tests", () => {
       body: {
         tripId: testTripId,
         blockId: testBlockId,
-        activityId: testActivityId
-      }
+        activityId: testActivityId,
+      },
     });
 
     expect(error).toBeNull();
@@ -147,16 +145,16 @@ describe("Voting Integration Tests", () => {
       body: {
         tripId: testTripId,
         blockId: testBlockId,
-        activityId: testActivityId
-      }
+        activityId: testActivityId,
+      },
     });
 
     const secondVote = await supabase.functions.invoke("vote-cast", {
       body: {
         tripId: testTripId,
         blockId: testBlockId,
-        activityId: testActivityId
-      }
+        activityId: testActivityId,
+      },
     });
 
     expect(firstVote.error).toBeNull();
@@ -179,16 +177,16 @@ describe("Voting Integration Tests", () => {
       body: {
         tripId: testTripId,
         blockId: testBlockId,
-        activityId: testActivityId
-      }
+        activityId: testActivityId,
+      },
     });
 
     // Then commit the block
     const { data, error } = await supabase.functions.invoke("block-commit", {
       body: {
         tripId: testTripId,
-        blockId: testBlockId
-      }
+        blockId: testBlockId,
+      },
     });
 
     expect(error).toBeNull();
@@ -207,19 +205,17 @@ describe("Voting Integration Tests", () => {
       .insert({
         trip_id: testTripId,
         title: "Test Activity 2",
-        category: "Outdoor"
+        category: "Outdoor",
       })
       .select()
       .single();
 
-    await supabase
-      .from("block_proposals")
-      .insert({
-        trip_id: testTripId,
-        block_id: testBlockId,
-        activity_id: activity2.id,
-        created_by: testMemberId
-      });
+    await supabase.from("block_proposals").insert({
+      trip_id: testTripId,
+      block_id: testBlockId,
+      activity_id: activity2.id,
+      created_by: testMemberId,
+    });
 
     // Create a second member and cast votes to create a tie
     const { data: member2 } = await supabase
@@ -228,7 +224,7 @@ describe("Voting Integration Tests", () => {
         trip_id: testTripId,
         role: "collaborator",
         display_name: "Test Member 2",
-        user_id: "test-user-2"
+        user_id: "test-user-2",
       })
       .select()
       .single();
@@ -239,22 +235,22 @@ describe("Voting Integration Tests", () => {
         trip_id: testTripId,
         block_id: testBlockId,
         activity_id: testActivityId,
-        member_id: testMemberId
+        member_id: testMemberId,
       },
       {
         trip_id: testTripId,
         block_id: testBlockId,
         activity_id: activity2.id,
-        member_id: member2.id
-      }
+        member_id: member2.id,
+      },
     ]);
 
     // Try to commit without specifying winner
     const { data } = await supabase.functions.invoke("block-commit", {
       body: {
         tripId: testTripId,
-        blockId: testBlockId
-      }
+        blockId: testBlockId,
+      },
     });
 
     expect(data.error).toBe("Tie detected");
@@ -268,19 +264,17 @@ describe("Voting Integration Tests", () => {
       .insert({
         trip_id: testTripId,
         title: "Test Activity 2",
-        category: "Outdoor"
+        category: "Outdoor",
       })
       .select()
       .single();
 
-    await supabase
-      .from("block_proposals")
-      .insert({
-        trip_id: testTripId,
-        block_id: testBlockId,
-        activity_id: activity2.id,
-        created_by: testMemberId
-      });
+    await supabase.from("block_proposals").insert({
+      trip_id: testTripId,
+      block_id: testBlockId,
+      activity_id: activity2.id,
+      created_by: testMemberId,
+    });
 
     const { data: member2 } = await supabase
       .from("trip_members")
@@ -288,7 +282,7 @@ describe("Voting Integration Tests", () => {
         trip_id: testTripId,
         role: "collaborator",
         display_name: "Test Member 2",
-        user_id: "test-user-2"
+        user_id: "test-user-2",
       })
       .select()
       .single();
@@ -298,14 +292,14 @@ describe("Voting Integration Tests", () => {
         trip_id: testTripId,
         block_id: testBlockId,
         activity_id: testActivityId,
-        member_id: testMemberId
+        member_id: testMemberId,
       },
       {
         trip_id: testTripId,
         block_id: testBlockId,
         activity_id: activity2.id,
-        member_id: member2.id
-      }
+        member_id: member2.id,
+      },
     ]);
 
     // Now commit with manual selection
@@ -313,8 +307,8 @@ describe("Voting Integration Tests", () => {
       body: {
         tripId: testTripId,
         blockId: testBlockId,
-        activityId: testActivityId // Manual selection
-      }
+        activityId: testActivityId, // Manual selection
+      },
     });
 
     expect(error).toBeNull();
@@ -331,7 +325,7 @@ describe("Voting Integration Tests", () => {
         label: "Evening",
         position: 3,
         vote_open_ts: new Date("2024-01-01T00:00:00Z").toISOString(),
-        vote_close_ts: new Date("2024-01-01T23:59:59Z").toISOString()
+        vote_close_ts: new Date("2024-01-01T23:59:59Z").toISOString(),
       })
       .select()
       .single();
@@ -340,8 +334,8 @@ describe("Voting Integration Tests", () => {
       body: {
         tripId: testTripId,
         blockId: pastBlock.id,
-        activityId: testActivityId
-      }
+        activityId: testActivityId,
+      },
     });
 
     expect(data.error).toContain("Voting has ended");

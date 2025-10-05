@@ -4,7 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { nanoid } from "nanoid";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
+import { ActionButton } from "@/components/loading";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { type JoinTripInput, JoinTripSchema } from "@/schemas";
@@ -30,17 +30,27 @@ export function TripJoinForm({ tripId, onSuccess }: TripJoinFormProps) {
     try {
       const result = await joinTrip.mutateAsync(values);
       toast.success("Successfully joined the trip!");
+      form.reset();
       onSuccess?.(result.member.id);
     } catch (error) {
+      // Clear any previous submission errors
+      form.clearErrors();
+
       if (error instanceof Error) {
         toast.error(error.message);
+
+        // Set field-specific errors if applicable
+        if (error.message.toLowerCase().includes("pin")) {
+          form.setError("pin", { message: error.message });
+        } else if (error.message.toLowerCase().includes("name")) {
+          form.setError("displayName", { message: error.message });
+        }
       } else {
         toast.error("Failed to join trip. Please try again.");
       }
       console.error("Join trip error:", error);
     }
   };
-  console.log(form.formState.errors)
   return (
     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
       <div className="space-y-2">
@@ -72,9 +82,14 @@ export function TripJoinForm({ tripId, onSuccess }: TripJoinFormProps) {
         )}
       </div>
 
-      <Button type="submit" className="w-full" disabled={joinTrip.isPending}>
-        {joinTrip.isPending ? "Joining..." : "Join Trip"}
-      </Button>
+      <ActionButton
+        type="submit"
+        className="w-full"
+        isPending={joinTrip.isPending}
+        pendingText="Joining..."
+      >
+        Join Trip
+      </ActionButton>
     </form>
   );
 }

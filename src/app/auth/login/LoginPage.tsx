@@ -14,7 +14,6 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { RequireGuest } from "@/components/auth/auth-guard";
-import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -26,6 +25,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/lib/auth-context";
 import { type SignInInput, SignInSchema } from "@/schemas";
+import { ActionButton } from "@/components/loading";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -50,8 +50,8 @@ export default function LoginPage() {
       await signIn(data.email, data.password);
       toast.success("Welcome back!");
       router.push(redirectTo);
-    } catch (error: any) {
-      toast.error(error.message || "Failed to sign in");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Failed to sign in");
     } finally {
       setIsLoading(false);
     }
@@ -124,16 +124,15 @@ export default function LoginPage() {
                 </Link>
               </div>
 
-              <Button type="submit" className="w-full" disabled={isLoading}>
-                {isLoading ? (
-                  "Signing in..."
-                ) : (
-                  <>
-                    <LogIn className="mr-2 h-4 w-4" />
-                    Sign In
-                  </>
-                )}
-              </Button>
+              <ActionButton
+                type="submit"
+                className="w-full"
+                isPending={isLoading}
+                pendingText="Signing in..."
+              >
+                <LogIn className="mr-2 h-4 w-4" />
+                Sign In
+              </ActionButton>
             </form>
 
             <div className="mt-6 text-center text-sm">

@@ -19,6 +19,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { InlineLoader } from "@/components/loading";
 import { ActivitySelectorDialog } from "@/features/activities/components/activity-selector-dialog";
 import {
   useBlockProposals,
@@ -245,11 +246,7 @@ export function BlockCard({
             </div>
 
             {proposalsLoading ? (
-              <div className="min-h-[140px] flex items-center justify-center">
-                <div className="animate-pulse text-muted-foreground text-sm">
-                  Loading proposals...
-                </div>
-              </div>
+              <InlineLoader message="Loading proposals..." />
             ) : proposals.length === 0 ? (
               <div className="min-h-[140px] border-2 border-dashed border-gray-200 rounded-lg p-6 text-center">
                 <div className="flex flex-col items-center justify-center h-full text-muted-foreground">

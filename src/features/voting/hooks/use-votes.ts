@@ -25,6 +25,10 @@ export function useVotes(blockId: string) {
   return useQuery({
     queryKey: ["votes", blockId],
     queryFn: async (): Promise<Vote[]> => {
+      if (!blockId) {
+        throw new Error("Block ID is required");
+      }
+
       const { data, error } = await supabase
         .from("votes")
         .select(`
@@ -46,42 +50,51 @@ export function useVotes(blockId: string) {
       if (error) throw error;
       return data || [];
     },
-    enabled: !!blockId,
+    enabled: !!blockId && blockId !== "undefined" && blockId !== "null",
+    staleTime: 1000 * 30, // 30 seconds for votes (more frequent updates expected)
   });
 }
 
 export function useVoteTally(blockId: string) {
   const { data: votes = [], ...queryResult } = useVotes(blockId);
 
-  const tally = votes.reduce((acc, vote) => {
-    const key = vote.activity_id;
-    if (!acc[key]) {
-      acc[key] = {
-        activityId: vote.activity_id,
-        activityTitle: vote.activity?.title || "Unknown",
-        activityCategory: vote.activity?.category,
-        votes: [],
-        voteCount: 0,
-      };
-    }
-    acc[key].votes.push(vote);
-    acc[key].voteCount++;
-    return acc;
-  }, {} as Record<string, {
-    activityId: string;
-    activityTitle: string;
-    activityCategory?: string;
-    votes: Vote[];
-    voteCount: number;
-  }>);
+  const tally = votes.reduce(
+    (acc, vote) => {
+      const key = vote.activity_id;
+      if (!acc[key]) {
+        acc[key] = {
+          activityId: vote.activity_id,
+          activityTitle: vote.activity?.title || "Unknown",
+          activityCategory: vote.activity?.category,
+          votes: [],
+          voteCount: 0,
+        };
+      }
+      acc[key].votes.push(vote);
+      acc[key].voteCount++;
+      return acc;
+    },
+    {} as Record<
+      string,
+      {
+        activityId: string;
+        activityTitle: string;
+        activityCategory?: string;
+        votes: Vote[];
+        voteCount: number;
+      }
+    >,
+  );
 
-  const sortedTally = Object.values(tally).sort((a, b) => b.voteCount - a.voteCount);
+  const sortedTally = Object.values(tally).sort(
+    (a, b) => b.voteCount - a.voteCount,
+  );
 
   return {
     ...queryResult,
     data: votes,
     tally: sortedTally,
     totalVotes: votes.length,
-    uniqueVoters: new Set(votes.map(v => v.member_id)).size,
+    uniqueVoters: new Set(votes.map((v) => v.member_id)).size,
   };
 }
