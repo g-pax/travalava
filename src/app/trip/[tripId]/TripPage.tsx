@@ -4,8 +4,10 @@ import { useQuery } from "@tanstack/react-query";
 import { Calendar, MapPin, Share2, Users } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { RequireAuth } from "@/components/auth/auth-guard";
+import { Spinner } from "@/components/loading/spinner";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -14,6 +16,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ActivitiesManager } from "@/features/activities/components/activities-manager";
 import { ItineraryView } from "@/features/itinerary/components/itinerary-view";
@@ -26,6 +29,7 @@ interface TripPageProps {
 
 const TripPage = ({ params }: TripPageProps) => {
   const { tripId } = params;
+  const [mounted, setMounted] = useState(false);
   const { data: currentMember } = useCurrentMember(tripId);
   const {
     data: trip,
@@ -51,13 +55,73 @@ const TripPage = ({ params }: TripPageProps) => {
       if (error) throw error;
       return data;
     },
+    enabled: mounted && !!tripId,
   });
 
-  if (isLoading) {
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  // Show loading state during SSR and initial mount
+  if (!mounted || isLoading) {
     return (
-      <div className="min-h-screen bg-gray-50 py-12">
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-950 py-12">
         <div className="container mx-auto px-4">
-          <div className="text-center">Loading trip details...</div>
+          <div className="max-w-6xl mx-auto">
+            {/* Banner Skeleton */}
+            <Skeleton className="mb-8 h-52 sm:h-64 md:h-80 rounded-3xl" />
+
+            {/* Header Card Skeleton */}
+            <Card className="mb-8">
+              <CardHeader>
+                <div className="flex items-start justify-between">
+                  <div className="flex-1">
+                    <Skeleton className="h-9 w-64 mb-3" />
+                    <Skeleton className="h-5 w-48" />
+                  </div>
+                  <Skeleton className="h-10 w-32" />
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="grid md:grid-cols-3 gap-4">
+                  <Skeleton className="h-5 w-full" />
+                  <Skeleton className="h-5 w-full" />
+                  <Skeleton className="h-5 w-full" />
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Members Card Skeleton */}
+            <Card className="mb-8">
+              <CardHeader>
+                <Skeleton className="h-7 w-32" />
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  {[1, 2, 3].map((i) => (
+                    <div
+                      key={i}
+                      className="flex items-center justify-between py-2 border-b last:border-b-0"
+                    >
+                      <div className="flex-1">
+                        <Skeleton className="h-5 w-32 mb-2" />
+                        <Skeleton className="h-4 w-20" />
+                      </div>
+                      <Skeleton className="h-4 w-16" />
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Loading Message */}
+            <div className="flex flex-col items-center justify-center py-12 space-y-4">
+              <Spinner size="lg" />
+              <p className="text-muted-foreground text-sm">
+                Loading trip details...
+              </p>
+            </div>
+          </div>
         </div>
       </div>
     );
