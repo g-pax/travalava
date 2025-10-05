@@ -1,28 +1,42 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
-import { renderHook, waitFor } from "@testing-library/react";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { useBlockCommit } from "../use-block-commit";
-import { supabase } from "@/lib/supabase";
+/**
+ * NOTE: These tests need to be updated to match the new implementation
+ * which uses direct Supabase operations instead of function invocations.
+ *
+ * The tests below use the old pattern with supabase.functions.invoke
+ * and need to be rewritten to properly mock the Supabase client methods:
+ * - supabase.auth.getUser()
+ * - supabase.from('table').select().eq().single/maybeSingle()
+ * - supabase.from('table').insert().select().single()
+ * - etc.
+ *
+ * TODO: Refactor tests to match new implementation
+ */
 
-// Mock Supabase
+import { QueryClient, type QueryClientProvider } from "@tanstack/react-query";
+import { renderHook, waitFor } from "@testing-library/react";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import { supabase } from "@/lib/supabase";
+import { useBlockCommit } from "../use-block-commit";
+
+// Mock Supabase (OLD - needs updating)
 vi.mock("@/lib/supabase", () => ({
   supabase: {
     functions: {
-      invoke: vi.fn()
-    }
-  }
+      invoke: vi.fn(),
+    },
+  },
 }));
 
 const createWrapper = () => {
   const queryClient = new QueryClient({
     defaultOptions: {
       queries: { retry: false },
-      mutations: { retry: false }
-    }
+      mutations: { retry: false },
+    },
   });
-  return ({ children }: { children: React.ReactNode }) => (
-    <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
-  );
+  return ({ children }: { children: React.ReactNode }) =>
+    (<QueryClientProvider client =
+      { queryClient } > { children } < />CPQdeeeiilnorrrtuvy);
 };
 
 describe("useBlockCommit", () => {
@@ -39,35 +53,35 @@ describe("useBlockCommit", () => {
         block_id: "block-1",
         activity_id: "activity-1",
         committed_by: "member-1",
-        committed_at: "2025-01-01T00:00:00Z"
+        committed_at: "2025-01-01T00:00:00Z",
       },
       voteTally: [
         {
           activityId: "activity-1",
           activityTitle: "Museum Visit",
-          voteCount: 3
+          voteCount: 3,
         },
         {
           activityId: "activity-2",
           activityTitle: "Park Walk",
-          voteCount: 1
-        }
+          voteCount: 1,
+        },
       ],
-      duplicatePolicy: "soft_block"
+      duplicatePolicy: "soft_block",
     };
 
     (supabase.functions.invoke as any).mockResolvedValue({
       data: mockResponse,
-      error: null
+      error: null,
     });
 
     const { result } = renderHook(() => useBlockCommit(), {
-      wrapper: createWrapper()
+      wrapper: createWrapper(),
     });
 
     const commitParams = {
       tripId: "trip-1",
-      blockId: "block-1"
+      blockId: "block-1",
     };
 
     result.current.mutate(commitParams);
@@ -79,8 +93,8 @@ describe("useBlockCommit", () => {
     expect(supabase.functions.invoke).toHaveBeenCalledWith("block-commit", {
       body: commitParams,
       headers: expect.objectContaining({
-        "x-client-mutation-id": expect.any(String)
-      })
+        "x-client-mutation-id": expect.any(String),
+      }),
     });
 
     expect(result.current.data).toEqual(mockResponse);
@@ -89,33 +103,34 @@ describe("useBlockCommit", () => {
   it("should handle tie detection", async () => {
     const mockResponse = {
       error: "Tie detected",
-      message: "Multiple activities tied for most votes. Please specify activityId to break the tie.",
+      message:
+        "Multiple activities tied for most votes. Please specify activityId to break the tie.",
       tiedActivities: [
         {
           activityId: "activity-1",
           activityTitle: "Museum Visit",
-          voteCount: 2
+          voteCount: 2,
         },
         {
           activityId: "activity-2",
           activityTitle: "Park Walk",
-          voteCount: 2
-        }
-      ]
+          voteCount: 2,
+        },
+      ],
     };
 
     (supabase.functions.invoke as any).mockResolvedValue({
       data: mockResponse,
-      error: null
+      error: null,
     });
 
     const { result } = renderHook(() => useBlockCommit(), {
-      wrapper: createWrapper()
+      wrapper: createWrapper(),
     });
 
     const commitParams = {
       tripId: "trip-1",
-      blockId: "block-1"
+      blockId: "block-1",
     };
 
     result.current.mutate(commitParams);
@@ -136,23 +151,23 @@ describe("useBlockCommit", () => {
         block_id: "block-1",
         activity_id: "activity-1",
         committed_by: "member-1",
-        committed_at: "2025-01-01T00:00:00Z"
-      }
+        committed_at: "2025-01-01T00:00:00Z",
+      },
     };
 
     (supabase.functions.invoke as any).mockResolvedValue({
       data: mockResponse,
-      error: null
+      error: null,
     });
 
     const { result } = renderHook(() => useBlockCommit(), {
-      wrapper: createWrapper()
+      wrapper: createWrapper(),
     });
 
     const commitParams = {
       tripId: "trip-1",
       blockId: "block-1",
-      activityId: "activity-1" // Manual tie breaking
+      activityId: "activity-1", // Manual tie breaking
     };
 
     result.current.mutate(commitParams);
@@ -164,25 +179,27 @@ describe("useBlockCommit", () => {
     expect(supabase.functions.invoke).toHaveBeenCalledWith("block-commit", {
       body: commitParams,
       headers: expect.objectContaining({
-        "x-client-mutation-id": expect.any(String)
-      })
+        "x-client-mutation-id": expect.any(String),
+      }),
     });
 
     expect(result.current.data).toEqual(mockResponse);
   });
 
   it("should handle duplicate policy violations", async () => {
-    const mockError = new Error("Activity is already scheduled in another block. Duplicate policy: prevent.");
+    const mockError = new Error(
+      "Activity is already scheduled in another block. Duplicate policy: prevent.",
+    );
 
     (supabase.functions.invoke as any).mockRejectedValue(mockError);
 
     const { result } = renderHook(() => useBlockCommit(), {
-      wrapper: createWrapper()
+      wrapper: createWrapper(),
     });
 
     const commitParams = {
       tripId: "trip-1",
-      blockId: "block-1"
+      blockId: "block-1",
     };
 
     result.current.mutate(commitParams);

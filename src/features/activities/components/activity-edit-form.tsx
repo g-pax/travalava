@@ -116,7 +116,7 @@ export function ActivityEditForm({
   });
 
   const googleMapsLink = isGoogleMapsLink(activity.link)
-    ? activity.link ?? undefined
+    ? (activity.link ?? undefined)
     : undefined;
 
   /*
@@ -449,7 +449,7 @@ export function ActivityEditForm({
             {(activity.location || googleMapsLink) && (
               <div className="mt-2">
                 <GoogleMapsIntegration
-                  location={activity.location}
+                  location={activity.location ?? undefined}
                   googleMapsLink={googleMapsLink}
                   activityTitle={activity.title}
                 />

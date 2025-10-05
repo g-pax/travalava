@@ -2,7 +2,7 @@ import { z } from "zod";
 
 // Common schemas
 export const TripIdSchema = z.string();
-export const MemberIdSchema = z.string().uuid();
+export const MemberIdSchema = z.string();
 
 // Trip schemas
 export const TripCreateSchema = z.object({
