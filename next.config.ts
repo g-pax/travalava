@@ -13,15 +13,9 @@ const nextConfig: NextConfig = {
       },
       {
         protocol: "https",
-        hostname: "cdn.getyourguide.com",
+        hostname: "pub-3cc713bf20b44a91a1b254ed442012c8.r2.dev",
         port: "",
         pathname: "/**",
-      },
-      {
-        protocol: "https",
-        hostname: "dynamic-media-cdn.tripadvisor.com",
-        port: "",
-        pathname: "/media/**",
       },
     ],
   },

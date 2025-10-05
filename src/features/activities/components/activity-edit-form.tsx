@@ -4,23 +4,16 @@
  * ActivityEditForm handles updating existing activities with all attributes.
  * - Pre-populated with existing activity data
  * - Validated with Zod schema via react-hook-form resolver
- * - Photo uploads temporarily disabled
- * - Includes location support and Google Maps integration
+ * - Google Maps location extraction from URLs and iframes
+ * - Optimistic updates with proper error handling
  */
 import { zodResolver } from "@hookform/resolvers/zod";
-/* Photo upload temporarily disabled */
-// import imageCompression from "browser-image-compression";
 import { Clock, DollarSign, FileText, Link2, MapPin } from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
+import { toast } from "sonner";
 import { ActionButton, FormLoadingOverlay } from "@/components/loading";
 import { Button } from "@/components/ui/button";
-// import {
-//   Card,
-//   CardContent,
-//   CardDescription,
-//   CardHeader,
-//   CardTitle,
-// } from "@/components/ui/card";
 import {
   Dialog,
   DialogContent,
@@ -37,10 +30,12 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import {
+  extractLatLngFromGoogleMapsSrc,
+  isGoogleMapsInput,
+} from "@/lib/google-maps";
 import { type ActivityCreateInput, ActivityCreateSchema } from "@/schemas";
-// import { supabase } from "@/lib/supabase";
 import { type Activity, useUpdateActivity } from "../hooks/use-activities";
-import { GoogleMapsIntegration } from "./google-maps-integration";
 
 interface ActivityEditFormProps {
   activity: Activity;
@@ -61,31 +56,7 @@ const ACTIVITY_CATEGORIES = [
   "transportation",
   "accommodation",
   "other",
-];
-
-/*
-const ACTIVITY_PHOTOS_BUCKET = "activity-photos";
-
-interface ActivityPhoto {
-  id: string;
-  url: string;
-  file?: File;
-  isNew?: boolean;
-}
-*/
-
-const isGoogleMapsLink = (link?: string | null) => {
-  if (!link) {
-    return false;
-  }
-
-  const normalized = link.toLowerCase();
-  return (
-    normalized.includes("maps.google.") ||
-    normalized.includes("maps.app.goo.gl") ||
-    normalized.includes("goo.gl/maps")
-  );
-};
+] as const;
 
 export function ActivityEditForm({
   activity,
@@ -96,10 +67,19 @@ export function ActivityEditForm({
   onOpenChange,
 }: ActivityEditFormProps) {
   const updateActivity = useUpdateActivity();
-  /*
-  const [photos, setPhotos] = useState<ActivityPhoto[]>([]);
-  const [uploadingPhotos, setUploadingPhotos] = useState(false);
-  */
+  const [locationInputs, setLocationInputs] = useState({
+    shortUrl: "",
+    iframeCode: "",
+  });
+  const [extractedCoords, setExtractedCoords] = useState<{
+    lat: number;
+    lng: number;
+  } | null>(
+    activity.location
+      ? { lat: activity.location.lat, lng: activity.location.lon }
+      : null,
+  );
+  const [locationError, setLocationError] = useState<string | null>(null);
 
   const form = useForm<ActivityCreateInput>({
     resolver: zodResolver(ActivityCreateSchema),
@@ -116,164 +96,98 @@ export function ActivityEditForm({
     },
   });
 
-  const googleMapsLink = isGoogleMapsLink(activity.link)
-    ? (activity.link ?? undefined)
-    : undefined;
+  // Extract coordinates helper function
+  const extractCoordinates = useCallback(
+    (input: string, source: string) => {
+      setLocationError(null);
 
-  /*
-  // Load existing photos when component mounts
-  useEffect(() => {
-    let isMounted = true;
-
-    const loadPhotos = async () => {
-      type PhotoRow = { id: string; storage_path: string };
-
-      const { data: rows, error } = await supabase
-        .from("activity_photos")
-        .select<PhotoRow>("id, storage_path")
-        .eq("activity_id", activity.id)
-        .order("created_at", { ascending: true });
-
-      if (error) {
-        console.error("Failed to load activity photos:", error);
-        if (isMounted) {
-          setPhotos([]);
-        }
-        return;
+      if (!input.trim()) {
+        return null;
       }
 
-      if (!rows || rows.length === 0) {
-        if (isMounted) {
-          setPhotos([]);
-        }
-        return;
+      const coords = extractLatLngFromGoogleMapsSrc(input);
+      if (coords) {
+        setExtractedCoords(coords);
+        form.setValue("location", {
+          name: locationInputs.shortUrl.trim() || input.trim(),
+          lat: coords.lat,
+          lon: coords.lng,
+        });
+        return coords;
+      } else {
+        setLocationError(`Could not extract coordinates from the ${source}`);
+        return null;
       }
-
-      const { data: signedUrls, error: signedError } = await supabase.storage
-        .from(ACTIVITY_PHOTOS_BUCKET)
-        .createSignedUrls(
-          rows.map((row) => row.storage_path),
-          60 * 15,
-        );
-
-      if (signedError) {
-        console.error(
-          "Failed to create signed URLs for activity photos:",
-          signedError,
-        );
-        if (isMounted) {
-          setPhotos([]);
-        }
-        return;
-      }
-
-      const photos = rows
-        .map<ActivityPhoto | null>((row, index) => {
-          const signed = signedUrls?.[index];
-          if (!signed || signed.error || !signed.signedUrl) {
-            if (signed?.error) {
-              console.error(
-                `Failed to sign URL for activity photo ${row.id}:`,
-                signed.error,
-              );
-            }
-            return null;
-          }
-
-          return {
-            id: row.id,
-            url: signed.signedUrl,
-          };
-        })
-        .filter((photo): photo is ActivityPhoto => photo !== null);
-
-      if (isMounted) {
-        setPhotos(photos);
-      }
-    };
-
-    loadPhotos();
-
-    return () => {
-      isMounted = false;
-    };
-  }, [activity.id]);
-
-  const onDrop = useCallback(async (acceptedFiles: File[]) => {
-    setUploadingPhotos(true);
-
-    try {
-      const compressedFiles = await Promise.all(
-        acceptedFiles.map(async (file) => {
-          if (file.size > 1.5 * 1024 * 1024) {
-            return await imageCompression(file, {
-              maxSizeMB: 1.5,
-              maxWidthOrHeight: 1920,
-              useWebWorker: true,
-              preserveExif: false,
-            });
-          }
-          return file;
-        }),
-      );
-
-      const newPhotos: ActivityPhoto[] = compressedFiles.map((file) => ({
-        id: `temp-${Date.now()}-${Math.random()}`,
-        url: URL.createObjectURL(file),
-        file,
-        isNew: true,
-      }));
-
-      setPhotos((prev) => [...prev, ...newPhotos]);
-    } catch (error) {
-      console.error("Error processing images:", error);
-    } finally {
-      setUploadingPhotos(false);
-    }
-  }, []);
-
-  const { getRootProps, getInputProps, isDragActive } = useDropzone({
-    onDrop,
-    accept: {
-      "image/*": [".jpeg", ".jpg", ".png", ".webp"],
     },
-    maxFiles: 5,
-    disabled: uploadingPhotos,
-  });
+    [form, locationInputs.shortUrl],
+  );
 
-  const removePhoto = (photoId: string) => {
-    setPhotos((prev) => {
-      const photo = prev.find((p) => p.id === photoId);
-      if (photo?.url && photo.isNew) {
-        URL.revokeObjectURL(photo.url);
+  // Handle short URL changes
+  const handleShortUrlChange = useCallback(
+    (value: string) => {
+      setLocationInputs((prev) => ({ ...prev, shortUrl: value }));
+
+      if (!value.trim() && !locationInputs.iframeCode.trim()) {
+        form.setValue("location", undefined);
+        setExtractedCoords(null);
+        setLocationError(null);
+        return;
       }
-      return prev.filter((p) => p.id !== photoId);
-    });
-  };
-  */
 
-  const handleLocationChange = (locationName: string) => {
-    if (locationName.trim()) {
-      // For now, we'll create a basic location object
-      // TODO: Implement geocoding to get actual coordinates
-      form.setValue("location", {
-        name: locationName,
-        lat: 0, // Will be set by geocoding
-        lon: 0, // Will be set by geocoding
-      });
-    } else {
-      form.setValue("location", undefined);
+      extractCoordinates(value, "URL");
+    },
+    [extractCoordinates, locationInputs.iframeCode, form],
+  );
+
+  // Handle iframe changes
+  const handleIframeChange = useCallback(
+    (value: string) => {
+      setLocationInputs((prev) => ({ ...prev, iframeCode: value }));
+
+      if (!value.trim() && !locationInputs.shortUrl.trim()) {
+        form.setValue("location", undefined);
+        setExtractedCoords(null);
+        setLocationError(null);
+        return;
+      }
+
+      extractCoordinates(value, "iframe");
+    },
+    [extractCoordinates, locationInputs.shortUrl, form],
+  );
+
+  // Initialize location inputs based on existing activity data
+  useEffect(() => {
+    // If activity has a location object with name, populate shortUrl input
+    if (activity.location?.name) {
+      setLocationInputs((prev) => ({
+        ...prev,
+        shortUrl: activity.location?.name || "",
+      }));
     }
-  };
+    // Alternatively, if activity.link is a Google Maps URL, use that
+    else if (activity.link && isGoogleMapsInput(activity.link)) {
+      setLocationInputs((prev) => ({ ...prev, shortUrl: activity.link || "" }));
+    }
+
+    // If location has coordinates, populate the extracted coords display
+    if (activity.location?.lat != null && activity.location?.lon != null) {
+      setExtractedCoords({
+        lat: activity.location.lat,
+        lng: activity.location.lon,
+      });
+    }
+  }, [activity.link, activity.location]);
 
   const onSubmit = async (values: ActivityCreateInput) => {
+    console.log("🚀 ~ onSubmit ~ values:", values);
     try {
-      // TODO: Upload new photos to Supabase Storage
-      // This will be implemented when we add proper photo support
+      // Exclude trip_id from updates as it's immutable
+      const { trip_id: _tripId, ...updates } = values;
 
       const updatedActivity = await updateActivity.mutateAsync({
         id: activity.id,
-        updates: values,
+        updates,
       });
 
       onSuccess?.(updatedActivity);
@@ -283,18 +197,19 @@ export function ActivityEditForm({
       form.clearErrors();
 
       if (error instanceof Error) {
-        // Set field-specific errors if applicable
-        if (error.message.toLowerCase().includes("title")) {
+        // Set field-specific errors
+        const message = error.message.toLowerCase();
+        if (message.includes("title")) {
           form.setError("title", { message: error.message });
-        } else if (error.message.toLowerCase().includes("cost")) {
+        } else if (message.includes("cost")) {
           form.setError("cost_amount", { message: error.message });
-        } else if (error.message.toLowerCase().includes("duration")) {
+        } else if (message.includes("duration")) {
           form.setError("duration_min", { message: error.message });
-        } else if (
-          error.message.toLowerCase().includes("url") ||
-          error.message.toLowerCase().includes("link")
-        ) {
+        } else if (message.includes("url") || message.includes("link")) {
           form.setError("link", { message: error.message });
+        } else {
+          // Show generic error toast for non-field-specific errors
+          toast.error(error.message);
         }
       }
       console.error("Failed to update activity:", error);
@@ -302,22 +217,13 @@ export function ActivityEditForm({
   };
 
   const handleCancel = () => {
-    /*
-    // Clean up any temporary photo URLs
-    photos.forEach((photo) => {
-      if (photo.isNew && photo.url) {
-        URL.revokeObjectURL(photo.url);
-      }
-    });
-    */
-
     onCancel?.();
     onOpenChange?.(false);
   };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto relative">
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Edit Activity</DialogTitle>
         </DialogHeader>
@@ -450,28 +356,70 @@ export function ActivityEditForm({
           </div>
 
           {/* Location */}
-          <div className="space-y-2">
-            <Label
-              htmlFor="location_name"
-              className="text-sm font-medium flex items-center gap-1"
-            >
+          <div className="space-y-4">
+            <Label className="text-sm font-medium flex items-center gap-1">
               <MapPin className="h-4 w-4" />
               Location
             </Label>
-            <Input
-              id="location_name"
-              placeholder="e.g., Louvre Museum, Paris"
-              defaultValue={activity.location?.name || ""}
-              onChange={(e) => handleLocationChange(e.target.value)}
-            />
-            {/* Google Maps Integration */}
-            {(activity.location || googleMapsLink) && (
-              <div className="mt-2">
-                <GoogleMapsIntegration
-                  location={activity.location ?? undefined}
-                  googleMapsLink={googleMapsLink}
-                  activityTitle={activity.title}
-                />
+
+            {/* Short URL Input */}
+            <div className="space-y-2">
+              <Label
+                htmlFor="short_url"
+                className="text-xs text-muted-foreground"
+              >
+                Google Maps Short URL
+              </Label>
+              <Input
+                id="short_url"
+                placeholder="e.g., https://maps.app.goo.gl/..."
+                value={locationInputs.shortUrl}
+                onChange={(e) => handleShortUrlChange(e.target.value)}
+                className="font-mono text-sm"
+              />
+            </div>
+
+            {/* Iframe Input */}
+            <div className="space-y-2">
+              <Label
+                htmlFor="iframe_code"
+                className="text-xs text-muted-foreground"
+              >
+                Google Maps Iframe Embed
+              </Label>
+              <Textarea
+                id="iframe_code"
+                placeholder='Paste iframe embed code: <iframe src="...">'
+                rows={3}
+                value={locationInputs.iframeCode}
+                onChange={(e) => handleIframeChange(e.target.value)}
+                className="font-mono text-sm"
+              />
+            </div>
+
+            {/* Error Display */}
+            {locationError && (
+              <p className="text-sm text-red-600">{locationError}</p>
+            )}
+
+            {/* Coordinates Display */}
+            {extractedCoords && (
+              <div className="p-3 bg-muted rounded-md space-y-1">
+                <p className="text-sm font-medium">Extracted Coordinates:</p>
+                <div className="grid grid-cols-2 gap-2 text-sm">
+                  <div>
+                    <span className="text-muted-foreground">Latitude:</span>{" "}
+                    <span className="font-mono">
+                      {extractedCoords.lat.toFixed(6)}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="text-muted-foreground">Longitude:</span>{" "}
+                    <span className="font-mono">
+                      {extractedCoords.lng.toFixed(6)}
+                    </span>
+                  </div>
+                </div>
               </div>
             )}
           </div>
@@ -492,62 +440,6 @@ export function ActivityEditForm({
               {...form.register("notes")}
             />
           </div>
-
-          {/*
-            Photo upload UI temporarily disabled. Uncomment this block to restore photo management.
-          <div className="space-y-2">
-            <Label className="text-sm font-medium flex items-center gap-1">
-              <Camera className="h-4 w-4" />
-              Photos
-            </Label>
-
-            {photos.length > 0 && (
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-3">
-                {photos.map((photo) => (
-                  <div key={photo.id} className="relative group">
-                    <img
-                      src={photo.url}
-                      alt="Activity"
-                      className="w-full h-24 object-cover rounded-lg"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => removePhoto(photo.id)}
-                      className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity"
-                    >
-                      <X className="h-3 w-3" />
-                    </button>
-                  </div>
-                ))}
-              </div>
-            )}
-
-            <div
-              {...getRootProps()}
-              className={`border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-colors ${isDragActive
-                ? "border-blue-500 bg-blue-50"
-                : "border-gray-300 hover:border-gray-400"
-                } ${uploadingPhotos ? "pointer-events-none opacity-50" : ""}`}
-            >
-              <input {...getInputProps()} />
-              <Camera className="mx-auto h-8 w-8 text-gray-400 mb-2" />
-              {uploadingPhotos ? (
-                <p className="text-sm text-gray-600">Processing images...</p>
-              ) : isDragActive ? (
-                <p className="text-sm text-gray-600">Drop photos here...</p>
-              ) : (
-                <div>
-                  <p className="text-sm text-gray-600 mb-1">
-                    Drag photos here or click to select
-                  </p>
-                  <p className="text-xs text-gray-500">
-                    Max 5 photos, up to 1.5MB each
-                  </p>
-                </div>
-              )}
-            </div>
-          </div>
-          */}
 
           {/* Form Actions */}
           <div className="flex gap-3 pt-4">

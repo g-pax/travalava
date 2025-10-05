@@ -8,6 +8,7 @@ import { Clock, DollarSign, FileText, Link2, MapPin } from "lucide-react";
  * - Supports photo uploads with compression
  * - Includes location support and currency handling
  */
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { ActionButton } from "@/components/loading";
 import { Button } from "@/components/ui/button";
@@ -28,6 +29,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { extractLatLngFromGoogleMapsSrc } from "@/lib/google-maps";
 import { type ActivityCreateInput, ActivityCreateSchema } from "@/schemas";
 import { type Activity, useCreateActivity } from "../hooks/use-activities";
 
@@ -57,6 +59,13 @@ export function ActivityCreateForm({
   onCancel,
 }: ActivityCreateFormProps) {
   const createActivity = useCreateActivity();
+  const [shortUrl, setShortUrl] = useState("");
+  const [iframeCode, setIframeCode] = useState("");
+  const [extractedCoords, setExtractedCoords] = useState<{
+    lat: number;
+    lng: number;
+  } | null>(null);
+  const [locationError, setLocationError] = useState<string | null>(null);
 
   const form = useForm<ActivityCreateInput>({
     resolver: zodResolver(ActivityCreateSchema),
@@ -66,11 +75,69 @@ export function ActivityCreateForm({
     },
   });
 
+  const handleShortUrlChange = (value: string) => {
+    setShortUrl(value);
+    setLocationError(null);
+
+    if (!value.trim()) {
+      // Don't clear location if iframe still has value
+      if (!iframeCode.trim()) {
+        form.setValue("location", undefined);
+        setExtractedCoords(null);
+      }
+      return;
+    }
+
+    const coords = extractLatLngFromGoogleMapsSrc(value);
+    if (coords) {
+      setExtractedCoords(coords);
+      form.setValue("location", {
+        name: value.trim(),
+        lat: coords.lat,
+        lon: coords.lng,
+      });
+      setLocationError(null);
+    } else {
+      setLocationError("Could not extract coordinates from the URL");
+    }
+  };
+
+  const handleIframeChange = (value: string) => {
+    setIframeCode(value);
+    setLocationError(null);
+
+    if (!value.trim()) {
+      // Don't clear location if short URL still has value
+      if (!shortUrl.trim()) {
+        form.setValue("location", undefined);
+        setExtractedCoords(null);
+      }
+      return;
+    }
+
+    const coords = extractLatLngFromGoogleMapsSrc(value);
+    if (coords) {
+      setExtractedCoords(coords);
+      form.setValue("location", {
+        name: shortUrl.trim() || value.trim(),
+        lat: coords.lat,
+        lon: coords.lng,
+      });
+      setLocationError(null);
+    } else {
+      setLocationError("Could not extract coordinates from the iframe");
+    }
+  };
+
   const onSubmit = async (values: ActivityCreateInput) => {
     try {
       const activity = await createActivity.mutateAsync(values);
       onSuccess?.(activity);
       form.reset({ trip_id: tripId, cost_currency: tripCurrency });
+      setShortUrl("");
+      setIframeCode("");
+      setExtractedCoords(null);
+      setLocationError(null);
     } catch (error) {
       // Clear any previous submission errors
       form.clearErrors();
@@ -230,31 +297,72 @@ export function ActivityCreateForm({
           </div>
 
           {/* Location */}
-          <div className="space-y-2">
-            <Label
-              htmlFor="location_name"
-              className="text-sm font-medium flex items-center gap-1"
-            >
+          <div className="space-y-4">
+            <Label className="text-sm font-medium flex items-center gap-1">
               <MapPin className="h-4 w-4" />
               Location
             </Label>
-            <Input
-              id="location_name"
-              placeholder="e.g., Louvre Museum, Paris"
-              onChange={(e) => {
-                // TODO: Implement location search/geocoding
-                const locationName = e.target.value;
-                if (locationName) {
-                  form.setValue("location", {
-                    name: locationName,
-                    lat: 0, // TODO: Get from geocoding
-                    lon: 0, // TODO: Get from geocoding
-                  });
-                } else {
-                  form.setValue("location", undefined);
-                }
-              }}
-            />
+
+            {/* Short URL Input */}
+            <div className="space-y-2">
+              <Label
+                htmlFor="short_url"
+                className="text-xs text-muted-foreground"
+              >
+                Google Maps Short URL
+              </Label>
+              <Input
+                id="short_url"
+                placeholder="e.g., https://maps.app.goo.gl/..."
+                value={shortUrl}
+                onChange={(e) => handleShortUrlChange(e.target.value)}
+                className="font-mono text-sm"
+              />
+            </div>
+
+            {/* Iframe Input */}
+            <div className="space-y-2">
+              <Label
+                htmlFor="iframe_code"
+                className="text-xs text-muted-foreground"
+              >
+                Google Maps Iframe Embed
+              </Label>
+              <Textarea
+                id="iframe_code"
+                placeholder='Paste iframe embed code: <iframe src="...">'
+                rows={3}
+                value={iframeCode}
+                onChange={(e) => handleIframeChange(e.target.value)}
+                className="font-mono text-sm"
+              />
+            </div>
+
+            {/* Error Display */}
+            {locationError && (
+              <p className="text-sm text-red-600">{locationError}</p>
+            )}
+
+            {/* Coordinates Display */}
+            {extractedCoords && (
+              <div className="p-3 bg-muted rounded-md space-y-1">
+                <p className="text-sm font-medium">Extracted Coordinates:</p>
+                <div className="grid grid-cols-2 gap-2 text-sm">
+                  <div>
+                    <span className="text-muted-foreground">Latitude:</span>{" "}
+                    <span className="font-mono">
+                      {extractedCoords.lat.toFixed(6)}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="text-muted-foreground">Longitude:</span>{" "}
+                    <span className="font-mono">
+                      {extractedCoords.lng.toFixed(6)}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Notes */}

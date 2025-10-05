@@ -210,61 +210,19 @@ export function useUpdateActivity() {
         throw new Error(`Failed to update activity: ${error.message}`);
       }
 
+      if (!data) {
+        throw new Error("Activity not found or update failed");
+      }
+
       return data;
     },
-    onMutate: async ({ id, updates }) => {
-      const activity = queryClient.getQueryData<Activity>(["activity", id]);
-      if (!activity) return;
-
-      // Cancel outgoing refetches
-      await queryClient.cancelQueries({
-        queryKey: ["activities", activity.trip_id],
-      });
-      await queryClient.cancelQueries({ queryKey: ["activity", id] });
-
-      // Snapshot previous values
-      const previousActivities = queryClient.getQueryData<Activity[]>([
-        "activities",
-        activity.trip_id,
-      ]);
-      const previousActivity = queryClient.getQueryData<Activity>([
-        "activity",
-        id,
-      ]);
-
-      // Optimistically update
-      const updatedActivity = {
-        ...activity,
-        ...updates,
-        updated_at: new Date().toISOString(),
-      };
-
-      queryClient.setQueryData(["activity", id], updatedActivity);
-
-      if (previousActivities) {
-        queryClient.setQueryData<Activity[]>(
-          ["activities", activity.trip_id],
-          previousActivities.map((a) => (a.id === id ? updatedActivity : a)),
-        );
-      }
-
-      return { previousActivities, previousActivity, tripId: activity.trip_id };
-    },
-    onError: (error, { id }, context) => {
-      // Rollback optimistic updates
-      if (context?.previousActivities) {
-        queryClient.setQueryData(
-          ["activities", context.tripId],
-          context.previousActivities,
-        );
-      }
-      if (context?.previousActivity) {
-        queryClient.setQueryData(["activity", id], context.previousActivity);
-      }
+    onError: (error) => {
+      console.log("🚀 ~ useUpdateActivity ~ error:", error);
       toast.error("Failed to update activity");
     },
     onSuccess: (data) => {
-      // Invalidate and refetch
+      console.log("🚀 ~ useUpdateActivity ~ data:", data);
+      // Invalidate both caches to refetch fresh data
       queryClient.invalidateQueries({ queryKey: ["activities", data.trip_id] });
       queryClient.invalidateQueries({ queryKey: ["activity", data.id] });
       toast.success("Activity updated successfully");
@@ -288,7 +246,7 @@ export function useDeleteActivity() {
     }) => {
       const mutationId = clientMutationId || nanoid();
 
-      // First check if activity is committed anywhere
+      // Check if activity is committed
       const { data: commits } = await supabase
         .from("commits")
         .select("id")
@@ -301,10 +259,19 @@ export function useDeleteActivity() {
         );
       }
 
-      // Delete proposals first
-      await supabase.from("block_proposals").delete().eq("activity_id", id);
+      // Get trip_id before deleting
+      const { data: activity } = await supabase
+        .from("activities")
+        .select("trip_id")
+        .eq("id", id)
+        .maybeSingle();
 
-      // Delete votes
+      if (!activity) {
+        throw new Error("Activity not found");
+      }
+
+      // Delete related data
+      await supabase.from("block_proposals").delete().eq("activity_id", id);
       await supabase.from("votes").delete().eq("activity_id", id);
 
       // Delete the activity
@@ -314,54 +281,17 @@ export function useDeleteActivity() {
         throw new Error(`Failed to delete activity: ${error.message}`);
       }
 
-      return { id, clientMutationId: mutationId };
+      return { id, tripId: activity.trip_id, clientMutationId: mutationId };
     },
-    onMutate: async ({ id }) => {
-      const activity = queryClient.getQueryData<Activity>(["activity", id]);
-      if (!activity) return;
-
-      // Cancel outgoing refetches
-      await queryClient.cancelQueries({
-        queryKey: ["activities", activity.trip_id],
-      });
-
-      // Snapshot previous value
-      const previousActivities = queryClient.getQueryData<Activity[]>([
-        "activities",
-        activity.trip_id,
-      ]);
-
-      // Optimistically remove
-      if (previousActivities) {
-        queryClient.setQueryData<Activity[]>(
-          ["activities", activity.trip_id],
-          previousActivities.filter((a) => a.id !== id),
-        );
-      }
-
-      return { previousActivities, tripId: activity.trip_id };
-    },
-    onError: (error, { id }, context) => {
-      // Rollback optimistic update
-      if (context?.previousActivities) {
-        queryClient.setQueryData(
-          ["activities", context.tripId],
-          context.previousActivities,
-        );
-      }
+    onError: (error) => {
       toast.error(error.message || "Failed to delete activity");
     },
-    onSuccess: (data, { id }, context) => {
-      // Remove from cache
-      queryClient.removeQueries({ queryKey: ["activity", id] });
-
-      // Invalidate activities list
-      if (context?.tripId) {
-        queryClient.invalidateQueries({
-          queryKey: ["activities", context.tripId],
-        });
-      }
-
+    onSuccess: (data) => {
+      // Remove from cache and invalidate
+      queryClient.removeQueries({ queryKey: ["activity", data.id] });
+      queryClient.invalidateQueries({
+        queryKey: ["activities", data.tripId],
+      });
       toast.success("Activity deleted successfully");
     },
   });

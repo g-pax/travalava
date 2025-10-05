@@ -8,13 +8,7 @@
  */
 import { ExternalLink, MapPin, Navigation } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+
 import {
   Dialog,
   DialogContent,
@@ -56,8 +50,8 @@ function parseGoogleMapsUrl(url: string) {
       }
 
       // Try to extract place ID or search query
-      const searchMatch = url.match(/\/search\/([^\/\?]+)/);
-      const placeMatch = url.match(/place\/([^\/\?]+)/);
+      const searchMatch = url.match(/\/search\/([^/?]+)/);
+      const placeMatch = url.match(/place\/([^/?]+)/);
 
       if (searchMatch || placeMatch) {
         return {
@@ -127,7 +121,10 @@ export function GoogleMapsIntegration({
   activityTitle,
 }: GoogleMapsIntegrationProps) {
   const embedUrl = getEmbedUrl(location, googleMapsLink);
-  const directionsUrl = getDirectionsUrl(location, googleMapsLink);
+  const directionsUrl = getDirectionsUrl(
+    location,
+    location?.name || googleMapsLink,
+  );
 
   // Don't render if no location data
   if (!location && !googleMapsLink) {
