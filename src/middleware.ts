@@ -1,4 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server";
+// Trigger a build
 
 export function middleware(request: NextRequest) {
   const response = NextResponse.next();
