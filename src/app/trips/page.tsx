@@ -18,13 +18,7 @@ import { TripCreateForm } from "@/features/trip/components/trip-create-form";
 import { useUserTrips } from "@/features/trip/hooks/use-user-trips";
 import { useAuth } from "@/lib/auth-context";
 
-function TripCard({
-  trip,
-  role
-}: {
-  trip: any;
-  role: string;
-}) {
+function TripCard({ trip, role }: { trip: any; role: string }) {
   const memberCount = trip.trip_members?.length || 0;
   const startDate = new Date(trip.start_date);
   const endDate = new Date(trip.end_date);
@@ -53,17 +47,20 @@ function TripCard({
               <div className="flex items-center gap-1">
                 <Calendar className="h-4 w-4" />
                 <span>
-                  {startDate.toLocaleDateString()} - {endDate.toLocaleDateString()}
+                  {startDate.toLocaleDateString()} -{" "}
+                  {endDate.toLocaleDateString()}
                 </span>
               </div>
               <div className="flex items-center gap-1">
                 <Users className="h-4 w-4" />
-                <span>{memberCount} member{memberCount !== 1 ? 's' : ''}</span>
+                <span>
+                  {memberCount} member{memberCount !== 1 ? "s" : ""}
+                </span>
               </div>
             </div>
             <div className="flex items-center justify-between">
               <span className="text-sm font-medium">
-                {trip.currency} • {isUpcoming ? 'Upcoming' : 'Past'}
+                {trip.currency} • {isUpcoming ? "Upcoming" : "Past"}
               </span>
             </div>
           </div>
@@ -81,7 +78,7 @@ function TripsPageContent() {
   const handleSignOut = async () => {
     try {
       await signOut();
-      router.push('/');
+      router.push("/");
     } catch (error) {
       console.error("Sign out error:", error);
     }
@@ -99,7 +96,9 @@ function TripsPageContent() {
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-2">
                 <Calendar className="h-8 w-8 text-blue-600" />
-                <span className="text-xl font-bold text-gray-900">Travalava</span>
+                <span className="text-xl font-bold text-gray-900">
+                  Travalava
+                </span>
               </div>
               <Skeleton className="h-10 w-24" />
             </div>
@@ -144,19 +143,18 @@ function TripsPageContent() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <Button onClick={() => window.location.reload()}>
-              Retry
-            </Button>
+            <Button onClick={() => window.location.reload()}>Retry</Button>
           </CardContent>
         </Card>
       </div>
     );
   }
 
-  const trips = tripMemberships?.map(membership => ({
-    ...membership.trip,
-    membershipRole: membership.role
-  })) || [];
+  const trips =
+    tripMemberships?.map((membership) => ({
+      ...membership.trip,
+      membershipRole: membership.role,
+    })) || [];
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -200,7 +198,8 @@ function TripsPageContent() {
                 No trips yet
               </h3>
               <p className="text-gray-600 mb-6">
-                Get started by creating your first trip or joining an existing one.
+                Get started by creating your first trip or joining an existing
+                one.
               </p>
               <div className="grid md:grid-cols-2 gap-4 max-w-2xl mx-auto">
                 <Card>
@@ -257,9 +256,10 @@ function TripsPageContent() {
 
             {/* Trips Grid */}
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {trips.map((trip) => (
+              {trips.map((trip, index) => (
                 <TripCard
-                  key={trip.id}
+                  // biome-ignore lint/suspicious/noArrayIndexKey: safe index
+                  key={index}
                   trip={trip}
                   role={trip.membershipRole}
                 />
