@@ -12,7 +12,7 @@ export function useJoinTrip() {
   return useMutation({
     mutationFn: async (input: JoinTripInput) => {
       const validated = JoinTripSchema.parse(input);
-      const { tripId, displayName, pin, clientDeviceId } = validated;
+      const { tripId, displayName, pin } = validated;
 
       const clientMutationId = nanoid();
 

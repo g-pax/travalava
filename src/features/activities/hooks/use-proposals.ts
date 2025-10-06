@@ -27,6 +27,7 @@ export interface BlockProposal {
     duration_min: number | null;
     notes: string | null;
     link: string | null;
+    // biome-ignore lint/suspicious/noExplicitAny: its ok here
     location: any;
   };
 }
@@ -288,7 +289,7 @@ export function useCreateProposal() {
       }
       toast.error(error.message || "Failed to add proposal");
     },
-    onSuccess: (data, { blockId, tripId, activityId }) => {
+    onSuccess: (_data, { blockId, tripId, activityId }) => {
       // Invalidate relevant queries
       queryClient.invalidateQueries({ queryKey: ["block-proposals", blockId] });
       queryClient.invalidateQueries({ queryKey: ["trip-proposals", tripId] });
@@ -355,13 +356,11 @@ export function useRemoveProposal() {
         queryKey: ["block-proposals"],
       });
       let proposal: BlockProposal | undefined;
-      let blockId: string | undefined;
 
-      for (const [key, data] of allQueries) {
+      for (const [_key, data] of allQueries) {
         if (Array.isArray(data)) {
           proposal = data.find((p: BlockProposal) => p.id === proposalId);
           if (proposal) {
-            blockId = (key as any[])[1];
             break;
           }
         }
@@ -422,7 +421,7 @@ export function useRemoveProposal() {
         previousActivityProposals,
       };
     },
-    onError: (error, { proposalId }, context) => {
+    onError: (error, _ctx, context) => {
       console.log("🚀 ~ useRemoveProposal ~ error:", error);
       if (!context?.proposal) return;
 
@@ -448,7 +447,7 @@ export function useRemoveProposal() {
 
       toast.error(error.message || "Failed to remove proposal");
     },
-    onSuccess: (data, { proposalId }, context) => {
+    onSuccess: (_data, _ctx, context) => {
       if (!context?.proposal) return;
 
       // Invalidate relevant queries

@@ -1,0 +1,36 @@
+name: lighthouse
+
+on:
+  pull_request:
+    branches: [ "main" ]   # only PRs targeting main
+    types: [opened, synchronize, reopened]
+
+jobs:
+  lhci:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      statuses: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install deps
+        run: npm ci
+
+      # If your app needs env vars to boot locally, set them here or use repo secrets
+      - name: Build and start + run Lighthouse CI
+        run: npx lhci autorun --config=./lighthouserc.json
+        # lhci autorun == collect + assert + upload
+
+      - name: Upload HTML reports as artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lighthouse-report
+          path: ".lighthouseci/*.html"

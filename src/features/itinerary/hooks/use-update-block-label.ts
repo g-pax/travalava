@@ -14,7 +14,7 @@ export function useUpdateBlockLabel() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ blockId, tripId, label }: UpdateBlockLabelInput) => {
+    mutationFn: async ({ blockId, label }: UpdateBlockLabelInput) => {
       const clientMutationId = nanoid();
 
       const { data, error } = await supabase
@@ -28,7 +28,7 @@ export function useUpdateBlockLabel() {
 
       return { block: data, clientMutationId };
     },
-    onSuccess: (data, variables) => {
+    onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({ queryKey: ["days", variables.tripId] });
       queryClient.invalidateQueries({ queryKey: ["blocks", variables.tripId] });
     },

@@ -1,3 +1,4 @@
+import { Button } from "../ui/button";
 import { Spinner } from "./spinner";
 
 interface LoadingOverlayProps {
@@ -6,7 +7,11 @@ interface LoadingOverlayProps {
   onCancel?: () => void;
 }
 
-export function LoadingOverlay({ isVisible, message = "Loading...", onCancel }: LoadingOverlayProps) {
+export function LoadingOverlay({
+  isVisible,
+  message = "Loading...",
+  onCancel,
+}: LoadingOverlayProps) {
   if (!isVisible) return null;
 
   return (
@@ -22,12 +27,13 @@ export function LoadingOverlay({ isVisible, message = "Loading...", onCancel }: 
           <Spinner size="lg" />
           <p className="text-sm text-center">{message}</p>
           {onCancel && (
-            <button
+            <Button
+              type="button"
               onClick={onCancel}
               className="text-xs text-muted-foreground hover:text-foreground underline"
             >
               Cancel
-            </button>
+            </Button>
           )}
         </div>
       </div>
@@ -40,10 +46,14 @@ interface FormLoadingOverlayProps {
   message?: string;
 }
 
-export function FormLoadingOverlay({ isVisible, message = "Saving..." }: FormLoadingOverlayProps) {
+export function FormLoadingOverlay({
+  isVisible,
+  message = "Saving...",
+}: FormLoadingOverlayProps) {
   if (!isVisible) return null;
 
   return (
+    // biome-ignore lint/a11y/useSemanticElements: we need this for the status
     <div
       className="absolute inset-0 z-10 flex items-center justify-center bg-background/80 backdrop-blur-sm rounded-lg"
       role="status"

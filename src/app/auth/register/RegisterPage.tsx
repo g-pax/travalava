@@ -53,6 +53,7 @@ export default function RegisterPage() {
       toast.success(
         "Registration successful! Please check your email to confirm your account.",
       );
+      // biome-ignore lint/suspicious/noExplicitAny: its ok here
     } catch (error: any) {
       toast.error(error.message || "Failed to create account");
     } finally {

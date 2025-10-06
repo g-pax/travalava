@@ -1,11 +1,17 @@
 "use client";
 
-import { Calendar, ChevronDown, ChevronUp, Plus, ArrowLeftRight } from "lucide-react";
+import {
+  ArrowLeftRight,
+  Calendar,
+  ChevronDown,
+  ChevronUp,
+  Plus,
+} from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
+import { ActionButton, ItineraryLoader } from "@/components/loading";
 import { Accordion } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
-import { ItineraryLoader, ActionButton } from "@/components/loading";
 import {
   Card,
   CardContent,
@@ -14,12 +20,12 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import type { CurrentMember } from "@/features/trip/hooks/use-current-member";
+import { useCommittedBlocks } from "@/features/voting/hooks/use-block-commit";
 import { useCreateDays } from "../hooks/use-create-days";
 import { useDays } from "../hooks/use-days";
-import { useCommittedBlocks } from "@/features/voting/hooks/use-block-commit";
 import { DayCard } from "./day-card";
-import { ItinerarySidebar } from "./itinerary-sidebar";
 import { DaySwapDialog } from "./day-swap-dialog";
+import { ItinerarySidebar } from "./itinerary-sidebar";
 
 interface ItineraryViewProps {
   tripId: string;
@@ -174,14 +180,18 @@ export function ItineraryView({
           </div>
 
           <div className="flex items-center gap-2">
-            {currentMember?.role === "organizer" && committedBlocks.length >= 2 && (
-              <DaySwapDialog tripId={tripId} committedBlocks={committedBlocks}>
-                <Button variant="outline" size="sm" className="gap-2">
-                  <ArrowLeftRight className="h-4 w-4" />
-                  Swap Days
-                </Button>
-              </DaySwapDialog>
-            )}
+            {currentMember?.role === "organizer" &&
+              committedBlocks.length >= 2 && (
+                <DaySwapDialog
+                  tripId={tripId}
+                  committedBlocks={committedBlocks}
+                >
+                  <Button variant="outline" size="sm" className="gap-2">
+                    <ArrowLeftRight className="h-4 w-4" />
+                    Swap Days
+                  </Button>
+                </DaySwapDialog>
+              )}
             <Button
               variant="outline"
               size="sm"

@@ -29,6 +29,7 @@ interface BlockCommitResult {
       cost_currency: string | null;
       duration_min: number | null;
       notes: string | null;
+      // biome-ignore lint/suspicious/noExplicitAny: its ok here
       location: any | null;
     };
   };
@@ -201,6 +202,7 @@ export function useBlockCommit() {
         if (existingCommitsError) throw existingCommitsError;
 
         if (existingCommits && existingCommits.length > 0) {
+          // biome-ignore lint/suspicious/noExplicitAny: its ok here
           const commitDetails = existingCommits.map((c: any) => ({
             blockId: c.block_id,
             blockLabel: c.blocks?.label || "Unknown",
@@ -281,13 +283,14 @@ export function useBlockCommit() {
 
       return {
         success: true,
+        // biome-ignore lint/suspicious/noExplicitAny: its ok here
         commit: newCommit as any,
         voteTally,
         duplicatePolicy: trip.duplicate_policy,
         message: "Activity committed successfully",
       };
     },
-    onSuccess: (data, variables) => {
+    onSuccess: (_data, variables) => {
       // Invalidate related queries
       queryClient.invalidateQueries({
         queryKey: ["votes", variables.blockId],
@@ -306,7 +309,7 @@ export function useBlockCommit() {
       });
 
       // If soft_block duplicate policy, invalidate all proposals for the trip
-      if (data.duplicatePolicy === "soft_block") {
+      if (_data.duplicatePolicy === "soft_block") {
         queryClient.invalidateQueries({
           queryKey: ["proposals"],
         });
@@ -375,23 +378,24 @@ export function useCommittedBlocks(tripId: string) {
           )
         `)
         .eq("trip_id", tripId)
-        .order("created_at", { ascending: true })
-        // .order("position", { ascending: true });
-        // .order("blocks.days.date", { ascending: true })
-        // .order("blocks.position", { ascending: true });
+        .order("created_at", { ascending: true });
+      // .order("position", { ascending: true });
+      // .order("blocks.days.date", { ascending: true })
+      // .order("blocks.position", { ascending: true });
 
       if (error) throw error;
 
       // Transform the data to match our component expectations
+      // biome-ignore lint/suspicious/noExplicitAny: its ok here
       return (data || []).map((commit: any) => ({
         id: commit.block_id,
         label: commit.blocks?.label || "Unknown",
         dayDate: commit.blocks?.days?.date || "",
         dayLabel: commit.blocks?.days?.date
           ? new Date(commit.blocks.days.date).toLocaleDateString(undefined, {
-              weekday: 'short',
-              month: 'short',
-              day: 'numeric'
+              weekday: "short",
+              month: "short",
+              day: "numeric",
             })
           : "Unknown",
         activity: {
@@ -502,7 +506,7 @@ export function useBlockUncommit() {
         activityId: existingCommit.activity_id,
       };
     },
-    onSuccess: (data, variables) => {
+    onSuccess: (_data, variables) => {
       // Invalidate related queries
       queryClient.invalidateQueries({
         queryKey: ["commit", variables.blockId],
@@ -558,7 +562,7 @@ export function useBlockSwap() {
       // Step 2: Get both commits
       const [
         { data: commit1, error: commit1Error },
-        { data: commit2, error: commit2Error }
+        { data: commit2, error: commit2Error },
       ] = await Promise.all([
         supabase
           .from("commits")
@@ -569,7 +573,7 @@ export function useBlockSwap() {
           .from("commits")
           .select("id, activity_id, committed_by, committed_at")
           .eq("block_id", blockId2)
-          .maybeSingle()
+          .maybeSingle(),
       ]);
 
       if (commit1Error) throw commit1Error;
@@ -622,7 +626,7 @@ export function useBlockSwap() {
           supabase
             .from("commits")
             .update({ block_id: blockId2 })
-            .eq("id", commit2.id)
+            .eq("id", commit2.id),
         ]);
         throw update1Error;
       }
@@ -632,7 +636,7 @@ export function useBlockSwap() {
         message: "Activities swapped successfully",
       };
     },
-    onSuccess: (data, variables) => {
+    onSuccess: (_data, variables) => {
       // Invalidate related queries for both blocks
       queryClient.invalidateQueries({
         queryKey: ["commit", variables.blockId1],

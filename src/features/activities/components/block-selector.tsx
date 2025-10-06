@@ -107,6 +107,7 @@ export function BlockSelector({
   // Prepare block data with additional info
   const blockData: BlockInfo[] = [];
   days.forEach((day) => {
+    // biome-ignore lint/suspicious/noExplicitAny: its ok here
     day.blocks?.forEach((block: any) => {
       blockData.push({
         id: block.id,

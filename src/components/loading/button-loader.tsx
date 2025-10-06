@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
-import { Spinner } from "./spinner";
 import { cn } from "@/lib/utils";
+import { Spinner } from "./spinner";
 
 interface LoadingButtonProps extends React.ComponentProps<typeof Button> {
   loading?: boolean;
@@ -22,9 +22,7 @@ export function LoadingButton({
       className={cn("relative", className)}
       {...props}
     >
-      {loading && (
-        <Spinner size="sm" className="mr-2" />
-      )}
+      {loading && <Spinner size="sm" className="mr-2" />}
       {loading && loadingText ? loadingText : children}
     </Button>
   );

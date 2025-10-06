@@ -8,10 +8,18 @@
  * - Optimistic updates with proper error handling
  */
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Clock, DollarSign, FileText, Link2, MapPin } from "lucide-react";
+import {
+  Camera,
+  Clock,
+  DollarSign,
+  FileText,
+  Link2,
+  MapPin,
+} from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
+import { ThumbnailUpload } from "@/components/common/thumbnail-upload";
 import { ActionButton, FormLoadingOverlay } from "@/components/loading";
 import { Button } from "@/components/ui/button";
 import {
@@ -34,6 +42,7 @@ import {
   extractLatLngFromGoogleMapsSrc,
   isGoogleMapsInput,
 } from "@/lib/google-maps";
+import type { ThumbnailUploadResult } from "@/lib/image-upload";
 import { type ActivityCreateInput, ActivityCreateSchema } from "@/schemas";
 import { type Activity, useUpdateActivity } from "../hooks/use-activities";
 
@@ -80,6 +89,15 @@ export function ActivityEditForm({
       : null,
   );
   const [locationError, setLocationError] = useState<string | null>(null);
+  const [thumbnail, setThumbnail] = useState<ThumbnailUploadResult | null>(
+    activity.src
+      ? {
+          url: activity.src,
+          fileName: "thumbnail",
+          originalFileName: "thumbnail",
+        }
+      : null,
+  );
 
   const form = useForm<ActivityCreateInput>({
     resolver: zodResolver(ActivityCreateSchema),
@@ -93,8 +111,18 @@ export function ActivityEditForm({
       notes: activity.notes || undefined,
       link: activity.link || undefined,
       location: activity.location || undefined,
+      src: activity.src || undefined,
     },
   });
+
+  const handleThumbnailUploaded = (result: ThumbnailUploadResult) => {
+    setThumbnail(result);
+    form.setValue("src", result.url);
+  };
+
+  const handleThumbnailUploadError = (error: string) => {
+    toast.error(error);
+  };
 
   // Extract coordinates helper function
   const extractCoordinates = useCallback(
@@ -438,6 +466,22 @@ export function ActivityEditForm({
               placeholder="Additional details, tips, or notes about this activity..."
               rows={3}
               {...form.register("notes")}
+            />
+          </div>
+
+          {/* Thumbnail Upload */}
+          <div className="space-y-4">
+            <Label className="text-sm font-medium flex items-center gap-1">
+              <Camera className="h-4 w-4" />
+              Activity Thumbnail
+            </Label>
+
+            <ThumbnailUpload
+              onThumbnailUploaded={handleThumbnailUploaded}
+              onError={handleThumbnailUploadError}
+              disabled={updateActivity.isPending}
+              currentThumbnail={thumbnail?.url}
+              placeholder="Upload a thumbnail for this activity"
             />
           </div>
 

@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
+import { InlineLoader } from "@/components/loading";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -23,8 +24,11 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { formatCurrency, formatDuration } from "@/lib/utils";
-import { InlineLoader } from "@/components/loading";
-import { useBlockCommit, useBlockCommitQuery, useBlockUncommit } from "../hooks/use-block-commit";
+import {
+  useBlockCommit,
+  useBlockCommitQuery,
+  useBlockUncommit,
+} from "../hooks/use-block-commit";
 import { useVoteTally } from "../hooks/use-votes";
 
 interface CommitPanelProps {
@@ -131,7 +135,9 @@ export function CommitPanel({ block, tripId, isOrganizer }: CommitPanelProps) {
         setSelectedTieBreaker("");
       }
     } catch (error: unknown) {
-      toast.error(error instanceof Error ? error.message : "Failed to commit activity");
+      toast.error(
+        error instanceof Error ? error.message : "Failed to commit activity",
+      );
       console.error("Commit error:", error);
     }
   };
@@ -161,7 +167,9 @@ export function CommitPanel({ block, tripId, isOrganizer }: CommitPanelProps) {
         toast.success(result.message || "Activity uncommitted successfully!");
       }
     } catch (error: unknown) {
-      toast.error(error instanceof Error ? error.message : "Failed to uncommit activity");
+      toast.error(
+        error instanceof Error ? error.message : "Failed to uncommit activity",
+      );
       console.error("Uncommit error:", error);
     }
   };
@@ -224,7 +232,9 @@ export function CommitPanel({ block, tripId, isOrganizer }: CommitPanelProps) {
                 disabled={blockUncommit.isPending}
                 className="w-full"
               >
-                {blockUncommit.isPending ? "Uncommitting..." : "Uncommit Activity"}
+                {blockUncommit.isPending
+                  ? "Uncommitting..."
+                  : "Uncommit Activity"}
               </Button>
             )}
           </div>

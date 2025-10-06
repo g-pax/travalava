@@ -47,7 +47,7 @@ export const MARKER_CONFIG = {
 export function validateGoogleMapsKey(): boolean {
   if (!GOOGLE_MAPS_API_KEY) {
     console.warn(
-      "Google Maps API key not found. Please add NEXT_PUBLIC_GOOGLE_MAPS_API_KEY to your environment variables."
+      "Google Maps API key not found. Please add NEXT_PUBLIC_GOOGLE_MAPS_API_KEY to your environment variables.",
     );
     return false;
   }
@@ -58,7 +58,7 @@ export function validateGoogleMapsKey(): boolean {
  * Extracts coordinates from Google Maps URL
  */
 export function extractCoordinatesFromGoogleMapsUrl(
-  url: string
+  url: string,
 ): { lat: number; lng: number } | null {
   try {
     // Handle various Google Maps URL formats
@@ -73,7 +73,7 @@ export function extractCoordinatesFromGoogleMapsUrl(
       if (match) {
         const lat = parseFloat(match[1]);
         const lng = parseFloat(match[2]);
-        if (!isNaN(lat) && !isNaN(lng)) {
+        if (!Number.isNaN(lat) && !Number.isNaN(lng)) {
           return { lat, lng };
         }
       }
@@ -100,7 +100,9 @@ export function formatCoordinates(lat: number, lng: number): string {
  * - Pattern B: "@lat,lng,zoom" (maps URLs)
  * - Pattern C: query "q=lat,lng" or "q=place+name@lat,lng"
  */
-export function extractLatLngFromGoogleMapsSrc(input: string): { lat: number; lng: number } | null {
+export function extractLatLngFromGoogleMapsSrc(
+  input: string,
+): { lat: number; lng: number } | null {
   if (!input) return null;
 
   // Extract src attribute if input is an iframe HTML string

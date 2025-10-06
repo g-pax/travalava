@@ -31,7 +31,7 @@ export function useVoteCast() {
       if (error) throw error;
       return data;
     },
-    onSuccess: (data, variables) => {
+    onSuccess: (_data, variables) => {
       // Invalidate and refetch votes for this block
       queryClient.invalidateQueries({
         queryKey: ["votes", variables.blockId],
@@ -65,7 +65,7 @@ export function useVoteRemove() {
 
       if (error) throw error;
     },
-    onSuccess: (data, variables) => {
+    onSuccess: (_data, variables) => {
       // Invalidate and refetch votes for this block
       queryClient.invalidateQueries({
         queryKey: ["votes", variables.blockId],

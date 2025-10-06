@@ -56,7 +56,7 @@ export function ActivitiesManager({
     setDialogState({ type: "none" });
   };
 
-  const handleActivityCreated = (activity: Activity) => {
+  const handleActivityCreated = (_activity: Activity) => {
     setDialogState({ type: "none" });
     // Optionally auto-open assignment dialog
     // setDialogState({ type: "assign", activityId: activity.id, activityTitle: activity.title });

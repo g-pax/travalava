@@ -88,9 +88,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
       // Create user profile
       const { error } = await supabase.from("user_profiles").insert({
         id: user.id,
-        email: user.email!,
+        email: user.email,
         display_name:
-          user.user_metadata?.display_name || user.email!.split("@")[0],
+          user.user_metadata?.display_name || user.email?.split("@")[0],
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
       });

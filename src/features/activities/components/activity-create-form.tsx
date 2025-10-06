@@ -1,7 +1,14 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Clock, DollarSign, FileText, Link2, MapPin } from "lucide-react";
+import {
+  Camera,
+  Clock,
+  DollarSign,
+  FileText,
+  Link2,
+  MapPin,
+} from "lucide-react";
 /**
  * ActivityCreateForm handles creation of new activities with all required attributes.
  * - Validated with Zod schema via react-hook-form resolver
@@ -10,6 +17,8 @@ import { Clock, DollarSign, FileText, Link2, MapPin } from "lucide-react";
  */
 import { useState } from "react";
 import { useForm } from "react-hook-form";
+import { toast } from "sonner";
+import { ThumbnailUpload } from "@/components/common/thumbnail-upload";
 import { ActionButton } from "@/components/loading";
 import { Button } from "@/components/ui/button";
 import {
@@ -30,6 +39,7 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { extractLatLngFromGoogleMapsSrc } from "@/lib/google-maps";
+import type { ThumbnailUploadResult } from "@/lib/image-upload";
 import { type ActivityCreateInput, ActivityCreateSchema } from "@/schemas";
 import { type Activity, useCreateActivity } from "../hooks/use-activities";
 
@@ -66,14 +76,27 @@ export function ActivityCreateForm({
     lng: number;
   } | null>(null);
   const [locationError, setLocationError] = useState<string | null>(null);
+  const [thumbnail, setThumbnail] = useState<ThumbnailUploadResult | null>(
+    null,
+  );
 
   const form = useForm<ActivityCreateInput>({
     resolver: zodResolver(ActivityCreateSchema),
     defaultValues: {
       trip_id: tripId,
       cost_currency: tripCurrency,
+      src: undefined,
     },
   });
+
+  const handleThumbnailUploaded = (result: ThumbnailUploadResult) => {
+    setThumbnail(result);
+    form.setValue("src", result.url);
+  };
+
+  const handleThumbnailUploadError = (error: string) => {
+    toast.error(error);
+  };
 
   const handleShortUrlChange = (value: string) => {
     setShortUrl(value);
@@ -133,11 +156,16 @@ export function ActivityCreateForm({
     try {
       const activity = await createActivity.mutateAsync(values);
       onSuccess?.(activity);
-      form.reset({ trip_id: tripId, cost_currency: tripCurrency });
+      form.reset({
+        trip_id: tripId,
+        cost_currency: tripCurrency,
+        src: undefined,
+      });
       setShortUrl("");
       setIframeCode("");
       setExtractedCoords(null);
       setLocationError(null);
+      setThumbnail(null);
     } catch (error) {
       // Clear any previous submission errors
       form.clearErrors();
@@ -382,7 +410,21 @@ export function ActivityCreateForm({
             />
           </div>
 
-          {/* TODO: Photo upload section will be added later */}
+          {/* Thumbnail Upload */}
+          <div className="space-y-4">
+            <Label className="text-sm font-medium flex items-center gap-1">
+              <Camera className="h-4 w-4" />
+              Activity Thumbnail
+            </Label>
+
+            <ThumbnailUpload
+              onThumbnailUploaded={handleThumbnailUploaded}
+              onError={handleThumbnailUploadError}
+              disabled={createActivity.isPending}
+              currentThumbnail={thumbnail?.url}
+              placeholder="Upload a thumbnail for this activity"
+            />
+          </div>
 
           {/* Form Actions */}
           <div className="flex gap-3 pt-4">

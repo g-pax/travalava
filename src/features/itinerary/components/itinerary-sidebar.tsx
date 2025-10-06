@@ -59,7 +59,6 @@ function StatusIcon({ status }: { status: DayStatus }) {
       return <Clock className="h-4 w-4 text-blue-600 animate-pulse" />;
     case "partial":
       return <Clock className="h-4 w-4 text-amber-600" />;
-    case "empty":
     default:
       return <Circle className="h-4 w-4 text-gray-300" />;
   }

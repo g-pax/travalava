@@ -1,5 +1,8 @@
 "use client";
 
+import { zodResolver } from "@hookform/resolvers/zod";
+import { ArrowLeft, Mail } from "lucide-react";
+import Link from "next/link";
 /**
  * Password reset page
  * - Send password reset email
@@ -7,9 +10,7 @@
  */
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import Link from "next/link";
-import { ArrowLeft, Mail } from "lucide-react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -21,8 +22,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/lib/auth-context";
-import { ResetPasswordSchema, type ResetPasswordInput } from "@/schemas";
-import { toast } from "sonner";
+import { type ResetPasswordInput, ResetPasswordSchema } from "@/schemas";
 
 export default function ResetPasswordPage() {
   const { resetPassword } = useAuth();
@@ -42,6 +42,7 @@ export default function ResetPasswordPage() {
       await resetPassword(data.email);
       setEmailSent(true);
       toast.success("Password reset email sent! Check your inbox.");
+      // biome-ignore lint/suspicious/noExplicitAny: its ok here
     } catch (error: any) {
       toast.error(error.message || "Failed to send reset email");
     } finally {

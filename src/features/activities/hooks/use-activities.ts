@@ -7,6 +7,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { nanoid } from "nanoid";
 import { toast } from "sonner";
+
 import { supabase } from "@/lib/supabase";
 import type { ActivityCreateInput } from "@/schemas";
 
@@ -138,6 +139,7 @@ export function useCreateActivity() {
         const optimisticActivity: Activity = {
           id: `temp-${nanoid()}`,
           ...input,
+          // photos: input.src || [],
           category: input.category || null,
           cost_amount: input.cost_amount || null,
           cost_currency: input.cost_currency || null,
@@ -157,7 +159,7 @@ export function useCreateActivity() {
 
       return { previousActivities };
     },
-    onError: (error, input, context) => {
+    onError: (_error, input, context) => {
       // Rollback optimistic update
       if (context?.previousActivities) {
         queryClient.setQueryData(
@@ -167,7 +169,7 @@ export function useCreateActivity() {
       }
       toast.error("Failed to create activity");
     },
-    onSuccess: (data, input) => {
+    onSuccess: (_data, input) => {
       // Invalidate and refetch
       queryClient.invalidateQueries({
         queryKey: ["activities", input.trip_id],

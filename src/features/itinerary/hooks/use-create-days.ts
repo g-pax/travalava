@@ -71,7 +71,7 @@ export function useCreateDays() {
 
       return { days, blocks, clientMutationId };
     },
-    onSuccess: (data) => {
+    onSuccess: (_data) => {
       queryClient.invalidateQueries({ queryKey: ["days"] });
       queryClient.invalidateQueries({ queryKey: ["blocks"] });
     },

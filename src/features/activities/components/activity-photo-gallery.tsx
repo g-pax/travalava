@@ -1,5 +1,7 @@
 "use client";
 
+import { Camera, X, ZoomIn } from "lucide-react";
+import Image from "next/image";
 /**
  * ActivityPhotoGallery displays and manages photos for activities
  * - Shows photo previews in activity cards
@@ -7,7 +9,6 @@
  * - Handles photo upload and deletion
  */
 import { useState } from "react";
-import { Camera, X, ZoomIn } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -68,13 +69,16 @@ export function ActivityPhotoPreview({
         {displayPhotos.map((photo) => (
           <button
             key={photo.id}
+            type="button"
             onClick={() => setSelectedPhoto(photo)}
             className="relative flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden border hover:ring-2 hover:ring-blue-500 transition-all"
           >
-            <img
+            <Image
               src={photo.url}
-              alt={`${activityTitle} photo`}
+              alt={`${activityTitle}`}
               className="w-full h-full object-cover"
+              width={1000}
+              height={1000}
             />
             <div className="absolute inset-0 bg-black bg-opacity-0 hover:bg-opacity-20 transition-opacity flex items-center justify-center">
               <ZoomIn className="h-4 w-4 text-white opacity-0 hover:opacity-100 transition-opacity" />
@@ -100,10 +104,12 @@ export function ActivityPhotoPreview({
               <DialogTitle>{activityTitle} - Photo</DialogTitle>
             </DialogHeader>
             <div className="flex justify-center">
-              <img
+              <Image
                 src={selectedPhoto.url}
-                alt={`${activityTitle} photo`}
+                alt={`${activityTitle} `}
                 className="max-w-full max-h-[70vh] object-contain rounded-lg"
+                width={1000}
+                height={1000}
               />
             </div>
           </DialogContent>
@@ -117,7 +123,6 @@ export function ActivityPhotoPreview({
  * Full photo gallery with management capabilities
  */
 export function ActivityPhotoGallery({
-  activityId,
   activityTitle,
   photos,
   onPhotoAdd,
@@ -161,13 +166,16 @@ export function ActivityPhotoGallery({
           {photos.map((photo) => (
             <div key={photo.id} className="relative group">
               <button
+                type="button"
                 onClick={() => setSelectedPhoto(photo)}
                 className="w-full aspect-square rounded-lg overflow-hidden border hover:ring-2 hover:ring-blue-500 transition-all"
               >
-                <img
+                <Image
                   src={photo.url}
-                  alt={`${activityTitle} photo`}
+                  alt={`${activityTitle} `}
                   className="w-full h-full object-cover"
+                  width={1000}
+                  height={1000}
                 />
                 <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-opacity flex items-center justify-center">
                   <ZoomIn className="h-5 w-5 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
@@ -177,6 +185,7 @@ export function ActivityPhotoGallery({
               {/* Delete Button */}
               {!readonly && onPhotoDelete && (
                 <button
+                  type="button"
                   onClick={() => onPhotoDelete(photo.id)}
                   className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-600"
                 >
@@ -199,10 +208,12 @@ export function ActivityPhotoGallery({
               <DialogTitle>{activityTitle} - Photo</DialogTitle>
             </DialogHeader>
             <div className="flex justify-center">
-              <img
+              <Image
                 src={selectedPhoto.url}
-                alt={`${activityTitle} photo`}
+                alt={`${activityTitle}`}
                 className="max-w-full max-h-[70vh] object-contain rounded-lg"
+                width={1000}
+                height={1000}
               />
             </div>
           </DialogContent>

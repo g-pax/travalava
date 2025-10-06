@@ -8,8 +8,8 @@ import { usePathname, useRouter } from "next/navigation";
  * - Preserves intended destination in redirect URL
  */
 import { useEffect } from "react";
-import { useAuth } from "@/lib/auth-context";
 import { AuthLoader } from "@/components/loading";
+import { useAuth } from "@/lib/auth-context";
 
 interface AuthGuardProps {
   children: React.ReactNode;

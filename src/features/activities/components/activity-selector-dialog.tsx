@@ -3,6 +3,7 @@
 import { Plus, Search, X } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
+import { InlineLoader } from "@/components/loading";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -13,7 +14,6 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { InlineLoader } from "@/components/loading";
 import { useActivities } from "../hooks/use-activities";
 import { useCreateProposal } from "../hooks/use-proposals";
 

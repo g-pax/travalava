@@ -8,6 +8,7 @@ import { Calendar, MapPin, PlusCircle, Users } from "lucide-react";
  */
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { AuthLoader } from "@/components/loading";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -18,7 +19,6 @@ import {
 } from "@/components/ui/card";
 import { TripCreateForm } from "@/features/trip/components/trip-create-form";
 import { useAuth } from "@/lib/auth-context";
-import { AuthLoader } from "@/components/loading";
 
 function LandingPage() {
   return (

@@ -1,5 +1,5 @@
-import { describe, it, expect, beforeAll, afterAll, beforeEach } from "vitest";
 import { createClient } from "@supabase/supabase-js";
+import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 
 // These tests require a running Supabase instance with the correct schema
 // They are meant to be run against a test database, not production
@@ -330,7 +330,7 @@ describe("Voting Integration Tests", () => {
       .select()
       .single();
 
-    const { data, error } = await supabase.functions.invoke("vote-cast", {
+    const { data } = await supabase.functions.invoke("vote-cast", {
       body: {
         tripId: testTripId,
         blockId: pastBlock.id,

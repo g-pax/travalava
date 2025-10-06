@@ -155,6 +155,7 @@ export interface Database {
           duration_min: number | null;
           notes: string | null;
           link: string | null;
+          // biome-ignore lint/suspicious/noExplicitAny: its ok here
           location: any | null;
           created_at: string;
           updated_at: string;
@@ -169,6 +170,7 @@ export interface Database {
           duration_min?: number | null;
           notes?: string | null;
           link?: string | null;
+          // biome-ignore lint/suspicious/noExplicitAny: its ok here
           location?: any | null;
           created_at?: string;
           updated_at?: string;
@@ -183,6 +185,7 @@ export interface Database {
           duration_min?: number | null;
           notes?: string | null;
           link?: string | null;
+          // biome-ignore lint/suspicious/noExplicitAny: its ok here
           location?: any | null;
           created_at?: string;
           updated_at?: string;

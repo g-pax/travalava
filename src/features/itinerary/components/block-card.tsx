@@ -14,12 +14,12 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
+import { InlineLoader } from "@/components/loading";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { InlineLoader } from "@/components/loading";
 import { ActivitySelectorDialog } from "@/features/activities/components/activity-selector-dialog";
 import {
   useBlockProposals,

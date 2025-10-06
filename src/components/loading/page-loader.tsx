@@ -5,8 +5,12 @@ interface PageLoaderProps {
   showLogo?: boolean;
 }
 
-export function PageLoader({ message = "Loading...", showLogo = true }: PageLoaderProps) {
+export function PageLoader({
+  message = "Loading...",
+  showLogo = true,
+}: PageLoaderProps) {
   return (
+    // biome-ignore lint/a11y/useSemanticElements: we need this for the status
     <div
       className="min-h-screen flex flex-col items-center justify-center bg-background"
       role="status"
@@ -15,9 +19,7 @@ export function PageLoader({ message = "Loading...", showLogo = true }: PageLoad
     >
       <div className="flex flex-col items-center space-y-4">
         {showLogo && (
-          <div className="text-2xl font-bold text-primary">
-            Travalava
-          </div>
+          <div className="text-2xl font-bold text-primary">Travalava</div>
         )}
         <Spinner size="lg" />
         <p className="text-muted-foreground text-sm">{message}</p>

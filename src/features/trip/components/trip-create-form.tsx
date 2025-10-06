@@ -142,6 +142,7 @@ export function TripCreateForm({ onSuccess }: TripCreateFormProps) {
           <Select
             value={form.watch("duplicate_policy")}
             onValueChange={(value) =>
+              // biome-ignore lint/suspicious/noExplicitAny: its ok here
               form.setValue("duplicate_policy", value as any)
             }
           >

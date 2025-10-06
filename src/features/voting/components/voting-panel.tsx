@@ -29,7 +29,6 @@ export function VotingPanel({
   tripId,
   proposals,
   currentMemberId,
-  isOrganizer = false,
 }: VotingPanelProps) {
   const {
     tally,

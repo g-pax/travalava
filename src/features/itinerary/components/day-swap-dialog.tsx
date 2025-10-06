@@ -21,8 +21,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { formatCurrency, formatDuration } from "@/lib/utils";
 import { useBlockSwap } from "@/features/voting/hooks/use-block-commit";
+import { formatCurrency, formatDuration } from "@/lib/utils";
 
 type CommittedBlock = {
   id: string;
@@ -80,7 +80,9 @@ export function DaySwapDialog({
         setSelectedBlock2("");
       }
     } catch (error: unknown) {
-      toast.error(error instanceof Error ? error.message : "Failed to swap activities");
+      toast.error(
+        error instanceof Error ? error.message : "Failed to swap activities",
+      );
       console.error("Swap error:", error);
     }
   };
@@ -115,7 +117,9 @@ export function DaySwapDialog({
         <div className="space-y-6">
           {/* Block 1 Selection */}
           <div className="space-y-2">
-            <label className="text-sm font-medium">First Block</label>
+            <label htmlFor="first-block" className="text-sm font-medium">
+              First Block
+            </label>
             <Select value={selectedBlock1} onValueChange={setSelectedBlock1}>
               <SelectTrigger>
                 <SelectValue placeholder="Select first block to swap" />
@@ -130,7 +134,8 @@ export function DaySwapDialog({
                     <div className="flex items-center gap-2">
                       <Calendar className="h-4 w-4 text-gray-500" />
                       <span>
-                        {block.dayLabel} • {block.label} • {block.activity.title}
+                        {block.dayLabel} • {block.label} •{" "}
+                        {block.activity.title}
                       </span>
                     </div>
                   </SelectItem>
@@ -166,7 +171,9 @@ export function DaySwapDialog({
                   {block1Info.activity.duration_min && (
                     <>
                       <span>•</span>
-                      <span>{formatDuration(block1Info.activity.duration_min)}</span>
+                      <span>
+                        {formatDuration(block1Info.activity.duration_min)}
+                      </span>
                     </>
                   )}
                 </div>
@@ -183,7 +190,9 @@ export function DaySwapDialog({
 
           {/* Block 2 Selection */}
           <div className="space-y-2">
-            <label className="text-sm font-medium">Second Block</label>
+            <label htmlFor="second-block" className="text-sm font-medium">
+              Second Block
+            </label>
             <Select value={selectedBlock2} onValueChange={setSelectedBlock2}>
               <SelectTrigger>
                 <SelectValue placeholder="Select second block to swap" />
@@ -198,7 +207,8 @@ export function DaySwapDialog({
                     <div className="flex items-center gap-2">
                       <Calendar className="h-4 w-4 text-gray-500" />
                       <span>
-                        {block.dayLabel} • {block.label} • {block.activity.title}
+                        {block.dayLabel} • {block.label} •{" "}
+                        {block.activity.title}
                       </span>
                     </div>
                   </SelectItem>
@@ -234,7 +244,9 @@ export function DaySwapDialog({
                   {block2Info.activity.duration_min && (
                     <>
                       <span>•</span>
-                      <span>{formatDuration(block2Info.activity.duration_min)}</span>
+                      <span>
+                        {formatDuration(block2Info.activity.duration_min)}
+                      </span>
                     </>
                   )}
                 </div>

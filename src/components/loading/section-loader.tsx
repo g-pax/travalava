@@ -7,9 +7,19 @@ interface SectionLoaderProps {
   className?: string;
 }
 
-export function SectionLoader({ title, lines = 3, className }: SectionLoaderProps) {
+export function SectionLoader({
+  title,
+  lines = 3,
+  className,
+}: SectionLoaderProps) {
   return (
-    <div className={className} role="status" aria-live="polite" aria-label="Loading content">
+    // biome-ignore lint/a11y/useSemanticElements: we need this for the status
+    <div
+      className={className}
+      role="status"
+      aria-live="polite"
+      aria-label="Loading content"
+    >
       {title && (
         <div className="mb-4">
           <Skeleton className="h-6 w-48" />
@@ -17,6 +27,7 @@ export function SectionLoader({ title, lines = 3, className }: SectionLoaderProp
       )}
       <div className="space-y-3">
         {Array.from({ length: lines }).map((_, i) => (
+          // biome-ignore lint/suspicious/noArrayIndexKey: we need this for the index
           <Skeleton key={i} className="h-4 w-full" />
         ))}
       </div>
@@ -26,12 +37,20 @@ export function SectionLoader({ title, lines = 3, className }: SectionLoaderProp
 
 export function ItineraryLoader() {
   return (
-    <div className="space-y-6" role="status" aria-live="polite" aria-label="Loading itinerary">
+    // biome-ignore lint/a11y/useSemanticElements: we need this for the status
+    <div
+      className="space-y-6"
+      role="status"
+      aria-live="polite"
+      aria-label="Loading itinerary"
+    >
       {Array.from({ length: 3 }).map((_, dayIndex) => (
+        // biome-ignore lint/suspicious/noArrayIndexKey: we need this for the index
         <div key={dayIndex} className="border rounded-lg p-4">
           <Skeleton className="h-6 w-32 mb-4" />
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {Array.from({ length: 3 }).map((_, blockIndex) => (
+              // biome-ignore lint/suspicious/noArrayIndexKey: we need this for the index
               <div key={blockIndex} className="border rounded-md p-3">
                 <Skeleton className="h-5 w-20 mb-2" />
                 <div className="space-y-2">
@@ -49,9 +68,19 @@ export function ItineraryLoader() {
 
 export function ActivityListLoader() {
   return (
-    <div className="space-y-4" role="status" aria-live="polite" aria-label="Loading activities">
+    // biome-ignore lint/a11y/useSemanticElements: we need this for the status
+    <div
+      className="space-y-4"
+      role="status"
+      aria-live="polite"
+      aria-label="Loading activities"
+    >
       {Array.from({ length: 5 }).map((_, i) => (
-        <div key={i} className="border rounded-lg p-4 flex items-center space-x-4">
+        <div
+          // biome-ignore lint/suspicious/noArrayIndexKey: we need this for the index
+          key={i}
+          className="border rounded-lg p-4 flex items-center space-x-4"
+        >
           <Skeleton className="h-12 w-12 rounded" />
           <div className="flex-1 space-y-2">
             <Skeleton className="h-5 w-3/4" />
@@ -66,6 +95,7 @@ export function ActivityListLoader() {
 
 export function InlineLoader({ message }: { message?: string }) {
   return (
+    // biome-ignore lint/a11y/useSemanticElements: we need this for the status
     <div
       className="flex items-center justify-center py-8"
       role="status"
@@ -74,7 +104,9 @@ export function InlineLoader({ message }: { message?: string }) {
     >
       <div className="flex items-center space-x-2">
         <Spinner size="sm" />
-        {message && <span className="text-sm text-muted-foreground">{message}</span>}
+        {message && (
+          <span className="text-sm text-muted-foreground">{message}</span>
+        )}
       </div>
     </div>
   );

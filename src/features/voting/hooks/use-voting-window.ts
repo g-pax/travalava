@@ -48,7 +48,7 @@ export function useUpdateVotingWindow() {
 
       return { block: data, clientMutationId };
     },
-    onSuccess: (data, variables) => {
+    onSuccess: (_data, variables) => {
       // Invalidate queries to refetch updated data
       queryClient.invalidateQueries({ queryKey: ["days", variables.tripId] });
       queryClient.invalidateQueries({ queryKey: ["blocks", variables.tripId] });
@@ -89,7 +89,7 @@ export function useClearVotingWindow() {
 
       return { block: data, clientMutationId };
     },
-    onSuccess: (data, variables) => {
+    onSuccess: (_data, variables) => {
       // Invalidate queries to refetch updated data
       queryClient.invalidateQueries({ queryKey: ["days", variables.tripId] });
       queryClient.invalidateQueries({ queryKey: ["blocks", variables.tripId] });

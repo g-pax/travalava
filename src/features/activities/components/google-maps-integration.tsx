@@ -228,7 +228,6 @@ export function GoogleMapsIntegration({
 export function CompactGoogleMapsIntegration({
   location,
   googleMapsLink,
-  activityTitle,
 }: GoogleMapsIntegrationProps) {
   const directionsUrl = getDirectionsUrl(location, googleMapsLink);
 

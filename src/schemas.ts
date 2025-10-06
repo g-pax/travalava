@@ -45,6 +45,7 @@ export const ActivityCreateSchema = z.object({
       lon: z.number(),
     })
     .optional(),
+  src: z.string().url().optional(),
 });
 
 export const ActivityUpdateSchema = ActivityCreateSchema.omit({
