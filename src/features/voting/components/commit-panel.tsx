@@ -24,7 +24,7 @@ import {
 } from "@/components/ui/dialog";
 import { formatCurrency, formatDuration } from "@/lib/utils";
 import { InlineLoader } from "@/components/loading";
-import { useBlockCommit, useBlockCommitQuery } from "../hooks/use-block-commit";
+import { useBlockCommit, useBlockCommitQuery, useBlockUncommit } from "../hooks/use-block-commit";
 import { useVoteTally } from "../hooks/use-votes";
 
 interface CommitPanelProps {
@@ -57,6 +57,7 @@ export function CommitPanel({ block, tripId, isOrganizer }: CommitPanelProps) {
   const { data: existingCommit, isPending: commitLoading } =
     useBlockCommitQuery(block.id);
   const blockCommit = useBlockCommit();
+  const blockUncommit = useBlockUncommit();
 
   const [showTieBreaker, setShowTieBreaker] = useState(false);
   const [selectedTieBreaker, setSelectedTieBreaker] = useState<string>("");
@@ -129,8 +130,8 @@ export function CommitPanel({ block, tripId, isOrganizer }: CommitPanelProps) {
         setDuplicateWarning(null);
         setSelectedTieBreaker("");
       }
-    } catch (error: any) {
-      toast.error(error.message || "Failed to commit activity");
+    } catch (error: unknown) {
+      toast.error(error instanceof Error ? error.message : "Failed to commit activity");
       console.error("Commit error:", error);
     }
   };
@@ -147,6 +148,22 @@ export function CommitPanel({ block, tripId, isOrganizer }: CommitPanelProps) {
   const handleDuplicateConfirm = async () => {
     if (!duplicateWarning) return;
     await handleCommit(duplicateWarning.activityId, true);
+  };
+
+  const handleUncommit = async () => {
+    try {
+      const result = await blockUncommit.mutateAsync({
+        tripId,
+        blockId: block.id,
+      });
+
+      if (result.success) {
+        toast.success(result.message || "Activity uncommitted successfully!");
+      }
+    } catch (error: unknown) {
+      toast.error(error instanceof Error ? error.message : "Failed to uncommit activity");
+      console.error("Uncommit error:", error);
+    }
   };
 
   if (votesLoading || commitLoading) {
@@ -199,6 +216,17 @@ export function CommitPanel({ block, tripId, isOrganizer }: CommitPanelProps) {
               Committed by {existingCommit.committed_by_member?.display_name} on{" "}
               {new Date(existingCommit.committed_at).toLocaleDateString()}
             </div>
+            {isOrganizer && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleUncommit}
+                disabled={blockUncommit.isPending}
+                className="w-full"
+              >
+                {blockUncommit.isPending ? "Uncommitting..." : "Uncommit Activity"}
+              </Button>
+            )}
           </div>
         </CardContent>
       </Card>

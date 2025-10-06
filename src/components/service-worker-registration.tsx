@@ -4,43 +4,16 @@ import { useEffect } from "react";
 
 export function ServiceWorkerRegistration() {
   useEffect(() => {
-    if (
-      typeof window !== "undefined" &&
-      "serviceWorker" in navigator &&
-      process.env.NODE_ENV === "production"
-    ) {
-      const registerSW = async () => {
-        try {
-          const registration = await navigator.serviceWorker.register(
-            "/sw.js",
-            {
-              scope: "/",
-            },
-          );
-
-          console.log("Service Worker registered successfully:", registration);
-
-          // Listen for updates
-          registration.addEventListener("updatefound", () => {
-            const newWorker = registration.installing;
-            if (newWorker) {
-              newWorker.addEventListener("statechange", () => {
-                if (
-                  newWorker.state === "installed" &&
-                  navigator.serviceWorker.controller
-                ) {
-                  // New update available
-                  console.log("New content available! Please refresh.");
-                }
-              });
-            }
-          });
-        } catch (error) {
-          console.error("Service Worker registration failed:", error);
-        }
-      };
-
-      registerSW();
+    // Service worker disabled for normal web app behavior
+    // If you need PWA features, re-enable this code
+    if (typeof window !== "undefined" && "serviceWorker" in navigator) {
+      // Unregister any existing service workers
+      navigator.serviceWorker.getRegistrations().then((registrations) => {
+        registrations.forEach((registration) => {
+          registration.unregister();
+          console.log("Service Worker unregistered:", registration);
+        });
+      });
     }
   }, []);
 

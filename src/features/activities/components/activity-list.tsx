@@ -38,6 +38,8 @@ interface ActivityListProps {
   tripId: string;
   tripCurrency?: string;
   onCreateActivity?: () => void;
+  onEditActivity?: (activity: Activity) => void;
+  onAssignActivity?: (activityId: string, activityTitle: string) => void;
 }
 
 function ActivityCard({

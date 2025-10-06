@@ -349,6 +349,65 @@ export function useCommits(tripId: string) {
   });
 }
 
+export function useCommittedBlocks(tripId: string) {
+  return useQuery({
+    queryKey: ["committed-blocks", tripId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("commits")
+        .select(`
+          block_id,
+          activity:activities!commits_activity_id_fkey(
+            id,
+            title,
+            category,
+            cost_amount,
+            cost_currency,
+            duration_min
+          ),
+          blocks!commits_block_id_fkey(
+            id,
+            label,
+            position,
+            days!blocks_day_id_fkey(
+              date
+            )
+          )
+        `)
+        .eq("trip_id", tripId)
+        .order("created_at", { ascending: true })
+        // .order("position", { ascending: true });
+        // .order("blocks.days.date", { ascending: true })
+        // .order("blocks.position", { ascending: true });
+
+      if (error) throw error;
+
+      // Transform the data to match our component expectations
+      return (data || []).map((commit: any) => ({
+        id: commit.block_id,
+        label: commit.blocks?.label || "Unknown",
+        dayDate: commit.blocks?.days?.date || "",
+        dayLabel: commit.blocks?.days?.date
+          ? new Date(commit.blocks.days.date).toLocaleDateString(undefined, {
+              weekday: 'short',
+              month: 'short',
+              day: 'numeric'
+            })
+          : "Unknown",
+        activity: {
+          id: commit.activity?.id || "",
+          title: commit.activity?.title || "Unknown",
+          category: commit.activity?.category,
+          cost_amount: commit.activity?.cost_amount,
+          cost_currency: commit.activity?.cost_currency,
+          duration_min: commit.activity?.duration_min,
+        },
+      }));
+    },
+    enabled: !!tripId,
+  });
+}
+
 export function useBlockCommitQuery(blockId: string) {
   return useQuery({
     queryKey: ["commit", blockId],
@@ -385,5 +444,211 @@ export function useBlockCommitQuery(blockId: string) {
     },
     enabled: !!blockId && blockId !== "undefined" && blockId !== "null",
     staleTime: 1000 * 60 * 10, // 10 minutes since commits don't change often
+  });
+}
+
+export function useBlockUncommit() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (params: { tripId: string; blockId: string }) => {
+      const { tripId, blockId } = params;
+
+      // Step 1: Get current user's member record to verify they're an organizer
+      const { data: userData } = await supabase.auth.getUser();
+      if (!userData.user) {
+        throw new Error("You must be logged in to uncommit activities");
+      }
+
+      const { data: member, error: memberError } = await supabase
+        .from("trip_members")
+        .select("id, role")
+        .eq("trip_id", tripId)
+        .eq("user_id", userData.user.id)
+        .maybeSingle();
+
+      if (memberError) throw memberError;
+      if (!member) {
+        throw new Error("You are not a member of this trip");
+      }
+      if (member.role !== "organizer") {
+        throw new Error("Only organizers can uncommit activities");
+      }
+
+      // Step 2: Check if block has a commit
+      const { data: existingCommit, error: existingCommitError } =
+        await supabase
+          .from("commits")
+          .select("id, activity_id")
+          .eq("block_id", blockId)
+          .maybeSingle();
+
+      if (existingCommitError) throw existingCommitError;
+      if (!existingCommit) {
+        throw new Error("This block doesn't have a committed activity");
+      }
+
+      // Step 3: Delete the commit
+      const { error: deleteError } = await supabase
+        .from("commits")
+        .delete()
+        .eq("block_id", blockId);
+
+      if (deleteError) throw deleteError;
+
+      return {
+        success: true,
+        message: "Activity uncommitted successfully",
+        activityId: existingCommit.activity_id,
+      };
+    },
+    onSuccess: (data, variables) => {
+      // Invalidate related queries
+      queryClient.invalidateQueries({
+        queryKey: ["commit", variables.blockId],
+      });
+
+      queryClient.invalidateQueries({
+        queryKey: ["commits", variables.tripId],
+      });
+
+      queryClient.invalidateQueries({
+        queryKey: ["days", variables.tripId],
+      });
+
+      queryClient.invalidateQueries({
+        queryKey: ["proposals", variables.blockId],
+      });
+    },
+  });
+}
+
+export function useBlockSwap() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (params: {
+      tripId: string;
+      blockId1: string;
+      blockId2: string;
+    }) => {
+      const { tripId, blockId1, blockId2 } = params;
+
+      // Step 1: Get current user's member record to verify they're an organizer
+      const { data: userData } = await supabase.auth.getUser();
+      if (!userData.user) {
+        throw new Error("You must be logged in to swap activities");
+      }
+
+      const { data: member, error: memberError } = await supabase
+        .from("trip_members")
+        .select("id, role")
+        .eq("trip_id", tripId)
+        .eq("user_id", userData.user.id)
+        .maybeSingle();
+
+      if (memberError) throw memberError;
+      if (!member) {
+        throw new Error("You are not a member of this trip");
+      }
+      if (member.role !== "organizer") {
+        throw new Error("Only organizers can swap activities");
+      }
+
+      // Step 2: Get both commits
+      const [
+        { data: commit1, error: commit1Error },
+        { data: commit2, error: commit2Error }
+      ] = await Promise.all([
+        supabase
+          .from("commits")
+          .select("id, activity_id, committed_by, committed_at")
+          .eq("block_id", blockId1)
+          .maybeSingle(),
+        supabase
+          .from("commits")
+          .select("id, activity_id, committed_by, committed_at")
+          .eq("block_id", blockId2)
+          .maybeSingle()
+      ]);
+
+      if (commit1Error) throw commit1Error;
+      if (commit2Error) throw commit2Error;
+
+      if (!commit1 || !commit2) {
+        throw new Error("Both blocks must have committed activities to swap");
+      }
+
+      // Step 3: Perform the swap using a transaction-like approach
+      // First, temporarily update one to avoid constraint conflicts
+      const tempId = `temp_${Date.now()}`;
+
+      // Update first commit to temp block
+      const { error: tempUpdateError } = await supabase
+        .from("commits")
+        .update({ block_id: tempId })
+        .eq("id", commit1.id);
+
+      if (tempUpdateError) throw tempUpdateError;
+
+      // Update second commit to first block
+      const { error: update2Error } = await supabase
+        .from("commits")
+        .update({ block_id: blockId1 })
+        .eq("id", commit2.id);
+
+      if (update2Error) {
+        // Rollback temp update
+        await supabase
+          .from("commits")
+          .update({ block_id: blockId1 })
+          .eq("id", commit1.id);
+        throw update2Error;
+      }
+
+      // Update first commit (temp) to second block
+      const { error: update1Error } = await supabase
+        .from("commits")
+        .update({ block_id: blockId2 })
+        .eq("id", commit1.id);
+
+      if (update1Error) {
+        // Rollback both updates
+        await Promise.all([
+          supabase
+            .from("commits")
+            .update({ block_id: blockId1 })
+            .eq("id", commit1.id),
+          supabase
+            .from("commits")
+            .update({ block_id: blockId2 })
+            .eq("id", commit2.id)
+        ]);
+        throw update1Error;
+      }
+
+      return {
+        success: true,
+        message: "Activities swapped successfully",
+      };
+    },
+    onSuccess: (data, variables) => {
+      // Invalidate related queries for both blocks
+      queryClient.invalidateQueries({
+        queryKey: ["commit", variables.blockId1],
+      });
+
+      queryClient.invalidateQueries({
+        queryKey: ["commit", variables.blockId2],
+      });
+
+      queryClient.invalidateQueries({
+        queryKey: ["commits", variables.tripId],
+      });
+
+      queryClient.invalidateQueries({
+        queryKey: ["days", variables.tripId],
+      });
+    },
   });
 }

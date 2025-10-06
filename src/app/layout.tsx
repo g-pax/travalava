@@ -5,6 +5,7 @@ import { Toaster } from "sonner";
 import { AuthProvider } from "@/lib/auth-context";
 import { ReactQueryProvider } from "@/lib/react-query";
 import { ServiceWorkerRegistration } from "@/components/service-worker-registration";
+import "@/lib/clear-cache";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",

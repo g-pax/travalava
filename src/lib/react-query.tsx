@@ -2,8 +2,6 @@
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
-import { PersistQueryClientProvider } from "@tanstack/react-query-persist-client";
-import { createSyncStoragePersister } from "@tanstack/query-sync-storage-persister";
 import { useState } from "react";
 
 export function ReactQueryProvider({
@@ -15,8 +13,8 @@ export function ReactQueryProvider({
     const client = new QueryClient({
       defaultOptions: {
         queries: {
-          staleTime: 1000 * 60 * 5, // 5 minutes
-          gcTime: 1000 * 60 * 60 * 24, // 24 hours (was cacheTime)
+          staleTime: 0, // Always consider data stale
+          gcTime: 0, // Don't cache data after component unmount
           retry: (failureCount, error) => {
             // Don't retry on 4xx errors except 429 (rate limiting)
             if (error && typeof error === "object" && "status" in error) {
@@ -34,7 +32,7 @@ export function ReactQueryProvider({
           },
           retryDelay: (attemptIndex) =>
             Math.min(1000 * 2 ** attemptIndex, 30000),
-          refetchOnWindowFocus: false,
+          refetchOnWindowFocus: true, // Always refetch when window gains focus
           refetchOnReconnect: true,
           refetchOnMount: true,
         },
@@ -56,34 +54,6 @@ export function ReactQueryProvider({
 
     return client;
   });
-
-  const [persister] = useState(() => {
-    if (typeof window === "undefined") return undefined;
-
-    return createSyncStoragePersister({
-      storage: window.localStorage,
-      key: "travalava-query-cache",
-      serialize: JSON.stringify,
-      deserialize: JSON.parse,
-    });
-  });
-
-  // Use PersistQueryClientProvider if we have a persister, otherwise regular provider
-  if (persister) {
-    return (
-      <PersistQueryClientProvider
-        client={queryClient}
-        persistOptions={{
-          persister,
-          maxAge: 1000 * 60 * 60 * 24, // 24 hours
-          buster: "", // Change this to clear cache when schema changes
-        }}
-      >
-        {children}
-        <ReactQueryDevtools initialIsOpen={false} />
-      </PersistQueryClientProvider>
-    );
-  }
 
   return (
     <QueryClientProvider client={queryClient}>

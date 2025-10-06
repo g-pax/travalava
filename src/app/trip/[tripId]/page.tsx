@@ -1,4 +1,4 @@
-import TripPage from "./TripPage";
+import { redirect } from "next/navigation";
 
 interface TripPageProps {
   params: Promise<{ tripId: string }>;
@@ -7,7 +7,8 @@ interface TripPageProps {
 const Trip = async ({ params }: TripPageProps) => {
   const { tripId } = await params;
 
-  return <TripPage params={{ tripId }} />;
+  // Redirect to itinerary as the default view
+  redirect(`/trip/${tripId}/itinerary`);
 };
 
 export default Trip;

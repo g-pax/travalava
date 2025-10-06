@@ -1,6 +1,6 @@
 "use client";
 
-import { Calendar, ChevronDown, ChevronUp, Plus } from "lucide-react";
+import { Calendar, ChevronDown, ChevronUp, Plus, ArrowLeftRight } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { Accordion } from "@/components/ui/accordion";
@@ -16,8 +16,10 @@ import {
 import type { CurrentMember } from "@/features/trip/hooks/use-current-member";
 import { useCreateDays } from "../hooks/use-create-days";
 import { useDays } from "../hooks/use-days";
+import { useCommittedBlocks } from "@/features/voting/hooks/use-block-commit";
 import { DayCard } from "./day-card";
 import { ItinerarySidebar } from "./itinerary-sidebar";
+import { DaySwapDialog } from "./day-swap-dialog";
 
 interface ItineraryViewProps {
   tripId: string;
@@ -33,6 +35,7 @@ export function ItineraryView({
   currentMember,
 }: ItineraryViewProps) {
   const { data: days, isLoading, error } = useDays(tripId);
+  const { data: committedBlocks = [] } = useCommittedBlocks(tripId);
   const createDays = useCreateDays();
 
   // State for accordion management - using string[] for shadcn Accordion
@@ -171,6 +174,14 @@ export function ItineraryView({
           </div>
 
           <div className="flex items-center gap-2">
+            {currentMember?.role === "organizer" && committedBlocks.length >= 2 && (
+              <DaySwapDialog tripId={tripId} committedBlocks={committedBlocks}>
+                <Button variant="outline" size="sm" className="gap-2">
+                  <ArrowLeftRight className="h-4 w-4" />
+                  Swap Days
+                </Button>
+              </DaySwapDialog>
+            )}
             <Button
               variant="outline"
               size="sm"
