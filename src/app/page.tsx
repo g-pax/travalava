@@ -136,6 +136,9 @@ function UserDashboard() {
               <span className="text-xl font-bold text-gray-900">Travalava</span>
             </div>
             <div className="flex items-center space-x-4">
+              <Link href="/trips">
+                <Button variant="ghost">All Trips</Button>
+              </Link>
               <span className="text-sm text-gray-600">
                 Welcome, {user?.user_metadata?.display_name || user?.email}
               </span>

@@ -42,12 +42,21 @@ function JoinPageContent() {
                   Please use a valid invite link or provide a trip ID in the
                   URL.
                 </p>
-                <Link
-                  href="/"
-                  className="text-blue-600 hover:text-blue-800 underline"
-                >
-                  Go back to home
-                </Link>
+                <div className="space-x-4">
+                  <Link
+                    href="/"
+                    className="text-blue-600 hover:text-blue-800 underline"
+                  >
+                    Go back to home
+                  </Link>
+                  <span className="text-gray-400">•</span>
+                  <Link
+                    href="/trips"
+                    className="text-blue-600 hover:text-blue-800 underline"
+                  >
+                    View all trips
+                  </Link>
+                </div>
               </CardContent>
             </Card>
           </div>

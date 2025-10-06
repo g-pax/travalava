@@ -1,7 +1,7 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { Calendar, MapPin, Share2, Users } from "lucide-react";
+import { ArrowLeft, Calendar, MapPin, Share2, Users } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -183,8 +183,15 @@ const TripLayout = ({ children, tripId }: TripLayoutProps) => {
               <CardHeader>
                 <div className="flex items-start justify-between">
                   <div>
-                    <CardTitle className="text-3xl mb-2">{trip.name}</CardTitle>
-                    <CardDescription className="flex items-center gap-2 text-lg">
+                    <div className="flex items-center gap-3 mb-2">
+                      <Link href="/trips">
+                        <Button variant="ghost" size="sm" className="p-2">
+                          <ArrowLeft className="h-4 w-4" />
+                        </Button>
+                      </Link>
+                      <CardTitle className="text-3xl">{trip.name}</CardTitle>
+                    </div>
+                    <CardDescription className="flex items-center gap-2 text-lg ml-11">
                       <MapPin className="h-4 w-4" />
                       {trip.destination_text}
                     </CardDescription>
