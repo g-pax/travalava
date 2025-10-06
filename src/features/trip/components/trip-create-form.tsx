@@ -26,6 +26,8 @@ export function TripCreateForm({ onSuccess }: TripCreateFormProps) {
 
   const form = useForm<TripCreateInput>({
     resolver: zodResolver(TripCreateSchema),
+    mode: "all",
+    reValidateMode: "onBlur",
     defaultValues: {
       currency: "EUR",
       timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,

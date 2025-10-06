@@ -23,16 +23,8 @@ import {
 
 import { formatCurrency, formatDuration } from "@/lib/utils";
 import { type Activity, useActivities } from "../hooks/use-activities";
-import { useActivityProposals } from "../hooks/use-proposals";
 
 import { ActivityPhotoPreview } from "./activity-photo-gallery";
-
-interface BlockProposal {
-  block?: {
-    day?: { date: string };
-    label: string;
-  };
-}
 
 interface ActivityListProps {
   tripId: string;
@@ -49,7 +41,8 @@ function ActivityCard({
   activity: Activity;
   tripId: string;
 }) {
-  const { data: proposals = [] } = useActivityProposals(activity.id);
+  // Proposals are now fetched with the activity data to avoid N+1 queries
+  const proposals = activity.block_proposals || [];
   const coverImage = activity.src ?? null;
 
   return (
@@ -135,14 +128,12 @@ function ActivityCard({
                     variant="outline"
                     className="text-xs"
                   >
-                    {/* format the date to be in the format of MMM D, YYYY */}
-                    {format(
-                      new Date(
-                        (proposal as BlockProposal).block?.day?.date ?? "",
-                      ),
-                      "MMM d, yyyy",
-                    )}{" "}
-                    {(proposal as BlockProposal).block?.label}
+                    {proposal.block?.day?.date &&
+                      format(
+                        new Date(proposal.block.day.date),
+                        "MMM d, yyyy",
+                      )}{" "}
+                    {proposal.block?.label}
                   </Badge>
                 ))}
               </div>

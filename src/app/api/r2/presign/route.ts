@@ -59,7 +59,7 @@ export async function POST(req: Request) {
       .replace(/-+/g, "-")
       .trim();
 
-    const key = `uploads/thumbnails/${safeFileName}-${timestamp}-${randomId}.${extension}`;
+    const key = `${safeFileName}.${extension}`;
 
     const cmd = new PutObjectCommand({
       Bucket: process.env.R2_BUCKET,

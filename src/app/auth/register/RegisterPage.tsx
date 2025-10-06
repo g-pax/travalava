@@ -37,6 +37,8 @@ export default function RegisterPage() {
 
   const form = useForm<SignUpInput>({
     resolver: zodResolver(SignUpSchema),
+    mode: "all",
+    reValidateMode: "onBlur",
     defaultValues: {
       email: "",
       password: "",

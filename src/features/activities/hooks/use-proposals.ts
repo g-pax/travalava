@@ -296,6 +296,9 @@ export function useCreateProposal() {
       queryClient.invalidateQueries({
         queryKey: ["activity-proposals", activityId],
       });
+      // Invalidate activities cache since proposals are now included in the activity data
+      queryClient.invalidateQueries({ queryKey: ["activities", tripId] });
+      queryClient.invalidateQueries({ queryKey: ["activity", activityId] });
       toast.success("Activity added to block");
     },
   });
@@ -459,6 +462,13 @@ export function useRemoveProposal() {
       });
       queryClient.invalidateQueries({
         queryKey: ["activity-proposals", context.proposal.activity_id],
+      });
+      // Invalidate activities cache since proposals are now included in the activity data
+      queryClient.invalidateQueries({
+        queryKey: ["activities", context.proposal.trip_id],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["activity", context.proposal.activity_id],
       });
       toast.success("Proposal removed");
     },

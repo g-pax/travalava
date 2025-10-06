@@ -30,10 +30,27 @@ export interface Activity {
   } | null;
   created_at: string;
   updated_at: string;
+  // Joined proposal data
+  block_proposals?: Array<{
+    id: string;
+    block_id: string;
+    created_at: string;
+    block?: {
+      id: string;
+      label: string;
+      position: number;
+      day?: {
+        id: string;
+        date: string;
+      };
+    };
+  }>;
 }
 
 /**
- * Fetch all activities for a trip
+ * Fetch all activities for a trip with their proposals
+ * This efficiently fetches all activity proposals in a single query
+ * to avoid N+1 queries when displaying activity cards
  */
 export function useActivities(tripId: string) {
   return useQuery({
@@ -45,7 +62,23 @@ export function useActivities(tripId: string) {
 
       const { data, error } = await supabase
         .from("activities")
-        .select("*")
+        .select(`
+          *,
+          block_proposals (
+            id,
+            block_id,
+            created_at,
+            block:blocks (
+              id,
+              label,
+              position,
+              day:days (
+                id,
+                date
+              )
+            )
+          )
+        `)
         .eq("trip_id", tripId)
         .order("created_at", { ascending: false });
 
@@ -61,7 +94,7 @@ export function useActivities(tripId: string) {
 }
 
 /**
- * Fetch a single activity by ID
+ * Fetch a single activity by ID with its proposals
  */
 export function useActivity(activityId: string) {
   return useQuery({
@@ -73,7 +106,23 @@ export function useActivity(activityId: string) {
 
       const { data, error } = await supabase
         .from("activities")
-        .select("*")
+        .select(`
+          *,
+          block_proposals (
+            id,
+            block_id,
+            created_at,
+            block:blocks (
+              id,
+              label,
+              position,
+              day:days (
+                id,
+                date
+              )
+            )
+          )
+        `)
         .eq("id", activityId)
         .maybeSingle();
 

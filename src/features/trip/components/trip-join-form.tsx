@@ -20,6 +20,8 @@ export function TripJoinForm({ tripId, onSuccess }: TripJoinFormProps) {
 
   const form = useForm<JoinTripInput>({
     resolver: zodResolver(JoinTripSchema),
+    mode: "all",
+    reValidateMode: "onBlur",
     defaultValues: {
       tripId,
       clientDeviceId: nanoid(), // Generate unique device ID

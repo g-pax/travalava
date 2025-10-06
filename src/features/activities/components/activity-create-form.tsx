@@ -82,6 +82,8 @@ export function ActivityCreateForm({
 
   const form = useForm<ActivityCreateInput>({
     resolver: zodResolver(ActivityCreateSchema),
+    mode: "all",
+    reValidateMode: "onBlur",
     defaultValues: {
       trip_id: tripId,
       cost_currency: tripCurrency,

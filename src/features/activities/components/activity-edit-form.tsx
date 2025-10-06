@@ -101,6 +101,8 @@ export function ActivityEditForm({
 
   const form = useForm<ActivityCreateInput>({
     resolver: zodResolver(ActivityCreateSchema),
+    mode: "all",
+    reValidateMode: "onBlur",
     defaultValues: {
       trip_id: activity.trip_id.toString(),
       title: activity.title,

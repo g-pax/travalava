@@ -48,7 +48,6 @@ import {
   useActivity,
   useDeleteActivity,
 } from "../hooks/use-activities";
-import { useActivityProposals } from "../hooks/use-proposals";
 import { ActivityEditForm } from "./activity-edit-form";
 import { ActivityGoogleMap } from "./activity-google-map";
 
@@ -65,7 +64,8 @@ export function ActivityDetailView({
   const [isMounted, setIsMounted] = useState(false);
   const { data: activity, isLoading, error } = useActivity(activityId);
 
-  const { data: proposals = [] } = useActivityProposals(activityId);
+  // Proposals are now fetched with the activity data
+  const proposals = activity?.block_proposals || [];
   const deleteActivity = useDeleteActivity();
   const [editingActivity, setEditingActivity] = useState<Activity | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -339,27 +339,8 @@ export function ActivityDetailView({
                           >
                             <Calendar className="h-4 w-4 text-blue-600" />
                             <span className="text-sm font-medium text-blue-900">
-                              {
-                                (
-                                  proposal as {
-                                    block?: {
-                                      day?: { date: string };
-                                      label: string;
-                                    };
-                                  }
-                                ).block?.day?.date
-                              }{" "}
-                              -{" "}
-                              {
-                                (
-                                  proposal as {
-                                    block?: {
-                                      day?: { date: string };
-                                      label: string;
-                                    };
-                                  }
-                                ).block?.label
-                              }
+                              {proposal.block?.day?.date} -{" "}
+                              {proposal.block?.label}
                             </span>
                           </div>
                         ))}
