@@ -20,9 +20,16 @@ export default function ItineraryPage({ params }: ItineraryPageProps) {
       if (!tripId) throw new Error("Trip ID is required");
       const { data, error } = await supabase
         .from("trips")
-        .select("*")
+        .select(`
+          *,
+          trip_members (
+            id,
+            display_name,
+            role
+          )
+        `)
         .eq("id", tripId)
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
       return data;

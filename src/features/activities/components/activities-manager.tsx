@@ -17,9 +17,9 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import type { Activity } from "../hooks/use-activities";
-import { ActivityCreateForm } from "./activity-create-form";
 import { ActivityList } from "./activity-list";
 import { BlockSelector } from "./block-selector";
+import { EnhancedActivityCreateForm } from "./enhanced-activity-create-form";
 
 interface ActivitiesManagerProps {
   tripId: string;
@@ -92,11 +92,12 @@ export function ActivitiesManager({
               <X className="h-4 w-4" />
             </Button>
           </DialogHeader>
-          <ActivityCreateForm
+          <EnhancedActivityCreateForm
             tripId={tripId}
             tripCurrency={tripCurrency}
             onSuccess={handleActivityCreated}
             onCancel={handleCloseDialog}
+            defaultMode="google"
           />
         </DialogContent>
       </Dialog>

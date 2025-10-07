@@ -41,7 +41,7 @@ const TripLayout = ({ children, tripId }: TripLayoutProps) => {
     data: trip,
     isLoading,
     error,
-    isFetching,
+    isPending,
   } = useQuery({
     queryKey: ["trip", tripId],
     queryFn: async () => {
@@ -76,7 +76,7 @@ const TripLayout = ({ children, tripId }: TripLayoutProps) => {
   };
 
   // Show loading state during SSR, initial mount, or when data is being fetched
-  const isLoadingData = !mounted || isLoading || !trip;
+  const isLoadingData = !mounted || isLoading || !trip || isPending;
 
   if (isLoadingData) {
     return (

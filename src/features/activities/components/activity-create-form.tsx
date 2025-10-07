@@ -40,9 +40,13 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { extractLatLngFromGoogleMapsSrc } from "@/lib/google-maps";
 import type { ThumbnailUploadResult } from "@/lib/image-upload";
-import { type ActivityCreateInput, ActivityCreateSchema, type RestaurantInput } from "@/schemas";
+import {
+  type ActivityCreateInput,
+  ActivityCreateSchema,
+  type RestaurantInput,
+} from "@/schemas";
 import { type Activity, useCreateActivity } from "../hooks/use-activities";
-import { RestaurantManager } from "./restaurant-manager";
+import { EnhancedRestaurantManager } from "./enhanced-restaurant-manager";
 
 interface ActivityCreateFormProps {
   tripId: string;
@@ -434,10 +438,16 @@ export function ActivityCreateForm({
 
           {/* Restaurant Recommendations */}
           <div className="space-y-4">
-            <RestaurantManager
+            <EnhancedRestaurantManager
               restaurants={restaurants}
               onRestaurantsChange={setRestaurants}
               disabled={createActivity.isPending}
+              tripLocation={
+                extractedCoords
+                  ? { lat: extractedCoords.lat, lng: extractedCoords.lng }
+                  : undefined
+              }
+              defaultMode="google"
             />
           </div>
 

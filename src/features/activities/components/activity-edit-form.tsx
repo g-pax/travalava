@@ -43,9 +43,13 @@ import {
   isGoogleMapsInput,
 } from "@/lib/google-maps";
 import type { ThumbnailUploadResult } from "@/lib/image-upload";
-import { type ActivityCreateInput, ActivityCreateSchema, type RestaurantInput } from "@/schemas";
+import {
+  type ActivityCreateInput,
+  ActivityCreateSchema,
+  type RestaurantInput,
+} from "@/schemas";
 import { type Activity, useUpdateActivity } from "../hooks/use-activities";
-import { RestaurantManager } from "./restaurant-manager";
+import { EnhancedRestaurantManager } from "./enhanced-restaurant-manager";
 
 interface ActivityEditFormProps {
   activity: Activity;
@@ -100,7 +104,7 @@ export function ActivityEditForm({
       : null,
   );
   const [restaurants, setRestaurants] = useState<RestaurantInput[]>(
-    (activity as any).restaurants || []
+    (activity as any).restaurants || [],
   );
 
   const form = useForm<ActivityCreateInput>({
@@ -493,10 +497,16 @@ export function ActivityEditForm({
 
           {/* Restaurant Recommendations */}
           <div className="space-y-4">
-            <RestaurantManager
+            <EnhancedRestaurantManager
               restaurants={restaurants}
               onRestaurantsChange={setRestaurants}
               disabled={updateActivity.isPending}
+              tripLocation={
+                extractedCoords
+                  ? { lat: extractedCoords.lat, lng: extractedCoords.lng }
+                  : undefined
+              }
+              defaultMode="google"
             />
           </div>
 

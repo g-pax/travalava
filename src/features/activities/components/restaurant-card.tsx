@@ -20,13 +20,14 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { type RestaurantInput } from "@/schemas";
+import type { RestaurantInput } from "@/schemas";
 
 interface RestaurantCardProps {
   restaurant: RestaurantInput;
   onEdit?: () => void;
   onDelete?: () => void;
   showActions?: boolean;
+  disabled?: boolean;
 }
 
 export function RestaurantCard({
@@ -34,6 +35,7 @@ export function RestaurantCard({
   onEdit,
   onDelete,
   showActions = true,
+  disabled = false,
 }: RestaurantCardProps) {
   const renderStars = (rating?: number) => {
     if (!rating) return null;
@@ -82,6 +84,7 @@ export function RestaurantCard({
                   variant="ghost"
                   onClick={onEdit}
                   className="h-8 w-8 p-0"
+                  disabled={disabled}
                 >
                   <Edit className="h-4 w-4" />
                 </Button>
