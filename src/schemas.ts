@@ -39,6 +39,28 @@ export const JoinTripSchema = z
     path: ["confirmPassword"],
   });
 
+// Restaurant schemas
+export const RestaurantSchema = z.object({
+  id: z.string().optional(),
+  name: z.string().min(1, "Restaurant name is required"),
+  cuisine_type: z.string().optional(),
+  price_range: z.enum(["$", "$$", "$$$", "$$$$"]).optional(),
+  description: z.string().optional(),
+  address: z.string().optional(),
+  phone: z.string().optional(),
+  website: z.string().url().optional(),
+  location: z
+    .object({
+      name: z.string(),
+      lat: z.number(),
+      lon: z.number(),
+    })
+    .optional(),
+  image_url: z.string().url().optional(),
+  rating: z.number().min(0).max(5).optional(),
+  review_count: z.number().min(0).optional(),
+});
+
 // Activity schemas
 export const ActivityCreateSchema = z.object({
   trip_id: TripIdSchema,
@@ -57,6 +79,7 @@ export const ActivityCreateSchema = z.object({
     })
     .optional(),
   src: z.string().url().optional(),
+  restaurants: z.array(RestaurantSchema).optional(),
 });
 
 export const ActivityUpdateSchema = ActivityCreateSchema.omit({
@@ -134,6 +157,7 @@ export const VotingWindowSchema = z
 export type TripCreateInput = z.infer<typeof TripCreateSchema>;
 export type JoinTripInput = z.infer<typeof JoinTripSchema>;
 export type ActivityCreateInput = z.infer<typeof ActivityCreateSchema>;
+export type RestaurantInput = z.infer<typeof RestaurantSchema>;
 export type VoteCastInput = z.infer<typeof VoteCastSchema>;
 export type BlockCommitInput = z.infer<typeof BlockCommitSchema>;
 export type VotingWindowInput = z.infer<typeof VotingWindowSchema>;

@@ -43,8 +43,9 @@ import {
   isGoogleMapsInput,
 } from "@/lib/google-maps";
 import type { ThumbnailUploadResult } from "@/lib/image-upload";
-import { type ActivityCreateInput, ActivityCreateSchema } from "@/schemas";
+import { type ActivityCreateInput, ActivityCreateSchema, type RestaurantInput } from "@/schemas";
 import { type Activity, useUpdateActivity } from "../hooks/use-activities";
+import { RestaurantManager } from "./restaurant-manager";
 
 interface ActivityEditFormProps {
   activity: Activity;
@@ -97,6 +98,9 @@ export function ActivityEditForm({
           originalFileName: "thumbnail",
         }
       : null,
+  );
+  const [restaurants, setRestaurants] = useState<RestaurantInput[]>(
+    (activity as any).restaurants || []
   );
 
   const form = useForm<ActivityCreateInput>({
@@ -217,7 +221,7 @@ export function ActivityEditForm({
 
       const updatedActivity = await updateActivity.mutateAsync({
         id: activity.id,
-        updates,
+        updates: { ...updates, restaurants },
       });
 
       onSuccess?.(updatedActivity);
@@ -484,6 +488,15 @@ export function ActivityEditForm({
               disabled={updateActivity.isPending}
               currentThumbnail={thumbnail?.url}
               placeholder="Upload a thumbnail for this activity"
+            />
+          </div>
+
+          {/* Restaurant Recommendations */}
+          <div className="space-y-4">
+            <RestaurantManager
+              restaurants={restaurants}
+              onRestaurantsChange={setRestaurants}
+              disabled={updateActivity.isPending}
             />
           </div>
 

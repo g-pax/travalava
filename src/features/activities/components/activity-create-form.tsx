@@ -40,8 +40,9 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { extractLatLngFromGoogleMapsSrc } from "@/lib/google-maps";
 import type { ThumbnailUploadResult } from "@/lib/image-upload";
-import { type ActivityCreateInput, ActivityCreateSchema } from "@/schemas";
+import { type ActivityCreateInput, ActivityCreateSchema, type RestaurantInput } from "@/schemas";
 import { type Activity, useCreateActivity } from "../hooks/use-activities";
+import { RestaurantManager } from "./restaurant-manager";
 
 interface ActivityCreateFormProps {
   tripId: string;
@@ -79,6 +80,7 @@ export function ActivityCreateForm({
   const [thumbnail, setThumbnail] = useState<ThumbnailUploadResult | null>(
     null,
   );
+  const [restaurants, setRestaurants] = useState<RestaurantInput[]>([]);
 
   const form = useForm<ActivityCreateInput>({
     resolver: zodResolver(ActivityCreateSchema),
@@ -156,7 +158,8 @@ export function ActivityCreateForm({
 
   const onSubmit = async (values: ActivityCreateInput) => {
     try {
-      const activity = await createActivity.mutateAsync(values);
+      const activityData = { ...values, restaurants };
+      const activity = await createActivity.mutateAsync(activityData);
       onSuccess?.(activity);
       form.reset({
         trip_id: tripId,
@@ -168,6 +171,7 @@ export function ActivityCreateForm({
       setExtractedCoords(null);
       setLocationError(null);
       setThumbnail(null);
+      setRestaurants([]);
     } catch (error) {
       // Clear any previous submission errors
       form.clearErrors();
@@ -425,6 +429,15 @@ export function ActivityCreateForm({
               disabled={createActivity.isPending}
               currentThumbnail={thumbnail?.url}
               placeholder="Upload a thumbnail for this activity"
+            />
+          </div>
+
+          {/* Restaurant Recommendations */}
+          <div className="space-y-4">
+            <RestaurantManager
+              restaurants={restaurants}
+              onRestaurantsChange={setRestaurants}
+              disabled={createActivity.isPending}
             />
           </div>
 

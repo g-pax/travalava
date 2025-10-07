@@ -10,6 +10,7 @@ import {
   MapPin,
   MoreVertical,
   Trash2,
+  Utensils,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -50,6 +51,7 @@ import {
 } from "../hooks/use-activities";
 import { ActivityEditForm } from "./activity-edit-form";
 import { ActivityGoogleMap } from "./activity-google-map";
+import { RestaurantCard } from "./restaurant-card";
 
 interface ActivityDetailViewProps {
   tripId: string;
@@ -382,6 +384,32 @@ export function ActivityDetailView({
                 )}
               </CardContent>
             </Card>
+
+            {/* Restaurants */}
+            {(activity as any).restaurants && (activity as any).restaurants.length > 0 && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Utensils className="h-5 w-5" />
+                    Restaurant Recommendations
+                  </CardTitle>
+                  <CardDescription>
+                    Recommended dining options near this activity
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {(activity as any).restaurants.map((restaurant: any, index: number) => (
+                      <RestaurantCard
+                        key={restaurant.id || index}
+                        restaurant={restaurant}
+                        showActions={false}
+                      />
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
           </div>
         </div>
 
