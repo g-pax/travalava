@@ -54,26 +54,34 @@ export default function ResetPasswordPage() {
 
   if (emailSent) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4 py-12">
-        <Card className="w-full max-w-md">
-          <CardHeader className="space-y-1">
-            <CardTitle className="text-2xl text-center">
-              Check your email
-            </CardTitle>
-            <CardDescription className="text-center">
-              We've sent a password reset link to {form.getValues("email")}
-            </CardDescription>
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-950 px-4 py-12">
+        <Card className="w-full max-w-md border-2 shadow-lg">
+          <CardHeader className="space-y-4 text-center pb-6">
+            <div className="mx-auto h-16 w-16 rounded-full bg-gradient-to-br from-green-500 to-green-600 dark:from-green-600 dark:to-green-700 flex items-center justify-center shadow-lg">
+              <Mail className="h-8 w-8 text-white" />
+            </div>
+            <div>
+              <CardTitle className="text-2xl">Check your email</CardTitle>
+              <CardDescription className="text-base mt-2">
+                We've sent a password reset link to
+                <br />
+                <span className="font-medium text-gray-900 dark:text-white">
+                  {form.getValues("email")}
+                </span>
+              </CardDescription>
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4 text-center">
-              <Mail className="mx-auto h-16 w-16 text-blue-600" />
-              <p className="text-sm text-gray-600">
-                Click the link in the email to reset your password.
-              </p>
-              <p className="text-sm text-gray-600">
-                Didn't receive the email? Check your spam folder.
-              </p>
-              <div className="space-y-2">
+            <div className="space-y-4">
+              <div className="space-y-2 text-center">
+                <p className="text-sm text-gray-600 dark:text-gray-400">
+                  Click the link in the email to reset your password.
+                </p>
+                <p className="text-xs text-gray-500 dark:text-gray-500">
+                  Didn't receive the email? Check your spam folder.
+                </p>
+              </div>
+              <div className="space-y-2 pt-4">
                 <Button
                   variant="outline"
                   onClick={() => setEmailSent(false)}
@@ -81,9 +89,9 @@ export default function ResetPasswordPage() {
                 >
                   Try another email
                 </Button>
-                <Link href="/auth/login">
-                  <Button variant="ghost" className="w-full">
-                    <ArrowLeft className="mr-2 h-4 w-4" />
+                <Link href="/auth/login" className="w-full block">
+                  <Button variant="ghost" className="w-full gap-2">
+                    <ArrowLeft className="h-4 w-4" />
                     Back to login
                   </Button>
                 </Link>
@@ -96,13 +104,18 @@ export default function ResetPasswordPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4 py-12">
-      <Card className="w-full max-w-md">
-        <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl text-center">Reset password</CardTitle>
-          <CardDescription className="text-center">
-            Enter your email and we'll send you a reset link
-          </CardDescription>
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-950 px-4 py-12">
+      <Card className="w-full max-w-md border-2 shadow-lg">
+        <CardHeader className="space-y-4 text-center pb-6">
+          <div className="mx-auto h-16 w-16 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 dark:from-blue-600 dark:to-blue-700 flex items-center justify-center shadow-lg">
+            <Mail className="h-8 w-8 text-white" />
+          </div>
+          <div>
+            <CardTitle className="text-2xl">Reset password</CardTitle>
+            <CardDescription className="text-base mt-2">
+              Enter your email and we'll send you a reset link
+            </CardDescription>
+          </div>
         </CardHeader>
         <CardContent>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -116,18 +129,18 @@ export default function ResetPasswordPage() {
                 disabled={isLoading}
               />
               {form.formState.errors.email && (
-                <p className="text-sm text-red-600">
+                <p className="text-sm text-red-600 dark:text-red-400">
                   {form.formState.errors.email.message}
                 </p>
               )}
             </div>
 
-            <Button type="submit" className="w-full" disabled={isLoading}>
+            <Button type="submit" className="w-full gap-2" disabled={isLoading}>
               {isLoading ? (
                 "Sending..."
               ) : (
                 <>
-                  <Mail className="mr-2 h-4 w-4" />
+                  <Mail className="h-4 w-4" />
                   Send Reset Link
                 </>
               )}
@@ -137,9 +150,9 @@ export default function ResetPasswordPage() {
           <div className="mt-6 text-center">
             <Link
               href="/auth/login"
-              className="text-sm text-blue-600 hover:text-blue-800 inline-flex items-center"
+              className="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 inline-flex items-center gap-1"
             >
-              <ArrowLeft className="mr-1 h-4 w-4" />
+              <ArrowLeft className="h-4 w-4" />
               Back to login
             </Link>
           </div>

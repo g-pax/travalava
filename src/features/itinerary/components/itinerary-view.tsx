@@ -1,16 +1,9 @@
 "use client";
 
-import {
-  ArrowLeftRight,
-  Calendar,
-  ChevronDown,
-  ChevronUp,
-  Plus,
-} from "lucide-react";
+import { ArrowLeftRight, Calendar, Plus } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { ActionButton, ItineraryLoader } from "@/components/loading";
-import { Accordion } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -44,19 +37,18 @@ export function ItineraryView({
   const { data: committedBlocks = [] } = useCommittedBlocks(tripId);
   const createDays = useCreateDays();
 
-  // State for accordion management - using string[] for shadcn Accordion
-  const [expandedDays, setExpandedDays] = useState<string[]>([]);
   const [activeDayId, setActiveDayId] = useState<string | null>(null);
+  const [expandedDays, setExpandedDays] = useState<Set<string>>(new Set());
 
   // Refs for scroll-to functionality
   const dayRefs = useRef<Map<string, HTMLDivElement>>(new Map());
 
-  // Initialize: expand first day by default
+  // Initialize: set first day as active and expanded by default
   // biome-ignore lint/correctness/useExhaustiveDependencies: This should run only once
   useEffect(() => {
-    if (days && days.length > 0 && expandedDays.length === 0) {
-      setExpandedDays([days[0].id]);
+    if (days && days.length > 0 && !activeDayId) {
       setActiveDayId(days[0].id);
+      setExpandedDays(new Set([days[0].id]));
     }
   }, []);
 
@@ -74,26 +66,26 @@ export function ItineraryView({
     }
   };
 
-  const expandAll = useCallback(() => {
-    if (days) {
-      setExpandedDays(days.map((d) => d.id));
-    }
-  }, [days]);
-
-  const collapseAll = useCallback(() => {
-    setExpandedDays([]);
-  }, []);
-
   const scrollToDay = useCallback((dayId: string) => {
     const element = dayRefs.current.get(dayId);
     if (element) {
       element.scrollIntoView({ behavior: "smooth", block: "start" });
       setActiveDayId(dayId);
       // Expand the day when navigating to it
-      setExpandedDays((prev) =>
-        prev.includes(dayId) ? prev : [...prev, dayId],
-      );
+      setExpandedDays((prev) => new Set(prev).add(dayId));
     }
+  }, []);
+
+  const toggleDay = useCallback((dayId: string) => {
+    setExpandedDays((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(dayId)) {
+        newSet.delete(dayId);
+      } else {
+        newSet.add(dayId);
+      }
+      return newSet;
+    });
   }, []);
 
   const setDayRef = useCallback(
@@ -157,8 +149,6 @@ export function ItineraryView({
     );
   }
 
-  const allExpanded = days && expandedDays.length === days.length;
-
   return (
     <div className="flex flex-col lg:flex-row gap-8">
       {/* Sidebar Navigation */}
@@ -192,34 +182,11 @@ export function ItineraryView({
                   </Button>
                 </DaySwapDialog>
               )}
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={allExpanded ? collapseAll : expandAll}
-              className="gap-2"
-            >
-              {allExpanded ? (
-                <>
-                  <ChevronUp className="h-4 w-4" />
-                  Collapse All
-                </>
-              ) : (
-                <>
-                  <ChevronDown className="h-4 w-4" />
-                  Expand All
-                </>
-              )}
-            </Button>
           </div>
         </div>
 
-        {/* Day Cards with Accordion */}
-        <Accordion
-          type="multiple"
-          value={expandedDays}
-          onValueChange={setExpandedDays}
-          className="space-y-4"
-        >
+        {/* Day Cards in Timeline Layout */}
+        <div className="space-y-12">
           {days?.map((day, index) => (
             <DayCard
               key={day.id}
@@ -229,9 +196,11 @@ export function ItineraryView({
               dayNumber={index + 1}
               currentMember={currentMember}
               dayId={day.id}
+              isExpanded={expandedDays.has(day.id)}
+              onToggle={() => toggleDay(day.id)}
             />
           ))}
-        </Accordion>
+        </div>
       </div>
     </div>
   );

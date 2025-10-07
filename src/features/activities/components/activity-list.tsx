@@ -46,43 +46,50 @@ function ActivityCard({
   const coverImage = activity.src ?? null;
 
   return (
-    <Card className="relative flex h-full flex-col overflow-hidden cursor-pointer hover:shadow-lg transition-shadow">
-      <Link href={`/trip/${tripId}/activity/${activity.id}`} className="block">
+    <Link href={`/trip/${tripId}/activity/${activity.id}`}>
+      <Card className="relative flex h-full flex-col overflow-hidden cursor-pointer hover:shadow-lg hover:border-gray-300 dark:hover:border-gray-600 transition-all group">
         {coverImage && (
-          <div className="w-full bg-gray-100">
+          <div className="relative w-full aspect-video bg-gray-100 dark:bg-gray-800 overflow-hidden">
             <Image
               src={coverImage}
               alt={`${activity.title} cover image`}
-              width={400}
-              height={225}
-              className="h-full max-h-[250px] w-full object-cover"
+              fill
+              className="object-cover group-hover:scale-105 transition-transform duration-300"
               loading="lazy"
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
             />
           </div>
         )}
 
-        <CardHeader className="p-6 pb-4">
-          <div className="flex items-start justify-between">
-            <div className="space-y-1">
-              <CardTitle className="text-lg">{activity.title}</CardTitle>
-              {activity.category && (
-                <Badge variant="secondary" className="w-fit">
-                  {activity.category}
-                </Badge>
-              )}
-            </div>
+        <CardHeader className="p-4 sm:p-6 pb-3">
+          <div className="flex items-start justify-between gap-3">
+            <CardTitle className="text-lg font-bold text-gray-900 dark:text-white line-clamp-2 flex-1">
+              {activity.title}
+            </CardTitle>
+            {activity.category && (
+              <Badge
+                variant="secondary"
+                className="w-fit text-xs flex-shrink-0"
+              >
+                {activity.category}
+              </Badge>
+            )}
           </div>
         </CardHeader>
 
-        <CardContent className="flex flex-1 flex-col gap-4 px-6 pb-6 pt-0">
+        <CardContent className="flex flex-1 flex-col gap-4 px-4 sm:px-6 pb-4 sm:pb-6 pt-0">
           {/* Activity Details */}
-          <div className="space-y-3">
-            <div className="grid grid-cols-1 gap-3 text-sm sm:grid-cols-2">
+          {(activity.cost_amount !== null ||
+            activity.duration_min ||
+            proposals.length > 0) && (
+            <div className="flex flex-wrap gap-3 text-sm">
               {activity.cost_amount !== null &&
                 activity.cost_amount !== undefined && (
-                  <div className="flex items-center gap-2 text-gray-600">
-                    <DollarSign className="h-4 w-4" />
-                    <span>
+                  <div className="flex items-center gap-1.5 text-gray-600 dark:text-gray-400">
+                    <div className="p-1.5 rounded-md bg-gray-100 dark:bg-gray-800">
+                      <DollarSign className="h-3.5 w-3.5" />
+                    </div>
+                    <span className="font-medium">
                       {formatCurrency(
                         activity.cost_amount,
                         activity.cost_currency || "USD",
@@ -92,56 +99,69 @@ function ActivityCard({
                 )}
 
               {activity.duration_min && (
-                <div className="flex items-center gap-2 text-gray-600">
-                  <Clock className="h-4 w-4" />
-                  <span>{formatDuration(activity.duration_min)}</span>
+                <div className="flex items-center gap-1.5 text-gray-600 dark:text-gray-400">
+                  <div className="p-1.5 rounded-md bg-gray-100 dark:bg-gray-800">
+                    <Clock className="h-3.5 w-3.5" />
+                  </div>
+                  <span className="font-medium">
+                    {formatDuration(activity.duration_min)}
+                  </span>
+                </div>
+              )}
+
+              {proposals.length > 0 && (
+                <div className="flex items-center gap-1.5 text-gray-600 dark:text-gray-400">
+                  <div className="p-1.5 rounded-md bg-gray-100 dark:bg-gray-800">
+                    <Calendar className="h-3.5 w-3.5" />
+                  </div>
+                  <Badge variant="secondary" className="text-xs">
+                    {proposals.length} block{proposals.length !== 1 ? "s" : ""}
+                  </Badge>
                 </div>
               )}
             </div>
+          )}
 
-            {/* Activity Photos Preview */}
-            <ActivityPhotoPreview
-              photos={[]} // TODO: Load actual photos from activity_photos table
-              activityTitle={activity.title}
-              maxDisplay={3}
-            />
-          </div>
+          {/* Activity Photos Preview */}
+          <ActivityPhotoPreview
+            photos={[]} // TODO: Load actual photos from activity_photos table
+            activityTitle={activity.title}
+            maxDisplay={3}
+          />
 
           {/* Notes */}
           {activity.notes && (
-            <div className="text-sm text-gray-600">
+            <div className="text-sm text-gray-600 dark:text-gray-400">
               <p className="line-clamp-2">{activity.notes}</p>
             </div>
           )}
 
-          {/* Proposals */}
+          {/* Proposals Detail */}
           {proposals.length > 0 && (
-            <div className="space-y-2">
-              <div className="flex items-center gap-2 text-sm font-medium text-gray-700">
-                <Calendar className="h-4 w-4" />
-                <span>Proposed for:</span>
-              </div>
-              <div className="flex flex-wrap gap-2">
-                {proposals.map((proposal) => (
+            <div className="pt-3 border-t border-gray-200 dark:border-gray-700">
+              <div className="flex flex-wrap gap-1.5">
+                {proposals.slice(0, 3).map((proposal) => (
                   <Badge
                     key={proposal.id}
                     variant="outline"
                     className="text-xs"
                   >
                     {proposal.block?.day?.date &&
-                      format(
-                        new Date(proposal.block.day.date),
-                        "MMM d, yyyy",
-                      )}{" "}
+                      format(new Date(proposal.block.day.date), "MMM d")}{" "}
                     {proposal.block?.label}
                   </Badge>
                 ))}
+                {proposals.length > 3 && (
+                  <Badge variant="secondary" className="text-xs">
+                    +{proposals.length - 3} more
+                  </Badge>
+                )}
               </div>
             </div>
           )}
         </CardContent>
-      </Link>
-    </Card>
+      </Card>
+    </Link>
   );
 }
 
@@ -150,21 +170,42 @@ export function ActivityList({ tripId, onCreateActivity }: ActivityListProps) {
 
   if (isLoading) {
     return (
-      <div className="space-y-4">
-        {[1, 2, 3].map((i) => (
-          <div key={i} className="h-32 bg-gray-100 rounded-lg animate-pulse" />
-        ))}
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <div className="space-y-2">
+            <div className="h-8 w-32 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
+            <div className="h-5 w-48 bg-gray-100 dark:bg-gray-800 rounded animate-pulse" />
+          </div>
+          <div className="h-10 w-32 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
+        </div>
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          {[1, 2, 3, 4, 5, 6].map((i) => (
+            <div
+              key={i}
+              className="h-80 bg-gray-100 dark:bg-gray-800 rounded-xl animate-pulse"
+            />
+          ))}
+        </div>
       </div>
     );
   }
 
   if (error) {
     return (
-      <Card>
-        <CardContent className="flex items-center justify-center py-8">
-          <div className="text-center">
-            <p className="text-red-600 mb-2">Failed to load activities</p>
-            <p className="text-sm text-gray-500">{error.message}</p>
+      <Card className="border-red-200 dark:border-red-800">
+        <CardContent className="flex items-center justify-center py-12">
+          <div className="text-center space-y-3">
+            <div className="h-12 w-12 rounded-full bg-red-100 dark:bg-red-900 flex items-center justify-center mx-auto">
+              <Calendar className="h-6 w-6 text-red-600 dark:text-red-400" />
+            </div>
+            <div>
+              <p className="text-red-600 dark:text-red-400 font-semibold mb-1">
+                Failed to load activities
+              </p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">
+                {error.message}
+              </p>
+            </div>
           </div>
         </CardContent>
       </Card>
@@ -174,18 +215,20 @@ export function ActivityList({ tripId, onCreateActivity }: ActivityListProps) {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between flex-wrap gap-4">
         <div>
-          <h2 className="text-2xl font-bold">Activities</h2>
-          <p className="text-gray-600">
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+            Activities
+          </h2>
+          <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
             {activities.length === 0
               ? "No activities yet"
               : `${activities.length} ${activities.length === 1 ? "activity" : "activities"}`}
           </p>
         </div>
         {onCreateActivity && (
-          <Button onClick={onCreateActivity}>
-            <Plus className="mr-2 h-4 w-4" />
+          <Button onClick={onCreateActivity} className="gap-2">
+            <Plus className="h-4 w-4" />
             Add Activity
           </Button>
         )}
@@ -193,18 +236,28 @@ export function ActivityList({ tripId, onCreateActivity }: ActivityListProps) {
 
       {/* Activities Grid */}
       {activities.length === 0 ? (
-        <Card>
-          <CardContent className="flex flex-col items-center justify-center py-12">
-            <div className="text-center">
-              <Calendar className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-              <CardTitle className="mb-2">No activities yet</CardTitle>
-              <CardDescription className="mb-4">
-                Start planning your trip by adding some activities you'd like to
-                do.
-              </CardDescription>
+        <Card className="border-2 border-dashed border-gray-200 dark:border-gray-700">
+          <CardContent className="flex flex-col items-center justify-center py-16">
+            <div className="text-center space-y-4 max-w-md">
+              <div className="h-16 w-16 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center mx-auto">
+                <Calendar className="h-8 w-8 text-gray-400 dark:text-gray-500" />
+              </div>
+              <div>
+                <CardTitle className="mb-2 text-gray-900 dark:text-white">
+                  No activities yet
+                </CardTitle>
+                <CardDescription className="text-gray-600 dark:text-gray-400">
+                  Start planning your trip by adding some activities you'd like
+                  to do.
+                </CardDescription>
+              </div>
               {onCreateActivity && (
-                <Button onClick={onCreateActivity}>
-                  <Plus className="mr-2 h-4 w-4" />
+                <Button
+                  onClick={onCreateActivity}
+                  size="lg"
+                  className="gap-2 mt-4"
+                >
+                  <Plus className="h-4 w-4" />
                   Add Your First Activity
                 </Button>
               )}
@@ -212,7 +265,7 @@ export function ActivityList({ tripId, onCreateActivity }: ActivityListProps) {
           </CardContent>
         </Card>
       ) : (
-        <div className="grid gap-6 md:grid-cols-2">
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {activities.map((activity) => (
             <ActivityCard
               key={activity.id}

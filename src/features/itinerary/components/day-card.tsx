@@ -1,13 +1,7 @@
 "use client";
 
-import { Calendar } from "lucide-react";
+import { Calendar, ChevronDown, ChevronRight } from "lucide-react";
 import { forwardRef } from "react";
-import {
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
-import { Card } from "@/components/ui/card";
 import type { CurrentMember } from "@/features/trip/hooks/use-current-member";
 import { BlockCard } from "./block-card";
 
@@ -27,10 +21,12 @@ interface DayCardProps {
   dayNumber: number;
   currentMember?: CurrentMember | null;
   dayId: string;
+  isExpanded: boolean;
+  onToggle: () => void;
 }
 
 export const DayCard = forwardRef<HTMLDivElement, DayCardProps>(
-  ({ day, tripId, dayNumber, currentMember, dayId }, ref) => {
+  ({ day, tripId, dayNumber, currentMember, isExpanded, onToggle }, ref) => {
     const sortedBlocks =
       day.blocks?.sort((a, b) => a.position - b.position) || [];
 
@@ -38,35 +34,67 @@ export const DayCard = forwardRef<HTMLDivElement, DayCardProps>(
       const date = new Date(dateString);
       return date.toLocaleDateString("en-US", {
         weekday: "long",
-        year: "numeric",
-        month: "long",
+        month: "short",
         day: "numeric",
       });
     };
 
     return (
-      <AccordionItem
-        value={dayId}
-        ref={ref}
-        id={`day-${day.id}`}
-        className="scroll-mt-24 border-0"
-      >
-        <Card className="overflow-hidden">
-          <AccordionTrigger className="px-6 py-4 hover:no-underline hover:bg-gray-50 dark:hover:bg-gray-900/50 transition-colors">
-            <div className="flex items-center gap-3">
-              <Calendar className="h-5 w-5 text-gray-600" />
-              <div className="text-left">
-                <div className="text-xl font-semibold">Day {dayNumber}</div>
-                <div className="text-sm font-normal text-muted-foreground">
-                  {formatDate(day.date)}
-                </div>
-              </div>
-            </div>
-          </AccordionTrigger>
+      <div ref={ref} id={`day-${day.id}`} className="scroll-mt-24 relative">
+        {/* Timeline connector line - only show if expanded */}
+        {isExpanded && (
+          <div className="absolute left-6 top-12 bottom-0 w-0.5 bg-gray-200 dark:bg-gray-700 hidden sm:block" />
+        )}
 
-          <AccordionContent className="px-6 pb-6">
-            <div className="grid grid-cols-1 gap-6 pt-2">
-              {sortedBlocks.map((block) => (
+        {/* Day header */}
+        <div className="flex items-start gap-4 mb-6">
+          {/* Timeline dot - clickable */}
+          <button
+            type="button"
+            onClick={onToggle}
+            className="flex-shrink-0 flex flex-col items-center gap-2 group relative"
+          >
+            <div className="h-12 w-12 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center shadow-lg transition-transform group-hover:scale-110 cursor-pointer">
+              <Calendar className="h-6 w-6 text-white" />
+            </div>
+            {/* Expand/Collapse indicator */}
+            <div className="absolute -right-1 -bottom-1 h-5 w-5 rounded-full bg-white dark:bg-gray-900 border-2 border-blue-500 flex items-center justify-center shadow-sm">
+              {isExpanded ? (
+                <ChevronDown className="h-3 w-3 text-blue-600 dark:text-blue-400" />
+              ) : (
+                <ChevronRight className="h-3 w-3 text-blue-600 dark:text-blue-400" />
+              )}
+            </div>
+          </button>
+
+          {/* Day info */}
+          <div className="flex-1 pt-2">
+            <h3 className="text-2xl font-bold text-gray-900 dark:text-white">
+              Day {dayNumber}
+            </h3>
+            <p className="text-base text-gray-600 dark:text-gray-400 mt-0.5">
+              {formatDate(day.date)}
+            </p>
+            {!isExpanded && sortedBlocks.length > 0 && (
+              <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                {sortedBlocks.length} time block
+                {sortedBlocks.length !== 1 ? "s" : ""}
+              </p>
+            )}
+          </div>
+        </div>
+
+        {/* Blocks in a cleaner layout - only show if expanded */}
+        {isExpanded && (
+          <div className="ml-0 sm:ml-16 space-y-6">
+            {sortedBlocks.length === 0 ? (
+              <div className="border-2 border-dashed border-gray-200 dark:border-gray-700 rounded-xl p-8 text-center">
+                <p className="text-sm text-gray-500 dark:text-gray-400">
+                  No time blocks scheduled yet
+                </p>
+              </div>
+            ) : (
+              sortedBlocks.map((block) => (
                 <BlockCard
                   key={block.id}
                   block={block}
@@ -74,11 +102,11 @@ export const DayCard = forwardRef<HTMLDivElement, DayCardProps>(
                   currentMemberId={currentMember?.id}
                   isOrganizer={currentMember?.role === "organizer"}
                 />
-              ))}
-            </div>
-          </AccordionContent>
-        </Card>
-      </AccordionItem>
+              ))
+            )}
+          </div>
+        )}
+      </div>
     );
   },
 );

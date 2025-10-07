@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { ArrowLeft, Calendar, MapPin, Share2, Users } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { RequireAuth } from "@/components/auth/auth-guard";
@@ -35,6 +36,7 @@ interface TripLayoutProps {
 }
 
 const TripLayout = ({ children, tripId }: TripLayoutProps) => {
+  const navigate = useRouter();
   const [mounted, setMounted] = useState(false);
   const { data: _currentMember } = useCurrentMember(tripId || "");
 
@@ -182,16 +184,16 @@ const TripLayout = ({ children, tripId }: TripLayoutProps) => {
             <div className="container mx-auto px-4 sm:px-6">
               <div className="max-w-6xl mx-auto">
                 <div className="flex items-center justify-between pt-4 sm:pt-6">
-                  <Link href="/trips">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="gap-2 bg-black/40 hover:bg-black/60 hover:text-white text-white border border-white/20 backdrop-blur-sm"
-                    >
-                      <ArrowLeft className="h-4 w-4" />
-                      <span className="hidden sm:inline">Back</span>
-                    </Button>
-                  </Link>
+                  <Button
+                    onClick={() => navigate.back()}
+                    variant="ghost"
+                    size="sm"
+                    className="gap-2 bg-black/40 hover:bg-black/60 hover:text-white text-white border border-white/20 backdrop-blur-sm"
+                  >
+                    <ArrowLeft className="h-4 w-4" />
+                    <span className="hidden sm:inline">Back</span>
+                  </Button>
+
                   <Button
                     onClick={generateInviteLink}
                     variant="ghost"

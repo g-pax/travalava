@@ -126,20 +126,22 @@ function UserDashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
       {/* Navigation */}
-      <nav className="bg-white shadow-sm border-b">
+      <nav className="bg-white dark:bg-gray-900 shadow-sm border-b border-gray-200 dark:border-gray-800">
         <div className="mx-auto max-w-6xl px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-2">
-              <Calendar className="h-8 w-8 text-blue-600" />
-              <span className="text-xl font-bold text-gray-900">Travalava</span>
+              <Calendar className="h-8 w-8 text-blue-600 dark:text-blue-500" />
+              <span className="text-xl font-bold text-gray-900 dark:text-white">
+                Travalava
+              </span>
             </div>
             <div className="flex items-center space-x-4">
               <Link href="/trips">
                 <Button variant="ghost">All Trips</Button>
               </Link>
-              <span className="text-sm text-gray-600">
+              <span className="text-sm text-gray-600 dark:text-gray-400 hidden sm:inline">
                 Welcome, {user?.user_metadata?.display_name || user?.email}
               </span>
               <Button variant="outline" onClick={handleSignOut}>
@@ -151,23 +153,27 @@ function UserDashboard() {
       </nav>
 
       {/* Dashboard Content */}
-      <div className="mx-auto max-w-6xl px-6 py-8">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Your Trips</h1>
-          <p className="mt-2 text-gray-600">
+      <div className="mx-auto max-w-6xl px-6 py-12">
+        <div className="mb-10 text-center">
+          <h1 className="text-4xl font-bold text-gray-900 dark:text-white">
+            Your Trips
+          </h1>
+          <p className="mt-3 text-lg text-gray-600 dark:text-gray-400">
             Create a new trip or continue planning an existing one.
           </p>
         </div>
 
         {/* Trip Management */}
         <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <PlusCircle className="h-5 w-5" />
+          <Card className="border-2 hover:border-blue-300 dark:hover:border-blue-700 transition-all hover:shadow-lg">
+            <CardHeader className="pb-4">
+              <CardTitle className="flex items-center gap-3 text-xl">
+                <div className="h-8 w-8 rounded-sm bg-gradient-to-br from-blue-500 to-blue-600 dark:from-blue-600 dark:to-blue-700 flex items-center justify-center shadow-lg">
+                  <PlusCircle className="h-4 w-4 text-white" />
+                </div>
                 Create New Trip
               </CardTitle>
-              <CardDescription>
+              <CardDescription className="text-base">
                 Start planning a new adventure with your group
               </CardDescription>
             </CardHeader>
@@ -176,18 +182,20 @@ function UserDashboard() {
             </CardContent>
           </Card>
 
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Users className="h-5 w-5" />
+          <Card className="border-2 hover:border-purple-300 dark:hover:border-purple-700 transition-all hover:shadow-lg">
+            <CardHeader className="pb-4">
+              <CardTitle className="flex items-center gap-3 text-xl">
+                <div className="h-8 w-8 rounded-sm bg-gradient-to-br from-purple-500 to-purple-600 dark:from-purple-600 dark:to-purple-700 flex items-center justify-center shadow-lg">
+                  <Users className="h-4 w-4 text-white" />
+                </div>
                 Join Existing Trip
               </CardTitle>
-              <CardDescription>
+              <CardDescription className="text-base">
                 Have an invite link? Join your friends' trip here
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <p className="text-sm text-gray-600">
+              <p className="text-sm text-gray-600 dark:text-gray-400">
                 If you have an invite link, click it to join the trip directly.
                 Or enter the trip code below:
               </p>

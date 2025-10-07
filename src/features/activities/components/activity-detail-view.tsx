@@ -8,7 +8,6 @@ import {
   Edit,
   Link2,
   MapPin,
-  MoreVertical,
   Trash2,
 } from "lucide-react";
 import Image from "next/image";
@@ -18,14 +17,6 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { InlineLoader, Spinner } from "@/components/loading";
 import { Badge } from "@/components/ui/badge";
-import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbPage,
-  BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -34,13 +25,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { Separator } from "@/components/ui/separator";
 import { formatCurrency, formatDate, formatDuration } from "@/lib/utils";
 import {
@@ -163,62 +147,7 @@ export function ActivityDetailView({
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="mx-auto max-w-6xl px-6 py-8">
-        {/* Breadcrumb Navigation */}
-        <div className="mb-6">
-          <Breadcrumb>
-            <BreadcrumbList>
-              <BreadcrumbItem>
-                <BreadcrumbLink asChild>
-                  <Link href={`/trip/${tripId}/activities`}>Activities</Link>
-                </BreadcrumbLink>
-              </BreadcrumbItem>
-              <BreadcrumbSeparator />
-              <BreadcrumbItem>
-                <BreadcrumbPage>Activity Details</BreadcrumbPage>
-              </BreadcrumbItem>
-            </BreadcrumbList>
-          </Breadcrumb>
-        </div>
-
-        {/* Header with Back Button */}
-        <div className="flex items-center justify-between mb-6">
-          <Button variant="outline" asChild>
-            <Link href={`/trip/${tripId}/activities`}>
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Back to Activities
-            </Link>
-          </Button>
-
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm">
-                <MoreVertical className="h-4 w-4" />
-                <span className="sr-only">More options</span>
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={() => setEditingActivity(activity)}>
-                <Edit className="mr-2 h-4 w-4" />
-                Edit Activity
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem
-                onClick={handleDelete}
-                className="text-red-600"
-                disabled={isDeleting}
-              >
-                {isDeleting ? (
-                  <Spinner size="sm" className="mr-2" />
-                ) : (
-                  <Trash2 className="mr-2 h-4 w-4" />
-                )}
-                Delete Activity
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
-
+      <div className="mx-auto max-w-6xl px-6 py-8 pt-0">
         {/* Main Activity Section */}
         <div className="grid grid-cols-1 gap-8 mb-8">
           {/* Activity Details */}
@@ -233,6 +162,29 @@ export function ActivityDetailView({
                         {activity.category}
                       </Badge>
                     )}
+                  </div>
+                  {/* Action Buttons */}
+                  <div className="flex items-center gap-3">
+                    <Button
+                      variant="default"
+                      onClick={() => setEditingActivity(activity)}
+                    >
+                      <Edit className="mr-2 h-4 w-4" />
+                      Edit Activity
+                    </Button>
+                    <Button
+                      variant="destructive"
+                      onClick={handleDelete}
+                      disabled={isDeleting}
+                      className="text-white"
+                    >
+                      {isDeleting ? (
+                        <Spinner size="sm" className="mr-2" />
+                      ) : (
+                        <Trash2 className="mr-2 h-4 w-4" />
+                      )}
+                      Delete Activity
+                    </Button>
                   </div>
                 </div>
               </CardHeader>

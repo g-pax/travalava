@@ -200,15 +200,8 @@ export function ActivityCreateForm({
   };
 
   return (
-    <Card className="w-full max-w-2xl">
-      <CardHeader>
-        <CardTitle>Add Activity</CardTitle>
-        <CardDescription>
-          Create a new activity for your trip. You can assign it to specific
-          time blocks later.
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
+    <Card className="w-full border-none shadow-none">
+      <CardContent className="p-0 m-0">
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
           {/* Title (Required) */}
           <div className="space-y-2">
@@ -433,21 +426,6 @@ export function ActivityCreateForm({
               disabled={createActivity.isPending}
               currentThumbnail={thumbnail?.url}
               placeholder="Upload a thumbnail for this activity"
-            />
-          </div>
-
-          {/* Restaurant Recommendations */}
-          <div className="space-y-4">
-            <EnhancedRestaurantManager
-              restaurants={restaurants}
-              onRestaurantsChange={setRestaurants}
-              disabled={createActivity.isPending}
-              tripLocation={
-                extractedCoords
-                  ? { lat: extractedCoords.lat, lng: extractedCoords.lng }
-                  : undefined
-              }
-              defaultMode="google"
             />
           </div>
 
