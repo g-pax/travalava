@@ -1,6 +1,7 @@
 "use client";
 
 import { CheckCircle2, Clock, Users, Vote } from "lucide-react";
+import Image from "next/image";
 import { useState } from "react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
@@ -210,7 +211,20 @@ export function VotingPanel({
                   }`}
                 >
                   <CardContent className="p-4">
-                    <div className="flex items-start justify-between">
+                    <div className="flex items-start gap-3">
+                      {/* Activity Image */}
+                      {(proposal.activity as any)?.src && (
+                        <div className="relative h-16 w-16 flex-shrink-0 overflow-hidden rounded-lg">
+                          <Image
+                            src={(proposal.activity as any).src}
+                            alt={proposal.activity?.title || "Activity"}
+                            fill
+                            className="object-cover"
+                            sizes="64px"
+                          />
+                        </div>
+                      )}
+
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-2">
                           <h4 className="font-medium text-sm truncate">

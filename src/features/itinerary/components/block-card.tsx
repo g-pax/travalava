@@ -12,6 +12,7 @@ import {
   Vote,
   X,
 } from "lucide-react";
+import Image from "next/image";
 import { useState } from "react";
 import { toast } from "sonner";
 import { InlineLoader } from "@/components/loading";
@@ -265,7 +266,20 @@ export function BlockCard({
                     className="border border-gray-200 hover:border-gray-300 transition-colors"
                   >
                     <CardContent className="p-3 sm:p-4">
-                      <div className="flex items-start justify-between gap-2">
+                      <div className="flex items-start gap-3">
+                        {/* Activity Image */}
+                        {(proposal.activity as any)?.src && (
+                          <div className="relative h-16 w-16 sm:h-20 sm:w-20 flex-shrink-0 overflow-hidden rounded-lg">
+                            <Image
+                              src={(proposal.activity as any).src}
+                              alt={proposal.activity?.title || "Activity"}
+                              fill
+                              className="object-cover"
+                              sizes="(max-width: 640px) 64px, 80px"
+                            />
+                          </div>
+                        )}
+
                         <div className="flex-1 min-w-0 space-y-2">
                           <h4 className="font-semibold text-sm sm:text-base line-clamp-1">
                             {proposal.activity?.title}
@@ -319,18 +333,18 @@ export function BlockCard({
                               {proposal.activity.notes}
                             </p>
                           )}
-                        </div>
 
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          onClick={() => handleRemoveProposal(proposal.id)}
-                          disabled={removeProposal.isPending}
-                          className="h-8 w-8 p-0 flex-shrink-0 text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950"
-                          title="Remove activity"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => handleRemoveProposal(proposal.id)}
+                            disabled={removeProposal.isPending}
+                            className="h-8 w-8 p-0 flex-shrink-0 text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950 self-start"
+                            title="Remove activity"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
                       </div>
                     </CardContent>
                   </Card>
