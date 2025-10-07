@@ -45,6 +45,7 @@ export function useBlockProposals(blockId: string) {
           *,
           activity:activities (
             id,
+            src,
             title,
             category,
             cost_amount,

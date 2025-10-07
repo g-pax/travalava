@@ -12,7 +12,7 @@ export function useJoinTrip() {
   return useMutation({
     mutationFn: async (input: JoinTripInput) => {
       const validated = JoinTripSchema.parse(input);
-      const { tripId, displayName, pin } = validated;
+      const { tripId, displayName, email, password, pin } = validated;
 
       const clientMutationId = nanoid();
 
@@ -33,21 +33,41 @@ export function useJoinTrip() {
         }
       }
 
-      // Create trip member
+      // Create user account
+      const { data: authData, error: authError } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          emailRedirectTo: `${window.location.origin}/auth/callback`,
+          data: {
+            display_name: displayName,
+          },
+        },
+      });
+
+      if (authError) {
+        throw authError;
+      }
+
+      if (!authData.user) {
+        throw new Error("Failed to create user account");
+      }
+
+      // Create trip member with the new user
       const { data: member, error: memberError } = await supabase
         .from("trip_members")
         .insert({
           trip_id: tripId,
           role: "collaborator",
           display_name: displayName,
-          user_id: null, // Will be set when auth is implemented
+          user_id: authData.user.id,
         })
         .select()
         .maybeSingle();
 
       if (memberError) throw memberError;
 
-      return { member, clientMutationId };
+      return { member, user: authData.user, clientMutationId };
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({

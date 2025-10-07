@@ -39,7 +39,7 @@ const TripLayout = ({ children, tripId }: TripLayoutProps) => {
   } = useQuery({
     queryKey: ["trip", tripId],
     queryFn: async () => {
-      if (!tripId) throw new Error("Trip ID is required");
+      if (!tripId) return null;
       const { data, error } = await supabase
         .from("trips")
         .select(`
@@ -149,6 +149,8 @@ const TripLayout = ({ children, tripId }: TripLayoutProps) => {
       </RequireAuth>
     );
   }
+
+  console.log(trip);
 
   return (
     <RequireAuth>

@@ -21,12 +21,23 @@ export const TripCreateSchema = z.object({
   pin: z.string().optional(),
 });
 
-export const JoinTripSchema = z.object({
-  tripId: TripIdSchema,
-  displayName: z.string().min(1, "Display name is required"),
-  pin: z.string().min(1, "PIN is required"),
-  clientDeviceId: z.string().min(1, "Device ID is required"),
-});
+export const JoinTripSchema = z
+  .object({
+    tripId: TripIdSchema,
+    displayName: z
+      .string()
+      .min(1, "Display name is required")
+      .max(50, "Display name must be 50 characters or less"),
+    email: z.string().email("Please enter a valid email address"),
+    password: z.string().min(8, "Password must be at least 8 characters"),
+    confirmPassword: z.string(),
+    pin: z.string().min(1, "PIN is required"),
+    clientDeviceId: z.string().min(1, "Device ID is required"),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "Passwords don't match",
+    path: ["confirmPassword"],
+  });
 
 // Activity schemas
 export const ActivityCreateSchema = z.object({
