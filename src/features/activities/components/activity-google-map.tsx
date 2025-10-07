@@ -11,7 +11,6 @@ import {
   DEFAULT_MAP_CONFIG,
   extractCoordinatesFromGoogleMapsUrl,
   GOOGLE_MAPS_API_KEY,
-  MAP_OPTIONS,
   validateGoogleMapsKey,
 } from "@/lib/google-maps";
 import { cn } from "@/lib/utils";
@@ -91,12 +90,19 @@ export function ActivityGoogleMap({
   return (
     <APIProvider apiKey={GOOGLE_MAPS_API_KEY}>
       <GoogleMap
-        {...MAP_OPTIONS}
         mapId={DEFAULT_MAP_CONFIG.mapId}
         defaultCenter={coordinates}
         defaultZoom={DEFAULT_MAP_CONFIG.zoom}
         className={cn("rounded-lg overflow-hidden", className)}
-        gestureHandling="cooperative"
+        gestureHandling="greedy"
+        disableDefaultUI={false}
+        zoomControl={true}
+        mapTypeControl={false}
+        streetViewControl={false}
+        fullscreenControl={false}
+        clickableIcons={true}
+        scrollwheel={true}
+        mapTypeId="roadmap"
       >
         <Marker position={coordinates} title={activity.title} />
       </GoogleMap>

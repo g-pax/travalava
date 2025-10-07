@@ -11,15 +11,16 @@ export const DEFAULT_MAP_CONFIG = {
   mapId: "travalava-map", // You'll need to create this in Google Cloud Console
 } as const;
 
-// Map styling options
+// Map styling options - consistent across all maps
+// Only allow pan and zoom, disable all other controls
 export const MAP_OPTIONS = {
   disableDefaultUI: false,
   clickableIcons: true,
   scrollwheel: true,
   disableDoubleClickZoom: false,
-  fullscreenControl: true,
-  mapTypeControl: true,
-  streetViewControl: true,
+  fullscreenControl: false,
+  mapTypeControl: false,
+  streetViewControl: false,
   zoomControl: true,
 } as const;
 

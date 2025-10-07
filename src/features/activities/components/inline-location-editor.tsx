@@ -22,7 +22,6 @@ import { Label } from "@/components/ui/label";
 import {
   DEFAULT_MAP_CONFIG,
   GOOGLE_MAPS_API_KEY,
-  MAP_OPTIONS,
   validateGoogleMapsKey,
 } from "@/lib/google-maps";
 import { cn } from "@/lib/utils";
@@ -171,7 +170,7 @@ export function InlineLocationEditor({
   }
 
   const mapCenter = tempCoordinates || coordinates || DEFAULT_MAP_CONFIG.center;
-  const mapZoom = tempCoordinates || coordinates ? 15 : DEFAULT_MAP_CONFIG.zoom;
+  const mapZoom = tempCoordinates || coordinates ? 13 : DEFAULT_MAP_CONFIG.zoom;
 
   return (
     <Card className={className}>
@@ -299,15 +298,22 @@ export function InlineLocationEditor({
         <div className="relative">
           <APIProvider apiKey={GOOGLE_MAPS_API_KEY || ""}>
             <GoogleMap
-              {...MAP_OPTIONS}
               mapId={DEFAULT_MAP_CONFIG.mapId}
-              center={mapCenter}
-              zoom={mapZoom}
+              defaultCenter={mapCenter}
+              defaultZoom={mapZoom}
               className={cn(
                 "h-[300px] w-full rounded-lg overflow-hidden",
                 isEditing && "cursor-crosshair",
               )}
-              gestureHandling={isEditing ? "greedy" : "cooperative"}
+              gestureHandling="greedy"
+              disableDefaultUI={false}
+              zoomControl={true}
+              mapTypeControl={false}
+              streetViewControl={false}
+              fullscreenControl={false}
+              clickableIcons={isEditing}
+              scrollwheel={true}
+              mapTypeId="roadmap"
               onClick={isEditing ? handleMapClick : undefined}
             >
               {(tempCoordinates || coordinates) && (

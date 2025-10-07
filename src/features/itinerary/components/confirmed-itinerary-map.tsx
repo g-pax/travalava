@@ -7,7 +7,7 @@ import {
   Marker,
 } from "@vis.gl/react-google-maps";
 import { MapPin } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import {
   DEFAULT_MAP_CONFIG,
   GOOGLE_MAPS_API_KEY,
