@@ -1,4 +1,4 @@
-import { ActivityDetailView } from "@/features/activities/components/activity-detail-view";
+import { EnhancedActivityDetailView } from "@/features/activities/components/enhanced-activity-detail-view";
 export const dynamic = "force-dynamic";
 
 interface ActivityDetailPageProps {
@@ -13,5 +13,5 @@ export default async function ActivityDetailPage({
 }: ActivityDetailPageProps) {
   const { id: tripId, activityId } = await params;
 
-  return <ActivityDetailView tripId={tripId} activityId={activityId} />;
+  return <EnhancedActivityDetailView tripId={tripId} activityId={activityId} />;
 }

@@ -4,6 +4,7 @@ import { Calendar, MapPin, PlusCircle, Users } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { RequireAuth } from "@/components/auth/auth-guard";
+import { PageError } from "@/components/error";
 import { TripNav } from "@/components/trip/trip-nav";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -136,19 +137,13 @@ function TripsPageContent() {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
         <TripNav />
-        <div className="flex items-center justify-center py-16">
-          <Card className="max-w-md">
-            <CardHeader>
-              <CardTitle>Error Loading Trips</CardTitle>
-              <CardDescription>
-                There was an error loading your trips. Please try again.
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Button onClick={() => window.location.reload()}>Retry</Button>
-            </CardContent>
-          </Card>
-        </div>
+        <PageError
+          message="Error Loading Trips"
+          description="There was an error loading your trips. Please try again."
+          onRetry={() => window.location.reload()}
+          showRetry={true}
+          showNavigation={false}
+        />
       </div>
     );
   }

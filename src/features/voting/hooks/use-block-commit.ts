@@ -366,7 +366,9 @@ export function useCommittedBlocks(tripId: string) {
             category,
             cost_amount,
             cost_currency,
-            duration_min
+            duration_min,
+            location,
+            notes
           ),
           blocks!commits_block_id_fkey(
             id,
@@ -405,6 +407,8 @@ export function useCommittedBlocks(tripId: string) {
           cost_amount: commit.activity?.cost_amount,
           cost_currency: commit.activity?.cost_currency,
           duration_min: commit.activity?.duration_min,
+          location: commit.activity?.location,
+          notes: commit.activity?.notes,
         },
       }));
     },

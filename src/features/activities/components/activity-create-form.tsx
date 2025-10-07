@@ -17,8 +17,9 @@ import {
  */
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-import { toast } from "sonner";
+
 import { ThumbnailUpload } from "@/components/common/thumbnail-upload";
+import { useFormErrorHandler } from "@/components/error";
 import { ActionButton } from "@/components/loading";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -92,13 +93,16 @@ export function ActivityCreateForm({
     },
   });
 
+  const { handleFormError } = useFormErrorHandler<ActivityCreateInput>();
+
   const handleThumbnailUploaded = (result: ThumbnailUploadResult) => {
     setThumbnail(result);
     form.setValue("src", result.url);
   };
 
   const handleThumbnailUploadError = (error: string) => {
-    toast.error(error);
+    // Use centralized error handler for consistency
+    handleFormError(error, form.setError, { showToast: true });
   };
 
   const handleShortUrlChange = (value: string) => {
@@ -172,24 +176,8 @@ export function ActivityCreateForm({
       setThumbnail(null);
       setRestaurants([]);
     } catch (error) {
-      // Clear any previous submission errors
-      form.clearErrors();
-
-      if (error instanceof Error) {
-        // Set field-specific errors if applicable
-        if (error.message.toLowerCase().includes("title")) {
-          form.setError("title", { message: error.message });
-        } else if (error.message.toLowerCase().includes("cost")) {
-          form.setError("cost_amount", { message: error.message });
-        } else if (error.message.toLowerCase().includes("duration")) {
-          form.setError("duration_min", { message: error.message });
-        } else if (
-          error.message.toLowerCase().includes("url") ||
-          error.message.toLowerCase().includes("link")
-        ) {
-          form.setError("link", { message: error.message });
-        }
-      }
+      // Use centralized form error handler
+      handleFormError(error, form.setError, { showToast: true });
       console.error("Failed to create activity:", error);
     }
   };

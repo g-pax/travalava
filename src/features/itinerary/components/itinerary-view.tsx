@@ -12,10 +12,12 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { CurrentMember } from "@/features/trip/hooks/use-current-member";
 import { useCommittedBlocks } from "@/features/voting/hooks/use-block-commit";
 import { useCreateDays } from "../hooks/use-create-days";
 import { useDays } from "../hooks/use-days";
+import { ConfirmedBlocksView } from "./confirmed-blocks-view";
 import { DayCard } from "./day-card";
 import { DaySwapDialog } from "./day-swap-dialog";
 import { ItinerarySidebar } from "./itinerary-sidebar";
@@ -150,58 +152,80 @@ export function ItineraryView({
   }
 
   return (
-    <div className="flex flex-col lg:flex-row gap-8">
-      {/* Sidebar Navigation */}
-      <ItinerarySidebar
-        days={days || []}
-        activeDayId={activeDayId}
-        onDayClick={scrollToDay}
-      />
-
-      {/* Main Content */}
-      <div className="flex-1 min-w-0 space-y-6">
-        {/* Header with controls */}
-        <div className="flex items-center justify-between flex-wrap gap-4">
-          <div>
-            <h2 className="text-2xl font-bold">Itinerary</h2>
-            <div className="text-sm text-muted-foreground mt-1">
-              {days?.length || 0} day{days?.length !== 1 ? "s" : ""}
-            </div>
-          </div>
-
-          <div className="flex items-center gap-2">
-            {currentMember?.role === "organizer" &&
-              committedBlocks.length >= 2 && (
-                <DaySwapDialog
-                  tripId={tripId}
-                  committedBlocks={committedBlocks}
-                >
-                  <Button variant="outline" size="sm" className="gap-2">
-                    <ArrowLeftRight className="h-4 w-4" />
-                    Swap Days
-                  </Button>
-                </DaySwapDialog>
-              )}
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex items-center justify-between flex-wrap gap-4">
+        <div>
+          <h2 className="text-2xl font-bold">Itinerary</h2>
+          <div className="text-sm text-muted-foreground mt-1">
+            {days?.length || 0} day{days?.length !== 1 ? "s" : ""} • {committedBlocks.length} confirmed activit{committedBlocks.length !== 1 ? "ies" : "y"}
           </div>
         </div>
 
-        {/* Day Cards in Timeline Layout */}
-        <div className="space-y-12">
-          {days?.map((day, index) => (
-            <DayCard
-              key={day.id}
-              ref={(el) => setDayRef(day.id, el)}
-              day={day}
-              tripId={tripId}
-              dayNumber={index + 1}
-              currentMember={currentMember}
-              dayId={day.id}
-              isExpanded={expandedDays.has(day.id)}
-              onToggle={() => toggleDay(day.id)}
-            />
-          ))}
+        <div className="flex items-center gap-2">
+          {currentMember?.role === "organizer" &&
+            committedBlocks.length >= 2 && (
+              <DaySwapDialog
+                tripId={tripId}
+                committedBlocks={committedBlocks}
+              >
+                <Button variant="outline" size="sm" className="gap-2">
+                  <ArrowLeftRight className="h-4 w-4" />
+                  Swap Days
+                </Button>
+              </DaySwapDialog>
+            )}
         </div>
       </div>
+
+      {/* Tabs for different views */}
+      <Tabs defaultValue="planning" className="w-full">
+        <TabsList className="grid w-full grid-cols-2">
+          <TabsTrigger value="planning">Planning View</TabsTrigger>
+          <TabsTrigger value="confirmed">
+            Final Itinerary
+            {committedBlocks.length > 0 && (
+              <span className="ml-2 bg-green-600 text-white text-xs px-2 py-0.5 rounded-full">
+                {committedBlocks.length}
+              </span>
+            )}
+          </TabsTrigger>
+        </TabsList>
+
+        {/* Planning View Tab */}
+        <TabsContent value="planning" className="mt-6">
+          <div className="flex flex-col lg:flex-row gap-8">
+            {/* Sidebar Navigation */}
+            <ItinerarySidebar
+              days={days || []}
+              activeDayId={activeDayId}
+              onDayClick={scrollToDay}
+            />
+
+            {/* Main Content */}
+            <div className="flex-1 min-w-0 space-y-12">
+              {days?.map((day, index) => (
+                <DayCard
+                  key={day.id}
+                  ref={(el) => setDayRef(day.id, el)}
+                  day={day}
+                  tripId={tripId}
+                  dayNumber={index + 1}
+                  currentMember={currentMember}
+                  dayId={day.id}
+                  isExpanded={expandedDays.has(day.id)}
+                  onToggle={() => toggleDay(day.id)}
+                />
+              ))}
+            </div>
+          </div>
+        </TabsContent>
+
+        {/* Confirmed View Tab */}
+        <TabsContent value="confirmed" className="mt-6">
+          <ConfirmedBlocksView tripId={tripId} />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }

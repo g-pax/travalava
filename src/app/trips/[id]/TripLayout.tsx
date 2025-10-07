@@ -292,9 +292,8 @@ const TripLayout = ({ children, tripId }: TripLayoutProps) => {
             </div>
           </div>
         </div>
-
         {/* Compact Trip Metadata Header */}
-        <div className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800">
+        <div className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 -translate-y-14">
           <div className="container mx-auto px-4 sm:px-6">
             <div className="max-w-6xl mx-auto">
               <div className="py-4">

@@ -4,7 +4,8 @@ import { format } from "date-fns";
 import { Calendar, Clock, DollarSign, Plus } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-
+import { CardError } from "@/components/error";
+import { ActivityListLoader } from "@/components/loading";
 /**
  * ActivityList displays all activities for a trip with management actions
  * - Shows activity details in card format
@@ -178,37 +179,19 @@ export function ActivityList({ tripId, onCreateActivity }: ActivityListProps) {
           </div>
           <div className="h-10 w-32 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
         </div>
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {[1, 2, 3, 4, 5, 6].map((i) => (
-            <div
-              key={i}
-              className="h-80 bg-gray-100 dark:bg-gray-800 rounded-xl animate-pulse"
-            />
-          ))}
-        </div>
+        <ActivityListLoader />
       </div>
     );
   }
 
   if (error) {
     return (
-      <Card className="border-red-200 dark:border-red-800">
-        <CardContent className="flex items-center justify-center py-12">
-          <div className="text-center space-y-3">
-            <div className="h-12 w-12 rounded-full bg-red-100 dark:bg-red-900 flex items-center justify-center mx-auto">
-              <Calendar className="h-6 w-6 text-red-600 dark:text-red-400" />
-            </div>
-            <div>
-              <p className="text-red-600 dark:text-red-400 font-semibold mb-1">
-                Failed to load activities
-              </p>
-              <p className="text-sm text-gray-500 dark:text-gray-400">
-                {error.message}
-              </p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+      <CardError
+        message="Failed to load activities"
+        description={error.message}
+        showRetry={true}
+        onRetry={() => window.location.reload()}
+      />
     );
   }
 

@@ -86,7 +86,7 @@ export function ActivityRestaurantSection({
 
   const handleDeleteRestaurant = async (index: number) => {
     try {
-      const updatedRestaurants = restaurants.filter((_, i) => i !== index);
+      const updatedRestaurants = restaurants.filter((_: any, i: number) => i !== index);
 
       await updateActivity.mutateAsync({
         id: activity.id,
