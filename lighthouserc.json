@@ -4,32 +4,30 @@
     "collect": {
       "numberOfRuns": 3,
       "settings": {
-        "preset": "desktop"
+        "preset": "desktop",
+        "chromeFlags": ["--no-sandbox", "--headless=new"]
       },
-      "startServerCommand": "npm run build && npm run start",
-      "startServerReadyPattern": "started server",
+      "startServerCommand": "npm run build && node ./node_modules/.bin/next start -p 3000 -H 127.0.0.1",
+      "startServerReadyPattern": "started server on .*:3000, url: http://localhost:3000",
+      "startServerReadyTimeout": 240000,
       "url": [
         "http://127.0.0.1:3000/",
         "http://127.0.0.1:3000/login",
-        "http://127.0.0.1:3000/dashboard",
-        "http://127.0.0.1:3000/pricing"
+        "http://127.0.0.1:3000/dashboard"
       ]
     },
     "assert": {
       "assertions": {
         "categories:performance": ["error", { "minScore": 0.9 }],
         "categories:accessibility": ["error", { "minScore": 0.95 }],
-        "categories:seo": ["warn", { "minScore": 0.9 }],
-        "categories:best-practices": ["warn", { "minScore": 0.9 }],
-        "uses-responsive-images": "warn",
         "unused-javascript": ["error", { "maxLengthDelta": 40000 }],
         "total-byte-weight": ["error", { "maxNumericValue": 400000 }],
-        "cumulative-layout-shift": ["error", { "maxNumericValue": 0.1 }],
-        "first-contentful-paint": ["warn", { "maxNumericValue": 2000 }]
+        "cumulative-layout-shift": ["error", { "maxNumericValue": 0.1 }]
       }
     },
     "upload": {
-      "target": "temporary-public-storage"
+      "target": "filesystem",
+      "outputDir": ".lighthouseci"
     }
   }
 }

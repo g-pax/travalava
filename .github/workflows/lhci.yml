@@ -2,16 +2,27 @@ name: lighthouse
 
 on:
   pull_request:
-    branches: [ "main" ]   # only PRs targeting main
+    branches: ["main"]
     types: [opened, synchronize, reopened]
 
 jobs:
   lhci:
     runs-on: ubuntu-latest
 
-    permissions:
-      contents: read
-      statuses: write
+    env:
+      NODE_ENV: production
+      NEXT_TELEMETRY_DISABLED: "1"
+      NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+      NEXTAUTH_SECRET: ${{ secrets.NEXTAUTH_SECRET }}
+      NEXTAUTH_URL: ${{ secrets.NEXTAUTH_URL }}
+      NEXT_PUBLIC_GOOGLE_MAPS_API_KEY: ${{ secrets.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY }}
+      R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+      R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+      R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+      R2_BUCKET: ${{ secrets.R2_BUCKET }}
+      NEXT_PUBLIC_R2_PUBLIC_URL: ${{ secrets.NEXT_PUBLIC_R2_PUBLIC_URL }}
+      GOOGLE_PLACES_API_KEY: ${{ secrets.GOOGLE_PLACES_API_KEY }}
 
     steps:
       - uses: actions/checkout@v4
@@ -19,18 +30,26 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 20
+          cache: "npm"
 
       - name: Install deps
         run: npm ci
 
-      # If your app needs env vars to boot locally, set them here or use repo secrets
-      - name: Build and start + run Lighthouse CI
-        run: npx lhci autorun --config=./lighthouserc.json
-        # lhci autorun == collect + assert + upload
+      # Optional sanity check: ensure the app actually starts before LHCI
+      - name: Build app
+        run: npm run build
 
-      - name: Upload HTML reports as artifacts
+      - name: Start app in background
+        run: |
+          npx next start -p 3000 -H 127.0.0.1 & \
+          npx --yes wait-on http://127.0.0.1:3000
+
+      - name: Run Lighthouse CI
+        run: npx lhci collect --config=./lighthouserc.json && npx lhci assert --config=./lighthouserc.json
+
+      - name: Upload HTML reports
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: lighthouse-report
-          path: ".lighthouseci/*.html"
+          path: .lighthouseci/*.html
