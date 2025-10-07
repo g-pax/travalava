@@ -340,6 +340,8 @@ export function GooglePlacesRestaurantForm({
                       src={form.watch("image_url") || ""}
                       alt="Restaurant preview"
                       className="w-full h-32 object-cover rounded"
+                      width={128}
+                      height={128}
                       onError={(e) => {
                         e.currentTarget.style.display = "none";
                       }}

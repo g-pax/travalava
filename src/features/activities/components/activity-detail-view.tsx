@@ -10,7 +10,6 @@ import {
   MapPin,
   MoreVertical,
   Trash2,
-  Utensils,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -43,7 +42,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Separator } from "@/components/ui/separator";
-import { formatCurrency, formatDuration } from "@/lib/utils";
+import { formatCurrency, formatDate, formatDuration } from "@/lib/utils";
 import {
   type Activity,
   useActivity,
@@ -51,7 +50,7 @@ import {
 } from "../hooks/use-activities";
 import { ActivityEditForm } from "./activity-edit-form";
 import { ActivityGoogleMap } from "./activity-google-map";
-import { RestaurantCard } from "./restaurant-card";
+import { ActivityRestaurantSection } from "./activity-restaurant-section";
 
 interface ActivityDetailViewProps {
   tripId: string;
@@ -220,9 +219,10 @@ export function ActivityDetailView({
           </DropdownMenu>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        {/* Main Activity Section */}
+        <div className="grid grid-cols-1 gap-8 mb-8">
           {/* Activity Details */}
-          <div className="space-y-6">
+          <div className="lg:col-span-2 space-y-6">
             <Card>
               <CardHeader>
                 <div className="flex items-start justify-between">
@@ -244,9 +244,9 @@ export function ActivityDetailView({
                     <Image
                       src={coverImage}
                       alt={`${activity.title} cover image`}
-                      width={600}
-                      height={300}
-                      className="w-full h-[300px] object-cover"
+                      width={800}
+                      height={400}
+                      className="w-full h-[400px] object-cover"
                       priority
                     />
                   </div>
@@ -341,7 +341,7 @@ export function ActivityDetailView({
                           >
                             <Calendar className="h-4 w-4 text-blue-600" />
                             <span className="text-sm font-medium text-blue-900">
-                              {proposal.block?.day?.date} -{" "}
+                              {formatDate(proposal.block?.day?.date || "")} -{" "}
                               {proposal.block?.label}
                             </span>
                           </div>
@@ -353,9 +353,8 @@ export function ActivityDetailView({
               </CardContent>
             </Card>
           </div>
-
-          {/* Map */}
-          <div className="space-y-6">
+          {/* Map Sidebar */}
+          <div className="space-y-6 w-full">
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
@@ -372,10 +371,10 @@ export function ActivityDetailView({
                 {hasLocation ? (
                   <ActivityGoogleMap
                     activity={activity}
-                    className="h-[400px] w-full rounded-lg"
+                    className="h-[300px] w-full rounded-lg"
                   />
                 ) : (
-                  <div className="h-[400px] w-full rounded-lg bg-gray-100 flex items-center justify-center">
+                  <div className="h-[300px] w-full rounded-lg bg-gray-100 flex items-center justify-center">
                     <div className="text-center">
                       <MapPin className="h-12 w-12 text-gray-400 mx-auto mb-2" />
                       <p className="text-gray-600">No location specified</p>
@@ -384,33 +383,12 @@ export function ActivityDetailView({
                 )}
               </CardContent>
             </Card>
-
-            {/* Restaurants */}
-            {(activity as any).restaurants && (activity as any).restaurants.length > 0 && (
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Utensils className="h-5 w-5" />
-                    Restaurant Recommendations
-                  </CardTitle>
-                  <CardDescription>
-                    Recommended dining options near this activity
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {(activity as any).restaurants.map((restaurant: any, index: number) => (
-                      <RestaurantCard
-                        key={restaurant.id || index}
-                        restaurant={restaurant}
-                        showActions={false}
-                      />
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-            )}
           </div>
+        </div>
+
+        {/* Restaurants Section - Separate full-width section */}
+        <div className="mb-8">
+          <ActivityRestaurantSection activity={activity} />
         </div>
 
         {/* Edit Activity Dialog */}
