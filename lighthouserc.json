@@ -7,9 +7,6 @@
         "preset": "desktop",
         "chromeFlags": ["--no-sandbox", "--headless=new"]
       },
-      "startServerCommand": "npm run build && node ./node_modules/.bin/next start -p 3000 -H 127.0.0.1",
-      "startServerReadyPattern": "started server on .*:3000, url: http://localhost:3000",
-      "startServerReadyTimeout": 240000,
       "url": [
         "http://127.0.0.1:3000/",
         "http://127.0.0.1:3000/login",
