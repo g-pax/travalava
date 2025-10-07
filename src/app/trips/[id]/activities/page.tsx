@@ -1,13 +1,14 @@
 import ActivitiesPage from "./ActivitiesPage";
+export const dynamic = "force-dynamic";
 
 interface ActivitiesRouteProps {
-  params: Promise<{ tripId: string }>;
+  params: Promise<{ id: string }>;
 }
 
 const Activities = async ({ params }: ActivitiesRouteProps) => {
-  const { tripId } = await params;
+  const { id } = await params;
 
-  return <ActivitiesPage params={{ tripId }} />;
+  return <ActivitiesPage params={{ tripId: id }} />;
 };
 
 export default Activities;

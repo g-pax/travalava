@@ -21,7 +21,7 @@ function JoinPageContent() {
 
   const handleJoinSuccess = (_memberId: string) => {
     if (tripId) {
-      router.push(`/trip/${tripId}`);
+      router.push(`/trips/${tripId}`);
     }
   };
 

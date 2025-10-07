@@ -68,7 +68,7 @@ export function ActivityDetailView({
     try {
       await deleteActivity.mutateAsync({ id: activityId });
       toast.success("Activity deleted successfully");
-      router.push(`/trip/${tripId}/activities`);
+      router.push(`/trips/${tripId}/activities`);
     } catch (error) {
       toast.error("Failed to delete activity");
       console.error("Delete activity error:", error);
@@ -107,7 +107,7 @@ export function ActivityDetailView({
                   {error instanceof Error ? error.message : "Unknown error"}
                 </p>
                 <Button variant="outline" className="mt-4" asChild>
-                  <Link href={`/trip/${tripId}/activities`}>
+                  <Link href={`/trips/${tripId}/activities`}>
                     <ArrowLeft className="h-4 w-4 mr-2" />
                     Back to Activities
                   </Link>
@@ -129,7 +129,7 @@ export function ActivityDetailView({
               <div className="text-center">
                 <p className="text-gray-600 mb-2">Activity not found</p>
                 <Button variant="outline" asChild>
-                  <Link href={`/trip/${tripId}/activities`}>
+                  <Link href={`/trips/${tripId}/activities`}>
                     <ArrowLeft className="h-4 w-4 mr-2" />
                     Back to Activities
                   </Link>

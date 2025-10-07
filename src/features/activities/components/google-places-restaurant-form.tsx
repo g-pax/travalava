@@ -73,6 +73,8 @@ export function GooglePlacesRestaurantForm({
 
   const form = useForm<RestaurantInput>({
     resolver: zodResolver(RestaurantSchema),
+    mode: "all",
+    reValidateMode: "onBlur",
     defaultValues: restaurant || {
       name: "",
       cuisine_type: "",

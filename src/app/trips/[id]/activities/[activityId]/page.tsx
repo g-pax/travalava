@@ -3,7 +3,7 @@ export const dynamic = "force-dynamic";
 
 interface ActivityDetailPageProps {
   params: Promise<{
-    tripId: string;
+    id: string;
     activityId: string;
   }>;
 }
@@ -11,7 +11,7 @@ interface ActivityDetailPageProps {
 export default async function ActivityDetailPage({
   params,
 }: ActivityDetailPageProps) {
-  const { tripId, activityId } = await params;
+  const { id: tripId, activityId } = await params;
 
   return <ActivityDetailView tripId={tripId} activityId={activityId} />;
 }

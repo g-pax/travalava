@@ -1,10 +1,17 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { ArrowLeft, Calendar, MapPin, Share2, Users } from "lucide-react";
+import {
+  ArrowLeft,
+  Calendar,
+  ChevronRight,
+  MapPin,
+  Share2,
+  Users,
+} from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { RequireAuth } from "@/components/auth/auth-guard";
@@ -37,6 +44,7 @@ interface TripLayoutProps {
 
 const TripLayout = ({ children, tripId }: TripLayoutProps) => {
   const navigate = useRouter();
+  const pathname = usePathname();
   const [mounted, setMounted] = useState(false);
   const { data: _currentMember } = useCurrentMember(tripId || "");
 
@@ -73,10 +81,41 @@ const TripLayout = ({ children, tripId }: TripLayoutProps) => {
   }, []);
 
   const generateInviteLink = () => {
-    const inviteUrl = `${window.location.origin}/join?tripId=${tripId}`;
+    const inviteUrl = `${window.location.origin}/trips/join?tripId=${tripId}`;
     navigator.clipboard.writeText(inviteUrl);
     toast.success("Invite link copied to clipboard!");
   };
+
+  const generateBreadcrumbs = () => {
+    const breadcrumbs = [
+      { label: "All Trips", href: "/trips" },
+      { label: trip?.name || "Trip", href: `/trips/${tripId}` },
+    ];
+
+    if (pathname?.includes("/itinerary")) {
+      breadcrumbs.push({
+        label: "Itinerary",
+        href: `/trips/${tripId}/itinerary`,
+      });
+    } else if (pathname?.includes("/activities")) {
+      breadcrumbs.push({
+        label: "Activities",
+        href: `/trips/${tripId}/activities`,
+      });
+
+      const activityIdMatch = pathname?.match(/\/activities\/([^/]+)$/);
+      if (activityIdMatch) {
+        breadcrumbs.push({
+          label: "Activity Details",
+          href: `/trips/${tripId}/activities/${activityIdMatch[1]}`,
+        });
+      }
+    }
+
+    return breadcrumbs;
+  };
+
+  const breadcrumbs = generateBreadcrumbs();
 
   // Show loading state during SSR, initial mount, or when data is being fetched
   const isLoadingData = !mounted || isLoading || !trip || isPending;
@@ -164,11 +203,11 @@ const TripLayout = ({ children, tripId }: TripLayoutProps) => {
   return (
     <RequireAuth>
       <div className="min-h-screen bg-gray-50">
-        {/* Trip Navigation */}
+        {/* Trip Navigation overlaid on banner */}
         <TripNav tripId={tripId} />
 
         {/* Full-width Trip Banner */}
-        <div className="relative h-52 overflow-hidden bg-gray-900 sm:h-64 md:h-80">
+        <div className="relative h-52 overflow-hidden bg-gray-900 sm:h-64 md:h-[600px] -translate-y-14">
           <Image
             src="https://images.unsplash.com/photo-1706722533137-dd3c3f06c624?q=80&w=2340&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
             alt={`${trip.name} banner`}
@@ -180,19 +219,47 @@ const TripLayout = ({ children, tripId }: TripLayoutProps) => {
           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
 
           {/* Navigation buttons on the image */}
-          <div className="absolute top-0 left-0 right-0 z-20">
+          <div className="absolute top-14 left-0 right-0 z-20">
             <div className="container mx-auto px-4 sm:px-6">
               <div className="max-w-6xl mx-auto">
                 <div className="flex items-center justify-between pt-4 sm:pt-6">
-                  <Button
-                    onClick={() => navigate.back()}
-                    variant="ghost"
-                    size="sm"
-                    className="gap-2 bg-black/40 hover:bg-black/60 hover:text-white text-white border border-white/20 backdrop-blur-sm"
-                  >
-                    <ArrowLeft className="h-4 w-4" />
-                    <span className="hidden sm:inline">Back</span>
-                  </Button>
+                  <div className="flex flex-col gap-2">
+                    <Button
+                      onClick={() => navigate.back()}
+                      variant="ghost"
+                      size="sm"
+                      className="gap-2 bg-black/40 hover:bg-black/60 hover:text-white text-white border border-white/20 backdrop-blur-sm self-start"
+                    >
+                      <ArrowLeft className="h-4 w-4" />
+                      <span className="hidden sm:inline">Back</span>
+                    </Button>
+
+                    {/* Breadcrumbs */}
+                    <nav className="flex items-center text-sm text-white/80">
+                      {breadcrumbs.map((breadcrumb, index) => (
+                        <div
+                          key={breadcrumb.href}
+                          className="flex items-center"
+                        >
+                          {index === breadcrumbs.length - 1 ? (
+                            <span className="text-white font-medium">
+                              {breadcrumb.label}
+                            </span>
+                          ) : (
+                            <>
+                              <Link
+                                href={breadcrumb.href}
+                                className="hover:text-white transition-colors"
+                              >
+                                {breadcrumb.label}
+                              </Link>
+                              <ChevronRight className="h-4 w-4 mx-2 text-white/60" />
+                            </>
+                          )}
+                        </div>
+                      ))}
+                    </nav>
+                  </div>
 
                   <Button
                     onClick={generateInviteLink}
@@ -209,16 +276,20 @@ const TripLayout = ({ children, tripId }: TripLayoutProps) => {
           </div>
 
           {/* Trip title and location */}
-          <div className="relative z-10 flex h-full flex-col justify-end p-6 text-white max-w-6xl mx-auto">
-            <h1 className="text-4xl font-bold tracking-tight md:text-5xl">
-              {trip.name}
-            </h1>
-            {trip.destination_text ? (
-              <p className="mt-3 text-lg font-medium text-white/90 flex items-center gap-2">
-                <MapPin className="h-5 w-5" />
-                {trip.destination_text}
-              </p>
-            ) : null}
+          <div className="relative z-10 flex h-full flex-col justify-end text-white">
+            <div className="container mx-auto px-4 sm:px-6 pb-6">
+              <div className="max-w-6xl mx-auto">
+                <h1 className="text-4xl font-bold tracking-tight md:text-5xl">
+                  {trip.name}
+                </h1>
+                {trip.destination_text ? (
+                  <p className="mt-3 text-lg font-medium text-white/90 flex items-center gap-2">
+                    <MapPin className="h-5 w-5" />
+                    {trip.destination_text}
+                  </p>
+                ) : null}
+              </div>
+            </div>
           </div>
         </div>
 

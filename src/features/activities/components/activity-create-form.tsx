@@ -21,13 +21,7 @@ import { toast } from "sonner";
 import { ThumbnailUpload } from "@/components/common/thumbnail-upload";
 import { ActionButton } from "@/components/loading";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -46,7 +40,6 @@ import {
   type RestaurantInput,
 } from "@/schemas";
 import { type Activity, useCreateActivity } from "../hooks/use-activities";
-import { EnhancedRestaurantManager } from "./enhanced-restaurant-manager";
 
 interface ActivityCreateFormProps {
   tripId: string;
@@ -93,6 +86,8 @@ export function ActivityCreateForm({
     defaultValues: {
       trip_id: tripId,
       cost_currency: tripCurrency,
+      cost_amount: 0,
+      duration_min: 120,
       src: undefined,
     },
   });

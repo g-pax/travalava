@@ -46,7 +46,7 @@ function ActivityCard({
   const coverImage = activity.src ?? null;
 
   return (
-    <Link href={`/trip/${tripId}/activity/${activity.id}`}>
+    <Link href={`/trips/${tripId}/activities/${activity.id}`}>
       <Card className="relative flex h-full flex-col overflow-hidden cursor-pointer hover:shadow-lg hover:border-gray-300 dark:hover:border-gray-600 transition-all group">
         {coverImage && (
           <div className="relative w-full aspect-video bg-gray-100 dark:bg-gray-800 overflow-hidden">

@@ -13,7 +13,7 @@ export const TripCreateSchema = z.object({
   start_date: z.string().min(1, "Start date is required"),
   end_date: z.string().min(1, "End date is required"),
   timezone: z.string().default("UTC").optional(),
-  currency: z.string().length(3).default("USD").optional(),
+  currency: z.string().length(3).default("EUR").optional(),
   duplicate_policy: z
     .enum(["soft_block", "prevent", "allow"])
     .default("soft_block")
@@ -28,7 +28,7 @@ export const JoinTripSchema = z
       .string()
       .min(1, "Display name is required")
       .max(50, "Display name must be 50 characters or less"),
-    email: z.string().email("Please enter a valid email address"),
+    email: z.email("Please enter a valid email address"),
     password: z.string().min(8, "Password must be at least 8 characters"),
     confirmPassword: z.string(),
     pin: z.string().min(1, "PIN is required"),
@@ -48,7 +48,7 @@ export const RestaurantSchema = z.object({
   description: z.string().optional(),
   address: z.string().optional(),
   phone: z.string().optional(),
-  website: z.string().url().optional(),
+  website: z.url().optional(),
   location: z
     .object({
       name: z.string(),
@@ -56,7 +56,7 @@ export const RestaurantSchema = z.object({
       lon: z.number(),
     })
     .optional(),
-  image_url: z.string().url().optional(),
+  image_url: z.url().optional(),
   rating: z.number().min(0).max(5).optional(),
   review_count: z.number().min(0).optional(),
 });
@@ -68,9 +68,9 @@ export const ActivityCreateSchema = z.object({
   category: z.string().optional(),
   cost_amount: z.number().optional(),
   cost_currency: z.string().length(3).optional(),
-  duration_min: z.number().positive().optional(),
+  duration_min: z.number().optional(),
   notes: z.string().optional(),
-  link: z.string().url().optional(),
+  link: z.url().optional(),
   location: z
     .object({
       name: z.string(),
@@ -78,7 +78,7 @@ export const ActivityCreateSchema = z.object({
       lon: z.number(),
     })
     .optional(),
-  src: z.string().url().optional(),
+  src: z.url().optional(),
   restaurants: z.array(RestaurantSchema).optional(),
 });
 
@@ -89,7 +89,7 @@ export const ActivityUpdateSchema = ActivityCreateSchema.omit({
 // Authentication schemas
 export const SignUpSchema = z
   .object({
-    email: z.string().email("Please enter a valid email address"),
+    email: z.email("Please enter a valid email address"),
     password: z.string().min(8, "Password must be at least 8 characters"),
     confirmPassword: z.string(),
     displayName: z
@@ -103,12 +103,12 @@ export const SignUpSchema = z
   });
 
 export const SignInSchema = z.object({
-  email: z.string().email("Please enter a valid email address"),
+  email: z.email("Please enter a valid email address"),
   password: z.string().min(1, "Password is required"),
 });
 
 export const ResetPasswordSchema = z.object({
-  email: z.string().email("Please enter a valid email address"),
+  email: z.email("Please enter a valid email address"),
 });
 
 export const UpdatePasswordSchema = z

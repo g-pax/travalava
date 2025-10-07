@@ -11,6 +11,7 @@ interface ActivitiesPageProps {
 
 export default function ActivitiesPage({ params }: ActivitiesPageProps) {
   const { tripId } = params;
+  console.log("🚀 ~ ActivitiesPage ~ tripId:", tripId);
   const { data: currentMember } = useCurrentMember(tripId);
 
   // Get trip data for currency - we need this for the ActivitiesManager component

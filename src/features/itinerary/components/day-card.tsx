@@ -3,6 +3,7 @@
 import { Calendar, ChevronDown, ChevronRight } from "lucide-react";
 import { forwardRef } from "react";
 import type { CurrentMember } from "@/features/trip/hooks/use-current-member";
+import { formatDate } from "@/lib/utils";
 import { BlockCard } from "./block-card";
 
 interface DayCardProps {
@@ -29,15 +30,6 @@ export const DayCard = forwardRef<HTMLDivElement, DayCardProps>(
   ({ day, tripId, dayNumber, currentMember, isExpanded, onToggle }, ref) => {
     const sortedBlocks =
       day.blocks?.sort((a, b) => a.position - b.position) || [];
-
-    const formatDate = (dateString: string) => {
-      const date = new Date(dateString);
-      return date.toLocaleDateString("en-US", {
-        weekday: "long",
-        month: "short",
-        day: "numeric",
-      });
-    };
 
     return (
       <div ref={ref} id={`day-${day.id}`} className="scroll-mt-24 relative">

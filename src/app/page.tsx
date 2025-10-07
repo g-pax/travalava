@@ -9,6 +9,7 @@ import { Calendar, MapPin, PlusCircle, Users } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { AuthLoader } from "@/components/loading";
+import { TripNav } from "@/components/trip/trip-nav";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -110,47 +111,16 @@ function LandingPage() {
 }
 
 function UserDashboard() {
-  const { user, signOut } = useAuth();
   const router = useRouter();
 
-  const handleSignOut = async () => {
-    try {
-      await signOut();
-    } catch (error) {
-      console.error("Sign out error:", error);
-    }
-  };
-
   const handleTripCreated = (tripId: string) => {
-    router.push(`/trip/${tripId}`);
+    router.push(`/trips/${tripId}`);
   };
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
       {/* Navigation */}
-      <nav className="bg-white dark:bg-gray-900 shadow-sm border-b border-gray-200 dark:border-gray-800">
-        <div className="mx-auto max-w-6xl px-6 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-2">
-              <Calendar className="h-8 w-8 text-blue-600 dark:text-blue-500" />
-              <span className="text-xl font-bold text-gray-900 dark:text-white">
-                Travalava
-              </span>
-            </div>
-            <div className="flex items-center space-x-4">
-              <Link href="/trips">
-                <Button variant="ghost">All Trips</Button>
-              </Link>
-              <span className="text-sm text-gray-600 dark:text-gray-400 hidden sm:inline">
-                Welcome, {user?.user_metadata?.display_name || user?.email}
-              </span>
-              <Button variant="outline" onClick={handleSignOut}>
-                Sign Out
-              </Button>
-            </div>
-          </div>
-        </div>
-      </nav>
+      <TripNav />
 
       {/* Dashboard Content */}
       <div className="mx-auto max-w-6xl px-6 py-12">
@@ -199,7 +169,7 @@ function UserDashboard() {
                 If you have an invite link, click it to join the trip directly.
                 Or enter the trip code below:
               </p>
-              <Link href="/join">
+              <Link href="/trips/join">
                 <Button variant="outline" className="w-full">
                   Join with Trip Code
                 </Button>

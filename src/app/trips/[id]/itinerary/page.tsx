@@ -1,13 +1,13 @@
 import ItineraryPage from "./ItineraryPage";
 
 interface ItineraryRouteProps {
-  params: Promise<{ tripId: string }>;
+  params: Promise<{ id: string }>;
 }
 
 const Itinerary = async ({ params }: ItineraryRouteProps) => {
-  const { tripId } = await params;
+  const { id } = await params;
 
-  return <ItineraryPage params={{ tripId }} />;
+  return <ItineraryPage params={{ tripId: id }} />;
 };
 
 export default Itinerary;

@@ -5,10 +5,10 @@ const Layout = async ({
   params,
 }: {
   children: React.ReactNode;
-  params: Promise<{ tripId: string }>;
+  params: Promise<{ id: string }>;
 }) => {
-  const tripId = await params;
-  return <TripLayout tripId={tripId.tripId}>{children}</TripLayout>;
+  const resolvedParams = await params;
+  return <TripLayout tripId={resolvedParams.id}>{children}</TripLayout>;
 };
 
 export default Layout;

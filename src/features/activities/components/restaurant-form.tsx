@@ -47,6 +47,8 @@ export function RestaurantForm({
 }: RestaurantFormProps) {
   const form = useForm<RestaurantInput>({
     resolver: zodResolver(RestaurantSchema),
+    mode: "all",
+    reValidateMode: "onBlur",
     defaultValues: restaurant || {
       name: "",
       cuisine_type: "",
@@ -114,7 +116,10 @@ export function RestaurantForm({
               <Select
                 value={form.watch("price_range") || ""}
                 onValueChange={(value) =>
-                  form.setValue("price_range", value as "$" | "$$" | "$$$" | "$$$$")
+                  form.setValue(
+                    "price_range",
+                    value as "$" | "$$" | "$$$" | "$$$$",
+                  )
                 }
               >
                 <SelectTrigger>

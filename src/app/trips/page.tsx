@@ -4,6 +4,7 @@ import { Calendar, MapPin, PlusCircle, Users } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { RequireAuth } from "@/components/auth/auth-guard";
+import { TripNav } from "@/components/trip/trip-nav";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -16,16 +17,15 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { TripCreateForm } from "@/features/trip/components/trip-create-form";
 import { useUserTrips } from "@/features/trip/hooks/use-user-trips";
-import { useAuth } from "@/lib/auth-context";
+import { formatDate } from "@/lib/utils";
 
 function TripCard({ trip, role }: { trip: any; role: string }) {
   const memberCount = trip.trip_members?.length || 0;
   const startDate = new Date(trip.start_date);
-  const endDate = new Date(trip.end_date);
   const isUpcoming = startDate > new Date();
 
   return (
-    <Link href={`/trip/${trip.id}`}>
+    <Link href={`/trips/${trip.id}`}>
       <Card className="group hover:shadow-lg hover:border-gray-300 dark:hover:border-gray-600 transition-all cursor-pointer overflow-hidden">
         <CardHeader className="pb-4">
           <div className="flex items-start justify-between gap-3">
@@ -47,7 +47,7 @@ function TripCard({ trip, role }: { trip: any; role: string }) {
           </div>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div className="flex justify-between items-center flex-wrap gap-3">
             <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
               <div className="p-1.5 rounded-md bg-gray-100 dark:bg-gray-800">
                 <Calendar className="h-4 w-4" />
@@ -57,15 +57,7 @@ function TripCard({ trip, role }: { trip: any; role: string }) {
                   Dates
                 </p>
                 <p className="text-sm font-medium truncate">
-                  {startDate.toLocaleDateString("en-US", {
-                    month: "short",
-                    day: "numeric",
-                  })}{" "}
-                  -{" "}
-                  {endDate.toLocaleDateString("en-US", {
-                    month: "short",
-                    day: "numeric",
-                  })}
+                  {formatDate(trip.start_date)} - {formatDate(trip.end_date)}
                 </p>
               </div>
             </div>
@@ -101,39 +93,17 @@ function TripCard({ trip, role }: { trip: any; role: string }) {
 }
 
 function TripsPageContent() {
-  const { user, signOut } = useAuth();
   const router = useRouter();
   const { data: tripMemberships, isLoading, error } = useUserTrips();
 
-  const handleSignOut = async () => {
-    try {
-      await signOut();
-      router.push("/");
-    } catch (error) {
-      console.error("Sign out error:", error);
-    }
-  };
-
   const handleTripCreated = (tripId: string) => {
-    router.push(`/trip/${tripId}`);
+    router.push(`/trips/${tripId}`);
   };
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gray-50">
-        <nav className="bg-white shadow-sm border-b">
-          <div className="mx-auto max-w-6xl px-6 py-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-2">
-                <Calendar className="h-8 w-8 text-blue-600" />
-                <span className="text-xl font-bold text-gray-900">
-                  Travalava
-                </span>
-              </div>
-              <Skeleton className="h-10 w-24" />
-            </div>
-          </div>
-        </nav>
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+        <TripNav />
 
         <div className="mx-auto max-w-6xl px-6 py-8">
           <div className="mb-8">
@@ -164,18 +134,21 @@ function TripsPageContent() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <Card className="max-w-md">
-          <CardHeader>
-            <CardTitle>Error Loading Trips</CardTitle>
-            <CardDescription>
-              There was an error loading your trips. Please try again.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Button onClick={() => window.location.reload()}>Retry</Button>
-          </CardContent>
-        </Card>
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+        <TripNav />
+        <div className="flex items-center justify-center py-16">
+          <Card className="max-w-md">
+            <CardHeader>
+              <CardTitle>Error Loading Trips</CardTitle>
+              <CardDescription>
+                There was an error loading your trips. Please try again.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Button onClick={() => window.location.reload()}>Retry</Button>
+            </CardContent>
+          </Card>
+        </div>
       </div>
     );
   }
@@ -187,26 +160,8 @@ function TripsPageContent() {
     })) || [];
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Navigation */}
-      <nav className="bg-white shadow-sm border-b">
-        <div className="mx-auto max-w-6xl px-6 py-4">
-          <div className="flex items-center justify-between">
-            <Link href="/" className="flex items-center space-x-2">
-              <Calendar className="h-8 w-8 text-blue-600" />
-              <span className="text-xl font-bold text-gray-900">Travalava</span>
-            </Link>
-            <div className="flex items-center space-x-4">
-              <span className="text-sm text-gray-600">
-                Welcome, {user?.user_metadata?.display_name || user?.email}
-              </span>
-              <Button variant="outline" onClick={handleSignOut}>
-                Sign Out
-              </Button>
-            </div>
-          </div>
-        </div>
-      </nav>
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+      <TripNav />
 
       {/* Page Content */}
       <div className="mx-auto max-w-6xl px-6 py-8">
@@ -261,7 +216,7 @@ function TripsPageContent() {
                     <p className="text-sm text-gray-600 dark:text-gray-400">
                       Have an invite link or trip code?
                     </p>
-                    <Link href="/join">
+                    <Link href="/trips/join">
                       <Button variant="outline" className="w-full">
                         Join Trip
                       </Button>
@@ -282,16 +237,10 @@ function TripsPageContent() {
                   Create New Trip
                 </Button>
               </Link>
-              <Link href="/join">
-                <Button variant="outline" className="gap-2">
-                  <Users className="h-4 w-4" />
-                  Join Trip
-                </Button>
-              </Link>
             </div>
 
             {/* Trips Grid */}
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid md:grid-cols-2 lg:grid-cols-2 gap-6">
               {trips.map((trip, index) => (
                 <TripCard
                   // biome-ignore lint/suspicious/noArrayIndexKey: safe index
