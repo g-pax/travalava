@@ -1,6 +1,6 @@
 "use client";
 
-import { Edit, Plus, Utensils } from "lucide-react";
+import { Plus, Utensils } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -81,7 +81,8 @@ export function InlineRestaurantManager({
     setEditingIndex(null);
   };
 
-  const editingRestaurant = editingIndex !== null ? restaurants[editingIndex] : undefined;
+  const editingRestaurant =
+    editingIndex !== null ? restaurants[editingIndex] : undefined;
 
   return (
     <Card className={className}>
@@ -131,7 +132,8 @@ export function InlineRestaurantManager({
               No restaurants added yet
             </h3>
             <p className="text-gray-600 mb-4">
-              Add restaurant recommendations to help travelers find great places to eat near this activity.
+              Add restaurant recommendations to help travelers find great places
+              to eat near this activity.
             </p>
             <Button
               onClick={handleAddRestaurant}
@@ -155,28 +157,26 @@ export function InlineRestaurantManager({
             </DialogTitle>
           </DialogHeader>
 
-          <RestaurantEntryModeToggle defaultMode="google">
-            {({ mode, toggleMode }) => (
-              <div className="space-y-6">
-                {mode === "manual" ? (
-                  <RestaurantForm
-                    restaurant={editingRestaurant}
-                    onSave={handleSaveRestaurant}
-                    onCancel={handleCancelForm}
-                    isLoading={isUpdating}
-                  />
-                ) : (
-                  <GooglePlacesRestaurantForm
-                    restaurant={editingRestaurant}
-                    onSave={handleSaveRestaurant}
-                    onCancel={handleCancelForm}
-                    isLoading={isUpdating}
-                    tripLocation={tripLocation}
-                  />
-                )}
-              </div>
-            )}
-          </RestaurantEntryModeToggle>
+          <RestaurantEntryModeToggle
+            defaultMode="google"
+            googlePlacesComponent={
+              <GooglePlacesRestaurantForm
+                restaurant={editingRestaurant}
+                onSave={handleSaveRestaurant}
+                onCancel={handleCancelForm}
+                isLoading={isUpdating}
+                tripLocation={tripLocation}
+              />
+            }
+            manualEntryComponent={
+              <RestaurantForm
+                restaurant={editingRestaurant}
+                onSave={handleSaveRestaurant}
+                onCancel={handleCancelForm}
+                isLoading={isUpdating}
+              />
+            }
+          />
         </DialogContent>
       </Dialog>
     </Card>

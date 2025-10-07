@@ -3,9 +3,10 @@
 import {
   APIProvider,
   Map as GoogleMap,
+  type MapMouseEvent,
   Marker,
 } from "@vis.gl/react-google-maps";
-import { Edit, MapPin, Save, X, Navigation, Target } from "lucide-react";
+import { Edit, MapPin, Navigation, Save, Target, X } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -47,43 +48,60 @@ export function InlineLocationEditor({
   className,
 }: InlineLocationEditorProps) {
   const [isEditing, setIsEditing] = useState(false);
-  const [locationName, setLocationName] = useState(activity.location?.name || "");
+  const [locationName, setLocationName] = useState(
+    activity.location?.name || "",
+  );
   const [coordinates, setCoordinates] = useState<{
     lat: number;
     lng: number;
   } | null>(
     activity.location?.lat && activity.location?.lon
       ? { lat: activity.location.lat, lng: activity.location.lon }
-      : null
+      : null,
   );
   const [tempCoordinates, setTempCoordinates] = useState<{
     lat: number;
     lng: number;
   } | null>(coordinates);
-  const [manualLat, setManualLat] = useState(coordinates?.lat?.toString() || "");
-  const [manualLng, setManualLng] = useState(coordinates?.lng?.toString() || "");
+  const [manualLat, setManualLat] = useState(
+    coordinates?.lat?.toString() || "",
+  );
+  const [manualLng, setManualLng] = useState(
+    coordinates?.lng?.toString() || "",
+  );
 
   const hasLocation = activity.location?.lat && activity.location?.lon;
 
-  const handleMapClick = useCallback((event: google.maps.MapMouseEvent) => {
-    if (isEditing && event.latLng) {
-      const lat = event.latLng.lat();
-      const lng = event.latLng.lng();
-      setTempCoordinates({ lat, lng });
-      setManualLat(lat.toString());
-      setManualLng(lng.toString());
-    }
-  }, [isEditing]);
+  const handleMapClick = useCallback(
+    (event: MapMouseEvent) => {
+      if (isEditing && event.detail.latLng) {
+        const lat = event.detail.latLng.lat;
+        const lng = event.detail.latLng.lng;
+        setTempCoordinates({ lat, lng });
+        setManualLat(lat.toString());
+        setManualLng(lng.toString());
+      }
+    },
+    [isEditing],
+  );
 
   const handleManualCoordinateChange = () => {
     const lat = parseFloat(manualLat);
     const lng = parseFloat(manualLng);
 
-    if (!isNaN(lat) && !isNaN(lng) && lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180) {
+    if (
+      !Number.isNaN(lat) &&
+      !Number.isNaN(lng) &&
+      lat >= -90 &&
+      lat <= 90 &&
+      lng >= -180 &&
+      lng <= 180
+    ) {
       setTempCoordinates({ lat, lng });
     }
   };
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: safe here
   useEffect(() => {
     handleManualCoordinateChange();
   }, [manualLat, manualLng]);
@@ -102,7 +120,7 @@ export function InlineLocationEditor({
         (error) => {
           toast.error("Unable to detect current location");
           console.error("Geolocation error:", error);
-        }
+        },
       );
     } else {
       toast.error("Geolocation is not supported by this browser");
@@ -183,11 +201,7 @@ export function InlineLocationEditor({
                 >
                   <X className="h-4 w-4" />
                 </Button>
-                <Button
-                  size="sm"
-                  onClick={handleSave}
-                  disabled={isUpdating}
-                >
+                <Button size="sm" onClick={handleSave} disabled={isUpdating}>
                   <Save className="h-4 w-4" />
                 </Button>
               </>
@@ -283,7 +297,7 @@ export function InlineLocationEditor({
 
         {/* Map */}
         <div className="relative">
-          <APIProvider apiKey={GOOGLE_MAPS_API_KEY}>
+          <APIProvider apiKey={GOOGLE_MAPS_API_KEY || ""}>
             <GoogleMap
               {...MAP_OPTIONS}
               mapId={DEFAULT_MAP_CONFIG.mapId}
@@ -291,7 +305,7 @@ export function InlineLocationEditor({
               zoom={mapZoom}
               className={cn(
                 "h-[300px] w-full rounded-lg overflow-hidden",
-                isEditing && "cursor-crosshair"
+                isEditing && "cursor-crosshair",
               )}
               gestureHandling={isEditing ? "greedy" : "cooperative"}
               onClick={isEditing ? handleMapClick : undefined}
@@ -315,8 +329,13 @@ export function InlineLocationEditor({
         {/* Current Location Display (when not editing and has location) */}
         {!isEditing && hasLocation && (
           <div className="text-sm text-gray-600 space-y-1">
-            <p><strong>Name:</strong> {activity.location?.name}</p>
-            <p><strong>Coordinates:</strong> {activity.location?.lat?.toFixed(6)}, {activity.location?.lon?.toFixed(6)}</p>
+            <p>
+              <strong>Name:</strong> {activity.location?.name}
+            </p>
+            <p>
+              <strong>Coordinates:</strong> {activity.location?.lat?.toFixed(6)}
+              , {activity.location?.lon?.toFixed(6)}
+            </p>
           </div>
         )}
 
