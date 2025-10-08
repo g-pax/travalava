@@ -1,8 +1,12 @@
-import type { NextRequest } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
 import { updateSession } from "./lib/middleware";
 // Trigger a build
 
 export async function middleware(request: NextRequest) {
+  // always redirect to "/";
+  if (request.nextUrl.pathname !== "/") {
+    return NextResponse.redirect(new URL("/", request.url));
+  }
   const response = await updateSession(request);
 
   // Add security headers
