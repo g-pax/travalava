@@ -24,7 +24,7 @@
     },
     "upload": {
       "target": "filesystem",
-      "outputDir": ".lighthouseci", // <— where files will be
+      "outputDir": ".lighthouseci",
       "reportFilenamePattern": "%%PATHNAME%%-%%RUN%%.report.html"
     }
   }
