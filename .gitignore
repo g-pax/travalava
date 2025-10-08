@@ -41,6 +41,7 @@ yarn-error.log*
 next-env.d.ts
 
 
-# lighthouserc.json
-lighthouserc.json
+
+# lighthouse
 .lighthouseci
+lighthouserc.json

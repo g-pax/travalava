@@ -43,13 +43,13 @@ jobs:
       - name: Build app
         run: npm run build
 
-      - name: Start app in background
+      - name: Start app and wait for it to be ready
         run: |
           npx next start -p 3000 -H 127.0.0.1 & \
           npx --yes wait-on http://127.0.0.1:3000
 
       - name: Run Lighthouse CI
-        run: npx lhci collect --config=./lighthouserc.json && npx lhci assert --config=./lighthouserc.json
+        run: npx lhci autorun --config=./lighthouserc.json
 
       - name: Upload HTML reports
         if: always()
@@ -59,54 +59,52 @@ jobs:
           path: .lighthouseci/*.html
   
       - name: Summarize Lighthouse scores
+        if: always()
         run: |
           node - <<'NODE'
           const fs = require('fs');
           const path = require('path');
           const manifestPath = '.lighthouseci/manifest.json';
-          const m = JSON.parse(fs.readFileSync(manifestPath,'utf8'));
-          const byUrl = {};
-          for (const r of m) byUrl[r.url] = r;
-          const rows = [];
-          const pct = v => Math.round(v*100);
-          for (const [url, r] of Object.entries(byUrl)) {
-            const s = r.summary;
-            const reportFile = r.htmlPath ? path.basename(r.htmlPath) : '';
-            rows.push(`| ${url} | ${pct(s.performance)} | ${pct(s.accessibility)} | ${pct(s.seo)} | ${pct(s['best-practices']||0)} | ${reportFile} |`);
+          let md = '## Lighthouse summary\n\n';
+
+          if (fs.existsSync(manifestPath)) {
+            const m = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
+            const byUrl = {};
+            for (const r of m) byUrl[r.url] = r; // last run per URL wins
+            const pct = v => Math.round((v || 0) * 100);
+            md += '| Page | Perf | A11y | SEO | Best-practices | Report |\n';
+            md += '|---|---:|---:|---:|---:|---|\n';
+            for (const [url, r] of Object.entries(byUrl)) {
+              const s = r.summary || {};
+              const reportFile = r.htmlPath ? path.basename(r.htmlPath) : '';
+              md += `| ${url} | ${pct(s.performance)} | ${pct(s.accessibility)} | ${pct(s.seo)} | ${pct(s['best-practices']||0)} | ${reportFile} |\n`;
+            }
+          } else {
+            md += '_No manifest found. Reports may still be attached as artifacts._\n';
           }
-          const md = [
-            '## Lighthouse summary',
-            '',
-            '| Page | Perf | A11y | SEO | Best-practices | Report file |',
-            '|---|---:|---:|---:|---:|---|',
-            ...rows
-          ].join('\n');
+
           fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, md + '\n');
           NODE
 
       - name: Comment results on PR (with artifact link)
-        if: github.event_name == 'pull_request'
+        if: always() && github.event_name == 'pull_request'
         uses: actions/github-script@v7
         with:
           script: |
             const fs = require('fs');
-            const summary = fs.readFileSync(process.env.GITHUB_STEP_SUMMARY, 'utf8');
-
             const {owner, repo} = context.repo;
             const run_id = context.runId;
 
-            // List artifacts for this workflow run
+            // link to the artifact page (private to repo)
             const { data } = await github.rest.actions.listWorkflowRunArtifacts({ owner, repo, run_id });
             const artifact = data.artifacts.find(a => a.name === 'lighthouse-report');
-
-            // Build artifact page link if found
             const artifactLink = artifact
               ? `🔗 **HTML reports:** https://github.com/${owner}/${repo}/actions/runs/${run_id}/artifacts/${artifact.id}`
-              : '⚠️ Artifact not found. Check the workflow logs!';
+              : '⚠️ Artifact not found. Check the workflow logs.';
 
+            const summary = fs.readFileSync(process.env.GITHUB_STEP_SUMMARY, 'utf8');
             const body = `<!-- lhci-summary -->\n${summary}\n\n${artifactLink}`;
 
-            // Upsert sticky comment
             const pr = context.payload.pull_request.number;
             const { data: comments } = await github.rest.issues.listComments({ owner, repo, issue_number: pr });
             const existing = comments.find(c => c.body && c.body.includes('<!-- lhci-summary -->'));
@@ -115,3 +113,4 @@ jobs:
             } else {
               await github.rest.issues.createComment({ owner, repo, issue_number: pr, body });
             }
+
