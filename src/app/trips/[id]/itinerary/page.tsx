@@ -7,7 +7,7 @@ interface ItineraryRouteProps {
 const Itinerary = async ({ params }: ItineraryRouteProps) => {
   const { id } = await params;
 
-  return <ItineraryPage params={{ tripId: id }} />;
+  return id ? <ItineraryPage params={{ tripId: id }} /> : null;
 };
 
 export default Itinerary;

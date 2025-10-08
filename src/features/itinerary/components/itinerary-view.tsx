@@ -158,17 +158,16 @@ export function ItineraryView({
         <div>
           <h2 className="text-2xl font-bold">Itinerary</h2>
           <div className="text-sm text-muted-foreground mt-1">
-            {days?.length || 0} day{days?.length !== 1 ? "s" : ""} • {committedBlocks.length} confirmed activit{committedBlocks.length !== 1 ? "ies" : "y"}
+            {days?.length || 0} day{days?.length !== 1 ? "s" : ""} •{" "}
+            {committedBlocks.length} confirmed activit
+            {committedBlocks.length !== 1 ? "ies" : "y"}
           </div>
         </div>
 
         <div className="flex items-center gap-2">
           {currentMember?.role === "organizer" &&
             committedBlocks.length >= 2 && (
-              <DaySwapDialog
-                tripId={tripId}
-                committedBlocks={committedBlocks}
-              >
+              <DaySwapDialog tripId={tripId} committedBlocks={committedBlocks}>
                 <Button variant="outline" size="sm" className="gap-2">
                   <ArrowLeftRight className="h-4 w-4" />
                   Swap Days

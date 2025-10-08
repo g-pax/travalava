@@ -67,11 +67,7 @@ export function InlineNotesEditor({
                 >
                   <X className="h-4 w-4" />
                 </Button>
-                <Button
-                  size="sm"
-                  onClick={handleSave}
-                  disabled={isUpdating}
-                >
+                <Button size="sm" onClick={handleSave} disabled={isUpdating}>
                   <Save className="h-4 w-4" />
                 </Button>
               </>

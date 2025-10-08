@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "sonner";
 import { RootErrorBoundary } from "@/components/error";
+import { FeedbackButton } from "@/components/FeedbackButton";
 import { ServiceWorkerRegistration } from "@/components/service-worker-registration";
 import { AuthProvider } from "@/lib/auth-context";
 import { ReactQueryProvider } from "@/lib/react-query";
@@ -36,6 +37,7 @@ export default function RootLayout({
           <ReactQueryProvider>
             <AuthProvider>
               {children}
+              <FeedbackButton />
               <Toaster position="top-right" richColors />
               <ServiceWorkerRegistration />
             </AuthProvider>

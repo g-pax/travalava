@@ -1,8 +1,9 @@
 import { type NextRequest, NextResponse } from "next/server";
+import { updateSession } from "./lib/middleware";
 // Trigger a build
 
-export function middleware(request: NextRequest) {
-  const response = NextResponse.next();
+export async function middleware(request: NextRequest) {
+  const response = await updateSession(request);
 
   // Add security headers
   response.headers.set("X-Frame-Options", "DENY");

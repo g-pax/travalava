@@ -13,12 +13,7 @@ import {
 import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -81,9 +76,13 @@ export function InlineMetadataEditor({
     const metadata: Partial<ActivityMetadata> = {
       title: formData.title.trim(),
       category: formData.category || null,
-      cost_amount: formData.cost_amount ? parseFloat(formData.cost_amount) : null,
+      cost_amount: formData.cost_amount
+        ? parseFloat(formData.cost_amount)
+        : null,
       cost_currency: formData.cost_currency || null,
-      duration_min: formData.duration_min ? parseInt(formData.duration_min) : null,
+      duration_min: formData.duration_min
+        ? parseInt(formData.duration_min)
+        : null,
       link: formData.link.trim() || null,
     };
 
@@ -123,11 +122,7 @@ export function InlineMetadataEditor({
                 >
                   <X className="h-4 w-4" />
                 </Button>
-                <Button
-                  size="sm"
-                  onClick={handleSave}
-                  disabled={isUpdating}
-                >
+                <Button size="sm" onClick={handleSave} disabled={isUpdating}>
                   <Save className="h-4 w-4" />
                 </Button>
               </>
@@ -189,7 +184,9 @@ export function InlineMetadataEditor({
                   step="0.01"
                   min="0"
                   value={formData.cost_amount}
-                  onChange={(e) => updateFormData("cost_amount", e.target.value)}
+                  onChange={(e) =>
+                    updateFormData("cost_amount", e.target.value)
+                  }
                   placeholder="0.00"
                 />
               </div>
@@ -199,7 +196,12 @@ export function InlineMetadataEditor({
                   id="cost_currency"
                   maxLength={3}
                   value={formData.cost_currency}
-                  onChange={(e) => updateFormData("cost_currency", e.target.value.toUpperCase())}
+                  onChange={(e) =>
+                    updateFormData(
+                      "cost_currency",
+                      e.target.value.toUpperCase(),
+                    )
+                  }
                   placeholder={tripCurrency}
                   className="uppercase"
                 />
@@ -238,29 +240,34 @@ export function InlineMetadataEditor({
             <div>
               <h3 className="text-2xl font-bold mb-2">{activity.title}</h3>
               {activity.category && (
-                <Badge variant="secondary" className="flex items-center gap-1 w-fit">
+                <Badge
+                  variant="secondary"
+                  className="flex items-center gap-1 w-fit"
+                >
                   <Tag className="h-3 w-3" />
-                  {activity.category.charAt(0).toUpperCase() + activity.category.slice(1)}
+                  {activity.category.charAt(0).toUpperCase() +
+                    activity.category.slice(1)}
                 </Badge>
               )}
             </div>
 
             {/* Metadata Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {activity.cost_amount !== null && activity.cost_amount !== undefined && (
-                <div className="flex items-center gap-3">
-                  <DollarSign className="h-5 w-5 text-gray-600" />
-                  <div>
-                    <p className="text-sm text-gray-600">Cost</p>
-                    <p className="font-medium">
-                      {formatCurrency(
-                        activity.cost_amount,
-                        activity.cost_currency || tripCurrency,
-                      )}
-                    </p>
+              {activity.cost_amount !== null &&
+                activity.cost_amount !== undefined && (
+                  <div className="flex items-center gap-3">
+                    <DollarSign className="h-5 w-5 text-gray-600" />
+                    <div>
+                      <p className="text-sm text-gray-600">Cost</p>
+                      <p className="font-medium">
+                        {formatCurrency(
+                          activity.cost_amount,
+                          activity.cost_currency || tripCurrency,
+                        )}
+                      </p>
+                    </div>
                   </div>
-                </div>
-              )}
+                )}
 
               {activity.duration_min && (
                 <div className="flex items-center gap-3">
@@ -297,11 +304,14 @@ export function InlineMetadataEditor({
                   <div>
                     <p className="text-sm text-gray-600">Created</p>
                     <p className="font-medium text-sm">
-                      {new Date(activity.created_at).toLocaleDateString(undefined, {
-                        year: "numeric",
-                        month: "long",
-                        day: "numeric",
-                      })}
+                      {new Date(activity.created_at).toLocaleDateString(
+                        undefined,
+                        {
+                          year: "numeric",
+                          month: "long",
+                          day: "numeric",
+                        },
+                      )}
                     </p>
                   </div>
                 </div>

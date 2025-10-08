@@ -8,6 +8,10 @@ on:
 jobs:
   lhci:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+      statuses: write
 
     env:
       NEXT_TELEMETRY_DISABLED: "1"
@@ -52,3 +56,23 @@ jobs:
         with:
           name: lighthouse-report
           path: .lighthouseci/*.html
+  
+      - name: Comment results on PR
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const summary = fs.readFileSync(process.env.GITHUB_STEP_SUMMARY, 'utf8');
+            const body = `<!-- lhci-summary -->\n${summary}\n\n🗂️ Download full HTML reports from the job artifacts.`;
+            const {owner, repo} = context.repo;
+            const pr = context.payload.pull_request.number;
+
+            // find existing
+            const { data: comments } = await github.rest.issues.listComments({owner, repo, issue_number: pr});
+            const existing = comments.find(c => c.body && c.body.includes('<!-- lhci-summary -->'));
+            if (existing) {
+              await github.rest.issues.updateComment({owner, repo, comment_id: existing.id, body});
+            } else {
+              await github.rest.issues.createComment({owner, repo, issue_number: pr, body});
+            }
