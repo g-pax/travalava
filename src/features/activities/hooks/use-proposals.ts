@@ -1,3 +1,4 @@
+"use client";
 /**
  * React Query hooks for block proposal management
  * - Assign/remove activities to/from blocks

@@ -1,3 +1,4 @@
+"use client";
 /**
  * React Query hooks for activity management
  * - CRUD operations for activities
