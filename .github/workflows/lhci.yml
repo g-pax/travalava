@@ -70,7 +70,7 @@ jobs:
           if (fs.existsSync(manifestPath)) {
             const m = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
             const byUrl = {};
-            for (const r of m) byUrl[r.url] = r; // last run per URL wins
+            for (const r of m) byUrl[r.url] = r;
             const pct = v => Math.round((v || 0) * 100);
             md += '| Page | Perf | A11y | SEO | Best-practices | Report |\n';
             md += '|---|---:|---:|---:|---:|---|\n';
@@ -86,7 +86,7 @@ jobs:
           fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, md + '\n');
           NODE
 
-      - name: Comment results on PR (with artifact link)
+      - name: Comment results on PR (with robust artifact link)
         if: always() && github.event_name == 'pull_request'
         uses: actions/github-script@v7
         with:
@@ -95,12 +95,24 @@ jobs:
             const {owner, repo} = context.repo;
             const run_id = context.runId;
 
-            // link to the artifact page (private to repo)
-            const { data } = await github.rest.actions.listWorkflowRunArtifacts({ owner, repo, run_id });
-            const artifact = data.artifacts.find(a => a.name === 'lighthouse-report');
+            // Always provide a fallback link to the run's artifacts tab
+            const runArtifactsTab = `${context.serverUrl}/${owner}/${repo}/actions/runs/${run_id}`;
+
+            // Retry listArtifacts for up to ~45s total to dodge indexing lag
+            async function findArtifactByName(name, maxAttempts=9, delayMs=5000) {
+              for (let i=1; i<=maxAttempts; i++) {
+                const { data } = await github.rest.actions.listWorkflowRunArtifacts({ owner, repo, run_id });
+                const hit = data.artifacts?.find(a => a.name === name);
+                if (hit) return hit;
+                if (i < maxAttempts) await new Promise(r => setTimeout(r, delayMs));
+              }
+              return null;
+            }
+
+            const artifact = await findArtifactByName('lighthouse-report');
             const artifactLink = artifact
-              ? `🔗 **HTML reports:** https://github.com/${owner}/${repo}/actions/runs/${run_id}/artifacts/${artifact.id}`
-              : '⚠️ Artifact not found. Check the workflow logs.';
+              ? `🔗 **HTML reports:** ${context.serverUrl}/${owner}/${repo}/actions/runs/${run_id}/artifacts/${artifact.id}`
+              : `⚠️ Artifact not indexed yet. Check the run page: ${runArtifactsTab} (Artifacts section).`;
 
             const summary = fs.readFileSync(process.env.GITHUB_STEP_SUMMARY, 'utf8');
             const body = `<!-- lhci-summary -->\n${summary}\n\n${artifactLink}`;
@@ -113,4 +125,5 @@ jobs:
             } else {
               await github.rest.issues.createComment({ owner, repo, issue_number: pr, body });
             }
+
 
