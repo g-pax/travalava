@@ -11,14 +11,12 @@ interface ActivitiesPageProps {
 
 export default function ActivitiesPage({ params }: ActivitiesPageProps) {
   const { tripId } = params;
-  console.log("🚀 ~ ActivitiesPage ~ tripId:", tripId);
   const { data: currentMember } = useCurrentMember(tripId);
 
   // Get trip data for currency - we need this for the ActivitiesManager component
   const { data: trip } = useQuery({
     queryKey: ["trip", tripId],
     queryFn: async () => {
-      if (!tripId) throw new Error("Trip ID is required");
       const { data, error } = await supabase
         .from("trips")
         .select(`

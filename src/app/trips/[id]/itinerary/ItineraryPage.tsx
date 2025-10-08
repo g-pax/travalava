@@ -17,7 +17,6 @@ export default function ItineraryPage({ params }: ItineraryPageProps) {
   const { data: trip } = useQuery({
     queryKey: ["trip", tripId],
     queryFn: async () => {
-      if (!tripId) throw new Error("Trip ID is required");
       const { data, error } = await supabase
         .from("trips")
         .select(`

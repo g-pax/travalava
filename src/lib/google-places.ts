@@ -84,7 +84,8 @@ interface PlacesDB extends DBSchema {
 const CACHE_DURATION = 24 * 60 * 60 * 1000; // 24 hours
 
 // API base URL for our Next.js routes
-const API_BASE_URL = typeof window !== 'undefined' ? window.location.origin : '';
+const API_BASE_URL =
+  typeof window !== "undefined" ? window.location.origin : "";
 
 class GooglePlacesService {
   private db: IDBPDatabase<PlacesDB> | null = null;
@@ -238,11 +239,13 @@ class GooglePlacesService {
     }
 
     try {
-      const response = await fetch(`${API_BASE_URL}/api/places/search?${searchParams}`);
+      const response = await fetch(
+        `${API_BASE_URL}/api/places/search?${searchParams}`,
+      );
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || 'Search failed');
+        throw new Error(errorData.error || "Search failed");
       }
 
       const data = await response.json();
@@ -270,12 +273,12 @@ class GooglePlacesService {
 
     try {
       const response = await fetch(
-        `${API_BASE_URL}/api/places/details?place_id=${encodeURIComponent(placeId)}`
+        `${API_BASE_URL}/api/places/details?place_id=${encodeURIComponent(placeId)}`,
       );
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || 'Details fetch failed');
+        throw new Error(errorData.error || "Details fetch failed");
       }
 
       const data = await response.json();
@@ -384,28 +387,36 @@ class GooglePlacesService {
 
   /**
    * Convert PlaceSearchResult to RestaurantInput format
+   *
+   * IMPORTANT: Per Google's Terms of Service, only these fields should be stored:
+   * - place_id (required for fetching fresh data)
+   * - lat/lon (cached coordinates, must be refreshed every 30 days)
+   * - name (optional, for convenience)
+   *
+   * All other fields are for DISPLAY ONLY and should be fetched fresh each time
+   * using the place_id. This ensures compliance with Google's caching restrictions.
    */
   toRestaurantInput(place: PlaceSearchResult, details?: PlaceDetails) {
-    const priceRange = this.formatPriceLevel(place.price_level) as
-      | "$"
-      | "$$"
-      | "$$$"
-      | "$$$$"
-      | undefined;
-
     return {
+      // Fields allowed to be stored (Google ToS compliant)
       name: place.name,
+      place_id: place.place_id,
+      lat: place.geometry.location.lat,
+      lon: place.geometry.location.lng,
+
+      // Fields for DISPLAY ONLY (do not cache in database)
+      location_updated_at: new Date().toISOString(),
+      cuisine_type: this.getCuisineFromTypes(place.types),
+      price_range: this.formatPriceLevel(place.price_level),
+      description: details?.editorial_summary?.overview || "",
       address: place.formatted_address,
       phone: details?.formatted_phone_number || "",
       website: details?.website || "",
-      rating: place.rating,
-      review_count: place.user_ratings_total,
-      price_range: priceRange,
       image_url: place.photos?.[0]
         ? this.getPhotoUrl(place.photos[0].photo_reference)
         : "",
-      description: details?.editorial_summary?.overview || "",
-      cuisine_type: this.getCuisineFromTypes(place.types),
+      rating: place.rating,
+      review_count: place.user_ratings_total,
     };
   }
 

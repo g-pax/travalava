@@ -39,7 +39,7 @@ export const JoinTripSchema = z
     path: ["confirmPassword"],
   });
 
-// Restaurant schemas
+// Restaurant schemas (DEPRECATED - Use @/features/restaurants/schemas instead)
 export const RestaurantSchema = z.object({
   id: z.string().optional(),
   name: z.string().min(1, "Restaurant name is required"),

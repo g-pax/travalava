@@ -451,7 +451,6 @@ export function useBlockCommitQuery(blockId: string) {
       return data;
     },
     enabled: !!blockId && blockId !== "undefined" && blockId !== "null",
-    staleTime: 1000 * 60 * 10, // 10 minutes since commits don't change often
   });
 }
 

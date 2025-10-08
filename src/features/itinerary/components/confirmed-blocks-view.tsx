@@ -89,7 +89,6 @@ export function ConfirmedBlocksView({ tripId }: ConfirmedBlocksViewProps) {
   const activitiesWithCoords = confirmedBlocks
     .filter((block) => {
       const location = (block.activity as any)?.location;
-      console.log("🚀 ~ ConfirmedBlocksView ~ block.activity:", block.activity);
       // Support multiple coordinate formats
       if (
         location?.coordinates &&

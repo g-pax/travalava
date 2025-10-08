@@ -1,6 +1,6 @@
 "use client";
 
-import { Calendar, Home, MapPin } from "lucide-react";
+import { Calendar, Home, MapPin, UtensilsCrossed } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
@@ -48,6 +48,13 @@ export function TripNav({ tripId }: TripNavProps) {
       label: "Activities",
       icon: MapPin,
       isActive: pathname?.includes("/activities"),
+      show: isOnTripPage,
+    },
+    {
+      href: `/trips/${tripId}/restaurants`,
+      label: "Restaurants",
+      icon: UtensilsCrossed,
+      isActive: pathname?.includes("/restaurants"),
       show: isOnTripPage,
     },
   ].filter((item) => item.show);

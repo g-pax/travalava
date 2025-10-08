@@ -16,9 +16,9 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-
+import { useRestaurantsByActivity } from "@/features/restaurants";
 import type { ThumbnailUploadResult } from "@/lib/image-upload";
-import type { RestaurantInput } from "@/schemas";
+
 import {
   useActivity,
   useDeleteActivity,
@@ -41,6 +41,9 @@ export function EnhancedActivityDetailView({
   const router = useRouter();
   const [isMounted, setIsMounted] = useState(false);
   const { data: activity, isLoading, error } = useActivity(activityId);
+  const { data: restaurants = [], isLoading: isRestaurantsLoading } =
+    useRestaurantsByActivity(activityId);
+
   const updateActivity = useUpdateActivity();
   const deleteActivity = useDeleteActivity();
   const [isDeleting, setIsDeleting] = useState(false);
@@ -84,14 +87,6 @@ export function EnhancedActivityDetailView({
       updates: { notes: notes || undefined },
     });
     toast.success("Notes updated successfully");
-  };
-
-  const handleRestaurantsUpdate = async (restaurants: RestaurantInput[]) => {
-    if (!activity) return;
-    await updateActivity.mutateAsync({
-      id: activity.id,
-      updates: { restaurants },
-    });
   };
 
   const handleThumbnailUploaded = async (result: ThumbnailUploadResult) => {
@@ -144,7 +139,7 @@ export function EnhancedActivityDetailView({
     setIsMounted(true);
   }, []);
 
-  if (isLoading || !isMounted) {
+  if (isLoading || isRestaurantsLoading || !isMounted) {
     return (
       <div className="min-h-screen bg-gray-50">
         <div className="mx-auto max-w-6xl px-6 py-8">
@@ -200,8 +195,6 @@ export function EnhancedActivityDetailView({
       </div>
     );
   }
-
-  const restaurants = (activity as any).restaurants || [];
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -259,7 +252,7 @@ export function EnhancedActivityDetailView({
                       size="sm"
                       onClick={handleRemoveThumbnail}
                       disabled={updateActivity.isPending}
-                      className="absolute top-2 right-2"
+                      className="absolute top-2 right-2 text-white"
                     >
                       Remove
                     </Button>
@@ -295,9 +288,8 @@ export function EnhancedActivityDetailView({
 
             {/* Restaurant Recommendations */}
             <InlineRestaurantManager
-              restaurants={restaurants}
-              onRestaurantsUpdate={handleRestaurantsUpdate}
-              isUpdating={updateActivity.isPending}
+              activityId={activityId}
+              tripId={tripId}
               tripLocation={
                 activity.location?.lat && activity.location?.lon
                   ? { lat: activity.location.lat, lng: activity.location.lon }
@@ -347,6 +339,7 @@ export function EnhancedActivityDetailView({
             {/* Location and Map */}
             <InlineLocationEditor
               activity={activity}
+              restaurants={restaurants}
               onLocationUpdate={handleLocationUpdate}
               isUpdating={updateActivity.isPending}
             />

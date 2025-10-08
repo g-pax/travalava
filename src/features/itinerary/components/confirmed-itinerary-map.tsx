@@ -35,7 +35,6 @@ export function ConfirmedItineraryMap({
   activities,
   className,
 }: ConfirmedItineraryMapProps) {
-  console.log("🚀 ~ activities:", activities);
   const [selectedMarker, setSelectedMarker] = useState<string | null>(null);
 
   // Calculate map center and zoom from activities
@@ -198,16 +197,6 @@ export function ConfirmedItineraryMap({
         {activities.map((activity, index) => {
           const coords = activity.location.coordinates;
 
-          console.log(`Activity ${index}:`, {
-            id: activity.id,
-            title: activity.title,
-            coords,
-            isArray: Array.isArray(coords),
-            length: coords?.length,
-            lat: coords?.[1],
-            lng: coords?.[0],
-          });
-
           if (
             !Array.isArray(coords) ||
             coords.length !== 2 ||
@@ -216,16 +205,11 @@ export function ConfirmedItineraryMap({
             Number.isNaN(coords[1]) ||
             Number.isNaN(coords[0])
           ) {
-            console.log(
-              `❌ Activity ${activity.title} filtered out - invalid coords`,
-            );
             return null;
           }
 
           const position = { lat: coords[1], lng: coords[0] };
           const dayColor = getDayColor(activity.dayDate);
-
-          console.log(`✅ Rendering marker for ${activity.title} at`, position);
 
           return (
             <div key={activity.id}>

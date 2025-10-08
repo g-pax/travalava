@@ -6,7 +6,6 @@ import { RootErrorBoundary } from "@/components/error";
 import { ServiceWorkerRegistration } from "@/components/service-worker-registration";
 import { AuthProvider } from "@/lib/auth-context";
 import { ReactQueryProvider } from "@/lib/react-query";
-import "@/lib/clear-cache";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",

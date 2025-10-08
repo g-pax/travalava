@@ -206,90 +206,90 @@ export function useCreateProposal() {
 
       return data;
     },
-    onMutate: async ({ blockId, activityId, tripId, createdBy }) => {
-      // Cancel outgoing refetches
-      await queryClient.cancelQueries({
-        queryKey: ["block-proposals", blockId],
-      });
-      await queryClient.cancelQueries({ queryKey: ["trip-proposals", tripId] });
-      await queryClient.cancelQueries({
-        queryKey: ["activity-proposals", activityId],
-      });
+    // onMutate: async ({ blockId, activityId, tripId, createdBy }) => {
+    //   // Cancel outgoing refetches
+    //   await queryClient.cancelQueries({
+    //     queryKey: ["block-proposals", blockId],
+    //   });
+    //   await queryClient.cancelQueries({ queryKey: ["trip-proposals", tripId] });
+    //   await queryClient.cancelQueries({
+    //     queryKey: ["activity-proposals", activityId],
+    //   });
 
-      // Snapshot previous values
-      const previousBlockProposals = queryClient.getQueryData<BlockProposal[]>([
-        "block-proposals",
-        blockId,
-      ]);
-      const previousTripProposals = queryClient.getQueryData<BlockProposal[]>([
-        "trip-proposals",
-        tripId,
-      ]);
-      const previousActivityProposals = queryClient.getQueryData<
-        BlockProposal[]
-      >(["activity-proposals", activityId]);
+    //   // Snapshot previous values
+    //   const previousBlockProposals = queryClient.getQueryData<BlockProposal[]>([
+    //     "block-proposals",
+    //     blockId,
+    //   ]);
+    //   const previousTripProposals = queryClient.getQueryData<BlockProposal[]>([
+    //     "trip-proposals",
+    //     tripId,
+    //   ]);
+    //   const previousActivityProposals = queryClient.getQueryData<
+    //     BlockProposal[]
+    //   >(["activity-proposals", activityId]);
 
-      // Create optimistic proposal
-      const optimisticProposal: BlockProposal = {
-        id: `temp-${nanoid()}`,
-        trip_id: tripId,
-        block_id: blockId,
-        activity_id: activityId,
-        created_by: createdBy,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-      };
+    //   // Create optimistic proposal
+    //   const optimisticProposal: BlockProposal = {
+    //     id: `temp-${nanoid()}`,
+    //     trip_id: tripId,
+    //     block_id: blockId,
+    //     activity_id: activityId,
+    //     created_by: createdBy,
+    //     created_at: new Date().toISOString(),
+    //     updated_at: new Date().toISOString(),
+    //   };
 
-      // Optimistically update caches
-      if (previousBlockProposals) {
-        queryClient.setQueryData<BlockProposal[]>(
-          ["block-proposals", blockId],
-          [...previousBlockProposals, optimisticProposal],
-        );
-      }
+    //   // Optimistically update caches
+    //   if (previousBlockProposals) {
+    //     queryClient.setQueryData<BlockProposal[]>(
+    //       ["block-proposals", blockId],
+    //       [...previousBlockProposals, optimisticProposal],
+    //     );
+    //   }
 
-      if (previousTripProposals) {
-        queryClient.setQueryData<BlockProposal[]>(
-          ["trip-proposals", tripId],
-          [...previousTripProposals, optimisticProposal],
-        );
-      }
+    //   if (previousTripProposals) {
+    //     queryClient.setQueryData<BlockProposal[]>(
+    //       ["trip-proposals", tripId],
+    //       [...previousTripProposals, optimisticProposal],
+    //     );
+    //   }
 
-      if (previousActivityProposals) {
-        queryClient.setQueryData<BlockProposal[]>(
-          ["activity-proposals", activityId],
-          [...previousActivityProposals, optimisticProposal],
-        );
-      }
+    //   if (previousActivityProposals) {
+    //     queryClient.setQueryData<BlockProposal[]>(
+    //       ["activity-proposals", activityId],
+    //       [...previousActivityProposals, optimisticProposal],
+    //     );
+    //   }
 
-      return {
-        previousBlockProposals,
-        previousTripProposals,
-        previousActivityProposals,
-      };
-    },
-    onError: (error, { blockId, tripId, activityId }, context) => {
-      // Rollback optimistic updates
-      if (context?.previousBlockProposals) {
-        queryClient.setQueryData(
-          ["block-proposals", blockId],
-          context.previousBlockProposals,
-        );
-      }
-      if (context?.previousTripProposals) {
-        queryClient.setQueryData(
-          ["trip-proposals", tripId],
-          context.previousTripProposals,
-        );
-      }
-      if (context?.previousActivityProposals) {
-        queryClient.setQueryData(
-          ["activity-proposals", activityId],
-          context.previousActivityProposals,
-        );
-      }
-      toast.error(error.message || "Failed to add proposal");
-    },
+    //   return {
+    //     previousBlockProposals,
+    //     previousTripProposals,
+    //     previousActivityProposals,
+    //   };
+    // },
+    // onError: (error, { blockId, tripId, activityId }, context) => {
+    //   // Rollback optimistic updates
+    //   if (context?.previousBlockProposals) {
+    //     queryClient.setQueryData(
+    //       ["block-proposals", blockId],
+    //       context.previousBlockProposals,
+    //     );
+    //   }
+    //   if (context?.previousTripProposals) {
+    //     queryClient.setQueryData(
+    //       ["trip-proposals", tripId],
+    //       context.previousTripProposals,
+    //     );
+    //   }
+    //   if (context?.previousActivityProposals) {
+    //     queryClient.setQueryData(
+    //       ["activity-proposals", activityId],
+    //       context.previousActivityProposals,
+    //     );
+    //   }
+    //   toast.error(error.message || "Failed to add proposal");
+    // },
     onSuccess: (_data, { blockId, tripId, activityId }) => {
       // Invalidate relevant queries
       queryClient.invalidateQueries({ queryKey: ["block-proposals", blockId] });
@@ -354,124 +354,123 @@ export function useRemoveProposal() {
 
       return { proposalId, ...proposal, clientMutationId: mutationId };
     },
-    onMutate: async ({ proposalId }) => {
-      // Find the proposal in caches to get its details
-      const allQueries = queryClient.getQueriesData({
-        queryKey: ["block-proposals"],
-      });
-      let proposal: BlockProposal | undefined;
+    // onMutate: async ({ proposalId }) => {
+    //   // Find the proposal in caches to get its details
+    //   const allQueries = queryClient.getQueriesData({
+    //     queryKey: ["block-proposals"],
+    //   });
+    //   let proposal: BlockProposal | undefined;
 
-      for (const [_key, data] of allQueries) {
-        if (Array.isArray(data)) {
-          proposal = data.find((p: BlockProposal) => p.id === proposalId);
-          if (proposal) {
-            break;
-          }
-        }
-      }
+    //   for (const [_key, data] of allQueries) {
+    //     if (Array.isArray(data)) {
+    //       proposal = data.find((p: BlockProposal) => p.id === proposalId);
+    //       if (proposal) {
+    //         break;
+    //       }
+    //     }
+    //   }
 
-      if (!proposal) return;
+    //   if (!proposal) return;
 
-      // Cancel outgoing refetches
-      await queryClient.cancelQueries({
-        queryKey: ["block-proposals", proposal.block_id],
-      });
-      await queryClient.cancelQueries({
-        queryKey: ["trip-proposals", proposal.trip_id],
-      });
-      await queryClient.cancelQueries({
-        queryKey: ["activity-proposals", proposal.activity_id],
-      });
+    //   // Cancel outgoing refetches
+    //   await queryClient.cancelQueries({
+    //     queryKey: ["block-proposals", proposal.block_id],
+    //   });
+    //   await queryClient.cancelQueries({
+    //     queryKey: ["trip-proposals", proposal.trip_id],
+    //   });
+    //   await queryClient.cancelQueries({
+    //     queryKey: ["activity-proposals", proposal.activity_id],
+    //   });
 
-      // Snapshot previous values
-      const previousBlockProposals = queryClient.getQueryData<BlockProposal[]>([
-        "block-proposals",
-        proposal.block_id,
-      ]);
-      const previousTripProposals = queryClient.getQueryData<BlockProposal[]>([
-        "trip-proposals",
-        proposal.trip_id,
-      ]);
-      const previousActivityProposals = queryClient.getQueryData<
-        BlockProposal[]
-      >(["activity-proposals", proposal.activity_id]);
+    //   // Snapshot previous values
+    //   const previousBlockProposals = queryClient.getQueryData<BlockProposal[]>([
+    //     "block-proposals",
+    //     proposal.block_id,
+    //   ]);
+    //   const previousTripProposals = queryClient.getQueryData<BlockProposal[]>([
+    //     "trip-proposals",
+    //     proposal.trip_id,
+    //   ]);
+    //   const previousActivityProposals = queryClient.getQueryData<
+    //     BlockProposal[]
+    //   >(["activity-proposals", proposal.activity_id]);
 
-      // Optimistically remove
-      if (previousBlockProposals) {
-        queryClient.setQueryData<BlockProposal[]>(
-          ["block-proposals", proposal.block_id],
-          previousBlockProposals.filter((p) => p.id !== proposalId),
-        );
-      }
+    //   // Optimistically remove
+    //   if (previousBlockProposals) {
+    //     queryClient.setQueryData<BlockProposal[]>(
+    //       ["block-proposals", proposal.block_id],
+    //       previousBlockProposals.filter((p) => p.id !== proposalId),
+    //     );
+    //   }
 
-      if (previousTripProposals) {
-        queryClient.setQueryData<BlockProposal[]>(
-          ["trip-proposals", proposal.trip_id],
-          previousTripProposals.filter((p) => p.id !== proposalId),
-        );
-      }
+    //   if (previousTripProposals) {
+    //     queryClient.setQueryData<BlockProposal[]>(
+    //       ["trip-proposals", proposal.trip_id],
+    //       previousTripProposals.filter((p) => p.id !== proposalId),
+    //     );
+    //   }
 
-      if (previousActivityProposals) {
-        queryClient.setQueryData<BlockProposal[]>(
-          ["activity-proposals", proposal.activity_id],
-          previousActivityProposals.filter((p) => p.id !== proposalId),
-        );
-      }
+    //   if (previousActivityProposals) {
+    //     queryClient.setQueryData<BlockProposal[]>(
+    //       ["activity-proposals", proposal.activity_id],
+    //       previousActivityProposals.filter((p) => p.id !== proposalId),
+    //     );
+    //   }
 
-      return {
-        proposal,
-        previousBlockProposals,
-        previousTripProposals,
-        previousActivityProposals,
-      };
-    },
-    onError: (error, _ctx, context) => {
-      console.log("🚀 ~ useRemoveProposal ~ error:", error);
-      if (!context?.proposal) return;
+    //   return {
+    //     proposal,
+    //     previousBlockProposals,
+    //     previousTripProposals,
+    //     previousActivityProposals,
+    //   };
+    // },
+    // onError: (error, _ctx, context) => {
+    //   if (!context?.proposal) return;
 
-      // Rollback optimistic updates
-      if (context.previousBlockProposals) {
-        queryClient.setQueryData(
-          ["block-proposals", context.proposal.block_id],
-          context.previousBlockProposals,
-        );
-      }
-      if (context.previousTripProposals) {
-        queryClient.setQueryData(
-          ["trip-proposals", context.proposal.trip_id],
-          context.previousTripProposals,
-        );
-      }
-      if (context.previousActivityProposals) {
-        queryClient.setQueryData(
-          ["activity-proposals", context.proposal.activity_id],
-          context.previousActivityProposals,
-        );
-      }
+    //   // Rollback optimistic updates
+    //   if (context.previousBlockProposals) {
+    //     queryClient.setQueryData(
+    //       ["block-proposals", context.proposal.block_id],
+    //       context.previousBlockProposals,
+    //     );
+    //   }
+    //   if (context.previousTripProposals) {
+    //     queryClient.setQueryData(
+    //       ["trip-proposals", context.proposal.trip_id],
+    //       context.previousTripProposals,
+    //     );
+    //   }
+    //   if (context.previousActivityProposals) {
+    //     queryClient.setQueryData(
+    //       ["activity-proposals", context.proposal.activity_id],
+    //       context.previousActivityProposals,
+    //     );
+    //   }
 
-      toast.error(error.message || "Failed to remove proposal");
-    },
-    onSuccess: (_data, _ctx, context) => {
-      if (!context?.proposal) return;
+    //   toast.error(error.message || "Failed to remove proposal");
+    // },
+    // onSuccess: (_data, _ctx, context) => {
+    //   if (!context?.proposal) return;
 
-      // Invalidate relevant queries
-      queryClient.invalidateQueries({
-        queryKey: ["block-proposals", context.proposal.block_id],
-      });
-      queryClient.invalidateQueries({
-        queryKey: ["trip-proposals", context.proposal.trip_id],
-      });
-      queryClient.invalidateQueries({
-        queryKey: ["activity-proposals", context.proposal.activity_id],
-      });
-      // Invalidate activities cache since proposals are now included in the activity data
-      queryClient.invalidateQueries({
-        queryKey: ["activities", context.proposal.trip_id],
-      });
-      queryClient.invalidateQueries({
-        queryKey: ["activity", context.proposal.activity_id],
-      });
-      toast.success("Proposal removed");
-    },
+    //   // Invalidate relevant queries
+    //   queryClient.invalidateQueries({
+    //     queryKey: ["block-proposals", context.proposal.block_id],
+    //   });
+    //   queryClient.invalidateQueries({
+    //     queryKey: ["trip-proposals", context.proposal.trip_id],
+    //   });
+    //   queryClient.invalidateQueries({
+    //     queryKey: ["activity-proposals", context.proposal.activity_id],
+    //   });
+    //   // Invalidate activities cache since proposals are now included in the activity data
+    //   queryClient.invalidateQueries({
+    //     queryKey: ["activities", context.proposal.trip_id],
+    //   });
+    //   queryClient.invalidateQueries({
+    //     queryKey: ["activity", context.proposal.activity_id],
+    //   });
+    //   toast.success("Proposal removed");
+    // },
   });
 }

@@ -1,5 +1,14 @@
 "use client";
 
+/**
+ * @deprecated This component is deprecated. Use ActivityRestaurantSelector from @/features/restaurants/components instead.
+ *
+ * MIGRATION: Replace with the new standalone restaurant system:
+ * - Restaurants are now managed separately at /trips/[id]/restaurants
+ * - Use ActivityRestaurantSelector to link existing restaurants to activities
+ * - See RESTAURANT_MIGRATION.md for full migration guide
+ */
+
 import { Plus, Utensils } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -17,16 +26,26 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import type { RestaurantInput } from "@/schemas";
+import { RestaurantListSelector } from "@/features/restaurants";
+import {
+  useCreateRestaurant,
+  useDeleteRestaurant,
+  useLinkRestaurantToActivity,
+  useRestaurantsByActivity,
+  useUnlinkRestaurantFromActivity,
+  useUpdateRestaurant,
+} from "@/features/restaurants/hooks/use-restaurants";
+import type {
+  RestaurantFormData,
+  RestaurantWithActivityLinks,
+} from "@/features/restaurants/types";
 import { RestaurantEntryModeToggle } from "./activity-entry-mode-toggle";
 import { GooglePlacesRestaurantForm } from "./google-places-restaurant-form";
 import { RestaurantCard } from "./restaurant-card";
-import { RestaurantForm } from "./restaurant-form";
 
 interface InlineRestaurantManagerProps {
-  restaurants: RestaurantInput[];
-  onRestaurantsUpdate: (restaurants: RestaurantInput[]) => Promise<void>;
-  isUpdating?: boolean;
+  activityId: string;
+  tripId: string;
   tripLocation?: {
     lat: number;
     lng: number;
@@ -35,54 +54,115 @@ interface InlineRestaurantManagerProps {
 }
 
 export function InlineRestaurantManager({
-  restaurants,
-  onRestaurantsUpdate,
-  isUpdating = false,
+  activityId,
+  tripId,
   tripLocation,
   className,
 }: InlineRestaurantManagerProps) {
   const [isFormOpen, setIsFormOpen] = useState(false);
-  const [editingIndex, setEditingIndex] = useState<number | null>(null);
+  const [editingRestaurant, setEditingRestaurant] =
+    useState<RestaurantWithActivityLinks | null>(null);
+
+  // Hooks for restaurant operations
+  const {
+    data: restaurants = [],
+    isLoading,
+    refetch,
+  } = useRestaurantsByActivity(activityId);
+  const createRestaurant = useCreateRestaurant();
+  const updateRestaurant = useUpdateRestaurant();
+  const deleteRestaurant = useDeleteRestaurant();
+  const linkRestaurant = useLinkRestaurantToActivity();
+  const unlinkRestaurant = useUnlinkRestaurantFromActivity();
+
+  const isUpdating =
+    createRestaurant.isPending ||
+    updateRestaurant.isPending ||
+    deleteRestaurant.isPending ||
+    linkRestaurant.isPending ||
+    unlinkRestaurant.isPending;
 
   const handleAddRestaurant = () => {
-    setEditingIndex(null);
+    setEditingRestaurant(null);
     setIsFormOpen(true);
   };
 
-  const handleEditRestaurant = (index: number) => {
-    setEditingIndex(index);
+  const handleEditRestaurant = (restaurant: RestaurantWithActivityLinks) => {
+    setEditingRestaurant(restaurant);
     setIsFormOpen(true);
   };
 
-  const handleSaveRestaurant = async (restaurant: RestaurantInput) => {
-    const newRestaurants = [...restaurants];
+  const handleSaveRestaurant = async (
+    restaurantData: RestaurantFormData & { id?: string },
+  ) => {
+    try {
+      if (editingRestaurant) {
+        // Update existing restaurant
+        await updateRestaurant.mutateAsync({
+          id: editingRestaurant.id,
+          ...restaurantData,
+        });
+      } else if (restaurantData.id) {
+        // Link existing restaurant from saved list to this activity
+        await linkRestaurant.mutateAsync({
+          activity_id: activityId,
+          restaurant_id: restaurantData.id,
+          sort_order: restaurants.length,
+        });
+      } else {
+        // Create new restaurant and link to activity
+        const newRestaurant = await createRestaurant.mutateAsync({
+          ...restaurantData,
+          trip_id: tripId,
+        });
 
-    if (editingIndex !== null) {
-      newRestaurants[editingIndex] = restaurant;
-      toast.success("Restaurant updated successfully");
-    } else {
-      newRestaurants.push(restaurant);
-      toast.success("Restaurant added successfully");
+        // Link the new restaurant to this activity
+        await linkRestaurant.mutateAsync({
+          activity_id: activityId,
+          restaurant_id: newRestaurant.id!,
+          sort_order: restaurants.length,
+        });
+      }
+
+      setIsFormOpen(false);
+      setEditingRestaurant(null);
+      refetch();
+    } catch (error) {
+      // Errors are handled by the mutation hooks
+      console.error("Restaurant save error:", error);
     }
-
-    await onRestaurantsUpdate(newRestaurants);
-    setIsFormOpen(false);
-    setEditingIndex(null);
   };
 
-  const handleDeleteRestaurant = async (index: number) => {
-    const newRestaurants = restaurants.filter((_, i) => i !== index);
-    await onRestaurantsUpdate(newRestaurants);
-    toast.success("Restaurant removed successfully");
+  const handleDeleteRestaurant = async (
+    restaurant: RestaurantWithActivityLinks,
+  ) => {
+    try {
+      // First unlink from activity
+      await unlinkRestaurant.mutateAsync({
+        activity_id: activityId,
+        restaurant_id: restaurant.id,
+      });
+
+      // Check if restaurant is linked to other activities before deleting
+      if (
+        restaurant.linked_activities_count &&
+        restaurant.linked_activities_count <= 1
+      ) {
+        // Only linked to this activity, safe to delete
+        await deleteRestaurant.mutateAsync(restaurant.id);
+      }
+
+      refetch();
+    } catch (error) {
+      // Errors are handled by the mutation hooks
+      console.error("Restaurant delete error:", error);
+    }
   };
 
   const handleCancelForm = () => {
     setIsFormOpen(false);
-    setEditingIndex(null);
+    setEditingRestaurant(null);
   };
-
-  const editingRestaurant =
-    editingIndex !== null ? restaurants[editingIndex] : undefined;
 
   return (
     <Card className={className}>
@@ -112,14 +192,18 @@ export function InlineRestaurantManager({
       </CardHeader>
 
       <CardContent>
-        {restaurants.length > 0 ? (
+        {isLoading ? (
+          <div className="text-center py-8">
+            <p className="text-gray-600">Loading restaurants...</p>
+          </div>
+        ) : restaurants.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {restaurants.map((restaurant, index) => (
+            {restaurants.map((restaurant) => (
               <RestaurantCard
-                key={restaurant.id || index}
+                key={restaurant.id}
                 restaurant={restaurant}
-                onEdit={() => handleEditRestaurant(index)}
-                onDelete={() => handleDeleteRestaurant(index)}
+                onEdit={() => handleEditRestaurant(restaurant)}
+                onDelete={() => handleDeleteRestaurant(restaurant)}
                 disabled={isUpdating}
                 showActions={true}
               />
@@ -153,7 +237,7 @@ export function InlineRestaurantManager({
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>
-              {editingIndex !== null ? "Edit Restaurant" : "Add Restaurant"}
+              {editingRestaurant ? "Edit Restaurant" : "Add Restaurant"}
             </DialogTitle>
           </DialogHeader>
 
@@ -161,7 +245,6 @@ export function InlineRestaurantManager({
             defaultMode="google"
             googlePlacesComponent={
               <GooglePlacesRestaurantForm
-                restaurant={editingRestaurant}
                 onSave={handleSaveRestaurant}
                 onCancel={handleCancelForm}
                 isLoading={isUpdating}
@@ -169,11 +252,11 @@ export function InlineRestaurantManager({
               />
             }
             manualEntryComponent={
-              <RestaurantForm
-                restaurant={editingRestaurant}
-                onSave={handleSaveRestaurant}
+              <RestaurantListSelector
+                tripId={tripId}
+                onSelect={handleSaveRestaurant}
                 onCancel={handleCancelForm}
-                isLoading={isUpdating}
+                selectedRestaurantId={editingRestaurant?.id}
               />
             }
           />

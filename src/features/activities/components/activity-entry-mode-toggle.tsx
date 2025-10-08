@@ -7,12 +7,12 @@
  * - Provides smooth switching between modes
  */
 
-import { Edit3, MapPin, Search } from "lucide-react";
+import { Edit3, MapPin, Search, Utensils } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface ActivityEntryModeToggleProps {
-  manualEntryComponent: React.ReactNode;
+  manualEntryComponent?: React.ReactNode;
   googlePlacesComponent: React.ReactNode;
   defaultMode?: "manual" | "google";
   disabled?: boolean;
@@ -112,8 +112,8 @@ export function RestaurantEntryModeToggle({
               disabled={disabled}
               className="flex items-center gap-2"
             >
-              <Edit3 className="h-4 w-4" />
-              Manual Entry
+              <Utensils className="h-4 w-4" />
+              My Restaurants
             </TabsTrigger>
           </TabsList>
 
@@ -128,15 +128,17 @@ export function RestaurantEntryModeToggle({
             </div>
           </TabsContent>
 
-          <TabsContent value="manual" className="mt-6">
-            <div className="space-y-4">
-              <div className="text-sm text-muted-foreground bg-gray-50 p-3 rounded-md">
-                ✏️ Enter restaurant details manually if you prefer or if the
-                place isn't found in Google Places.
+          {manualEntryComponent && (
+            <TabsContent value="manual" className="mt-6">
+              <div className="space-y-4">
+                <div className="text-sm text-muted-foreground bg-gray-50 p-3 rounded-md">
+                  📋 Browse and select from restaurants you've already added to
+                  this trip.
+                </div>
+                {manualEntryComponent}
               </div>
-              {manualEntryComponent}
-            </div>
-          </TabsContent>
+            </TabsContent>
+          )}
         </Tabs>
       </CardContent>
     </Card>

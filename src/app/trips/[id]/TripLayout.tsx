@@ -56,7 +56,6 @@ const TripLayout = ({ children, tripId }: TripLayoutProps) => {
   } = useQuery({
     queryKey: ["trip", tripId],
     queryFn: async () => {
-      if (!tripId) return null;
       const { data, error } = await supabase
         .from("trips")
         .select(`

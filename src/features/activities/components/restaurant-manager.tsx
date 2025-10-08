@@ -1,5 +1,14 @@
 "use client";
 
+/**
+ * @deprecated This component is deprecated. Use ActivityRestaurantSelector from @/features/restaurants/components instead.
+ *
+ * MIGRATION: Replace with the new standalone restaurant system:
+ * - Restaurants are now managed separately at /trips/[id]/restaurants
+ * - Use ActivityRestaurantSelector to link existing restaurants to activities
+ * - See RESTAURANT_MIGRATION.md for full migration guide
+ */
+
 import { Plus, Utensils } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";

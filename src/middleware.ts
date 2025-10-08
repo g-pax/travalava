@@ -25,13 +25,13 @@ export function middleware(request: NextRequest) {
     );
   }
 
-  // Cache control for API routes (short cache)
-  if (request.nextUrl.pathname.startsWith("/api/")) {
-    response.headers.set(
-      "Cache-Control",
-      "public, max-age=0, s-maxage=60, stale-while-revalidate=300",
-    );
-  }
+  // // Cache control for API routes (short cache)
+  // if (request.nextUrl.pathname.startsWith("/api/")) {
+  //   response.headers.set(
+  //     "Cache-Control",
+  //     "public, max-age=0, s-maxage=60, stale-while-revalidate=300",
+  //   );
+  // }
 
   return response;
 }

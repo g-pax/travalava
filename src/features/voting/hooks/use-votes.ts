@@ -51,7 +51,6 @@ export function useVotes(blockId: string) {
       return data || [];
     },
     enabled: !!blockId && blockId !== "undefined" && blockId !== "null",
-    staleTime: 1000 * 30, // 30 seconds for votes (more frequent updates expected)
   });
 }
 
