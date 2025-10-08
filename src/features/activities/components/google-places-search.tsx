@@ -144,12 +144,6 @@ export function GooglePlacesSearch({
     setResults([]);
   };
 
-  const formatDistance = (place: PlaceSearchResult) => {
-    // This would require additional calculation if we have user location
-    // For now, we'll skip distance display
-    return null;
-  };
-
   const getPlaceTypeLabel = (types: string[]) => {
     if (googlePlacesService.isRestaurant(types)) {
       return "Restaurant";

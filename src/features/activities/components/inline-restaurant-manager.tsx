@@ -11,7 +11,7 @@
 
 import { Plus, Utensils } from "lucide-react";
 import { useState } from "react";
-import { toast } from "sonner";
+
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -119,7 +119,7 @@ export function InlineRestaurantManager({
         // Link the new restaurant to this activity
         await linkRestaurant.mutateAsync({
           activity_id: activityId,
-          restaurant_id: newRestaurant.id!,
+          restaurant_id: newRestaurant?.id ?? "",
           sort_order: restaurants.length,
         });
       }

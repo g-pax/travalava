@@ -47,9 +47,7 @@ export function ActivityRestaurantSelector({
   const [searchQuery, setSearchQuery] = useState("");
 
   const { data: linkedRestaurants = [] } = useRestaurantsByActivity(activityId);
-  const { data: allRestaurants = [] } = useRestaurants(tripId, {
-    search: searchQuery,
-  });
+  const { data: allRestaurants = [] } = useRestaurants(tripId);
 
   const linkRestaurant = useLinkRestaurantToActivity();
   const unlinkRestaurant = useUnlinkRestaurantFromActivity();

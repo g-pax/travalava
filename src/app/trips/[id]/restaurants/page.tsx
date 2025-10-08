@@ -61,7 +61,9 @@ export default function RestaurantsPage() {
   const tripId = params.id as string;
 
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
-  const [filters, setFilters] = useState<Partial<RestaurantSearch>>({});
+  const [filters, setFilters] = useState<RestaurantSearch>({
+    trip_id: tripId,
+  });
 
   const {
     data: restaurants = [],
@@ -70,25 +72,25 @@ export default function RestaurantsPage() {
   } = useRestaurants(tripId, filters);
 
   const handleSearchChange = (search: string) => {
-    setFilters((prev) => ({ ...prev, search: search || undefined }));
+    setFilters((prev) => ({ ...prev, search: search || "" }));
   };
 
   const handleCuisineTypeChange = (cuisine_type: string) => {
     setFilters((prev) => ({
       ...prev,
-      cuisine_type: cuisine_type || undefined,
+      cuisine_type: cuisine_type || "",
     }));
   };
 
   const handlePriceRangeChange = (price_range: string) => {
     setFilters((prev) => ({
       ...prev,
-      price_range: (price_range as any) || undefined,
+      price_range: (price_range as any) || "",
     }));
   };
 
   const clearFilters = () => {
-    setFilters({});
+    setFilters({ trip_id: tripId });
   };
 
   const hasActiveFilters = Object.values(filters).some(Boolean);
