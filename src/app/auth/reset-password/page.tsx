@@ -32,7 +32,7 @@ export default function ResetPasswordPage() {
   const form = useForm<ResetPasswordInput>({
     resolver: zodResolver(ResetPasswordSchema),
     mode: "all",
-    reValidateMode: "onBlur",
+    reValidateMode: "onChange",
     defaultValues: {
       email: "",
     },

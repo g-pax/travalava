@@ -30,7 +30,7 @@ export function TripJoinForm({ tripId, onSuccess }: TripJoinFormProps) {
   const form = useForm<JoinTripInput>({
     resolver: zodResolver(JoinTripSchema),
     mode: "all",
-    reValidateMode: "onBlur",
+    reValidateMode: "onChange",
     defaultValues: {
       tripId,
       displayName: "",

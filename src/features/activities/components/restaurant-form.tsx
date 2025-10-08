@@ -48,7 +48,7 @@ export function RestaurantForm({
   const form = useForm<RestaurantInput>({
     resolver: zodResolver(RestaurantSchema),
     mode: "all",
-    reValidateMode: "onBlur",
+    reValidateMode: "onChange",
     defaultValues: restaurant || {
       name: "",
       cuisine_type: "",

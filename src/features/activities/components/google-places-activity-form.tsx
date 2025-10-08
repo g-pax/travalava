@@ -79,7 +79,7 @@ export function GooglePlacesActivityForm({
   const form = useForm<ActivityCreateInput>({
     resolver: zodResolver(ActivityCreateSchema),
     mode: "all",
-    reValidateMode: "onBlur",
+    reValidateMode: "onChange",
     defaultValues: {
       trip_id: tripId,
       cost_currency: tripCurrency,

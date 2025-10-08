@@ -39,7 +39,7 @@ export default function LoginPage() {
   const form = useForm<SignInInput>({
     resolver: zodResolver(SignInSchema),
     mode: "all",
-    reValidateMode: "onBlur",
+    reValidateMode: "onChange",
     defaultValues: {
       email: "",
       password: "",
