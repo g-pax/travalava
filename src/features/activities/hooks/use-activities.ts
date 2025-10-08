@@ -11,6 +11,15 @@ import { toast } from "sonner";
 import { supabase } from "@/lib/supabase";
 import type { ActivityCreateInput } from "@/schemas";
 
+export interface Restaurant {
+  id?: string;
+  name: string;
+  lat: number;
+  lon: number;
+  place_id: string;
+  trip_id: string;
+}
+
 export interface Activity {
   src?: string | null;
   id: string;
@@ -30,22 +39,51 @@ export interface Activity {
   } | null;
   created_at: string;
   updated_at: string;
+  // Joined proposal data
+  block_proposals?: Array<{
+    id: string;
+    block_id: string;
+    created_at: string;
+    block?: {
+      id: string;
+      label: string;
+      position: number;
+      day?: {
+        id: string;
+        date: string;
+      };
+    };
+  }>;
 }
 
 /**
- * Fetch all activities for a trip
+ * Fetch all activities for a trip with their proposals
+ * This efficiently fetches all activity proposals in a single query
+ * to avoid N+1 queries when displaying activity cards
  */
 export function useActivities(tripId: string) {
   return useQuery({
     queryKey: ["activities", tripId],
     queryFn: async (): Promise<Activity[]> => {
-      if (!tripId) {
-        throw new Error("Trip ID is required");
-      }
-
       const { data, error } = await supabase
         .from("activities")
-        .select("*")
+        .select(`
+          *,
+          block_proposals (
+            id,
+            block_id,
+            created_at,
+            block:blocks (
+              id,
+              label,
+              position,
+              day:days (
+                id,
+                date
+              )
+            )
+          )
+        `)
         .eq("trip_id", tripId)
         .order("created_at", { ascending: false });
 
@@ -56,12 +94,11 @@ export function useActivities(tripId: string) {
       return data || [];
     },
     enabled: !!tripId && tripId !== "undefined" && tripId !== "null",
-    staleTime: 1000 * 60 * 2, // 2 minutes for activities
   });
 }
 
 /**
- * Fetch a single activity by ID
+ * Fetch a single activity by ID with its proposals
  */
 export function useActivity(activityId: string) {
   return useQuery({
@@ -73,7 +110,23 @@ export function useActivity(activityId: string) {
 
       const { data, error } = await supabase
         .from("activities")
-        .select("*")
+        .select(`
+          *,
+          block_proposals (
+            id,
+            block_id,
+            created_at,
+            block:blocks (
+              id,
+              label,
+              position,
+              day:days (
+                id,
+                date
+              )
+            )
+          )
+        `)
         .eq("id", activityId)
         .maybeSingle();
 
@@ -89,7 +142,6 @@ export function useActivity(activityId: string) {
     },
     enabled:
       !!activityId && activityId !== "undefined" && activityId !== "null",
-    staleTime: 1000 * 60 * 5, // 5 minutes for individual activity
   });
 }
 
@@ -122,53 +174,53 @@ export function useCreateActivity() {
 
       return data;
     },
-    onMutate: async (input) => {
-      // Cancel outgoing refetches
-      await queryClient.cancelQueries({
-        queryKey: ["activities", input.trip_id],
-      });
+    // onMutate: async (input) => {
+    //   // Cancel outgoing refetches
+    //   await queryClient.cancelQueries({
+    //     queryKey: ["activities", input.trip_id],
+    //   });
 
-      // Snapshot previous value
-      const previousActivities = queryClient.getQueryData<Activity[]>([
-        "activities",
-        input.trip_id,
-      ]);
+    //   // Snapshot previous value
+    //   const previousActivities = queryClient.getQueryData<Activity[]>([
+    //     "activities",
+    //     input.trip_id,
+    //   ]);
 
-      // Optimistically update
-      if (previousActivities) {
-        const optimisticActivity: Activity = {
-          id: `temp-${nanoid()}`,
-          ...input,
-          // photos: input.src || [],
-          category: input.category || null,
-          cost_amount: input.cost_amount || null,
-          cost_currency: input.cost_currency || null,
-          duration_min: input.duration_min || null,
-          notes: input.notes || null,
-          link: input.link || null,
-          location: input.location || null,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-        };
+    //   // Optimistically update
+    //   if (previousActivities) {
+    //     const optimisticActivity: Activity = {
+    //       id: `temp-${nanoid()}`,
+    //       ...input,
+    //       // photos: input.src || [],
+    //       category: input.category || null,
+    //       cost_amount: input.cost_amount || null,
+    //       cost_currency: input.cost_currency || null,
+    //       duration_min: input.duration_min || null,
+    //       notes: input.notes || null,
+    //       link: input.link || null,
+    //       location: input.location || null,
+    //       created_at: new Date().toISOString(),
+    //       updated_at: new Date().toISOString(),
+    //     };
 
-        queryClient.setQueryData<Activity[]>(
-          ["activities", input.trip_id],
-          [optimisticActivity, ...previousActivities],
-        );
-      }
+    //     queryClient.setQueryData<Activity[]>(
+    //       ["activities", input.trip_id],
+    //       [optimisticActivity, ...previousActivities],
+    //     );
+    //   }
 
-      return { previousActivities };
-    },
-    onError: (_error, input, context) => {
-      // Rollback optimistic update
-      if (context?.previousActivities) {
-        queryClient.setQueryData(
-          ["activities", input.trip_id],
-          context.previousActivities,
-        );
-      }
-      toast.error("Failed to create activity");
-    },
+    //   return { previousActivities };
+    // },
+    // onError: (_error, input, context) => {
+    //   // Rollback optimistic update
+    //   if (context?.previousActivities) {
+    //     queryClient.setQueryData(
+    //       ["activities", input.trip_id],
+    //       context.previousActivities,
+    //     );
+    //   }
+    //   toast.error("Failed to create activity");
+    // },
     onSuccess: (_data, input) => {
       // Invalidate and refetch
       queryClient.invalidateQueries({
@@ -223,7 +275,6 @@ export function useUpdateActivity() {
       toast.error("Failed to update activity");
     },
     onSuccess: (data) => {
-      console.log("🚀 ~ useUpdateActivity ~ data:", data);
       // Invalidate both caches to refetch fresh data
       queryClient.invalidateQueries({ queryKey: ["activities", data.trip_id] });
       queryClient.invalidateQueries({ queryKey: ["activity", data.id] });

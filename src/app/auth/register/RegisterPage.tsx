@@ -6,7 +6,8 @@
  * - Email confirmation flow
  */
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Eye, EyeOff, Link, UserPlus } from "lucide-react";
+import { Eye, EyeOff, UserPlus } from "lucide-react";
+import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
@@ -37,6 +38,8 @@ export default function RegisterPage() {
 
   const form = useForm<SignUpInput>({
     resolver: zodResolver(SignUpSchema),
+    mode: "all",
+    reValidateMode: "onBlur",
     defaultValues: {
       email: "",
       password: "",

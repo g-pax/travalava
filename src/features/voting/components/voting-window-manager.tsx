@@ -50,6 +50,8 @@ export function VotingWindowManager({
 
   const form = useForm<VotingWindowInput>({
     resolver: zodResolver(VotingWindowSchema),
+    mode: "all",
+    reValidateMode: "onBlur",
     defaultValues: {
       vote_open_ts: block.vote_open_ts
         ? new Date(block.vote_open_ts).toISOString().slice(0, 16)

@@ -27,7 +27,6 @@ export function SectionLoader({
       )}
       <div className="space-y-3">
         {Array.from({ length: lines }).map((_, i) => (
-          // biome-ignore lint/suspicious/noArrayIndexKey: we need this for the index
           <Skeleton key={i} className="h-4 w-full" />
         ))}
       </div>
@@ -45,12 +44,10 @@ export function ItineraryLoader() {
       aria-label="Loading itinerary"
     >
       {Array.from({ length: 3 }).map((_, dayIndex) => (
-        // biome-ignore lint/suspicious/noArrayIndexKey: we need this for the index
         <div key={dayIndex} className="border rounded-lg p-4">
           <Skeleton className="h-6 w-32 mb-4" />
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {Array.from({ length: 3 }).map((_, blockIndex) => (
-              // biome-ignore lint/suspicious/noArrayIndexKey: we need this for the index
               <div key={blockIndex} className="border rounded-md p-3">
                 <Skeleton className="h-5 w-20 mb-2" />
                 <div className="space-y-2">
@@ -77,7 +74,6 @@ export function ActivityListLoader() {
     >
       {Array.from({ length: 5 }).map((_, i) => (
         <div
-          // biome-ignore lint/suspicious/noArrayIndexKey: we need this for the index
           key={i}
           className="border rounded-lg p-4 flex items-center space-x-4"
         >

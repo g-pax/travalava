@@ -17,9 +17,9 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import type { Activity } from "../hooks/use-activities";
-import { ActivityCreateForm } from "./activity-create-form";
 import { ActivityList } from "./activity-list";
 import { BlockSelector } from "./block-selector";
+import { EnhancedActivityCreateForm } from "./enhanced-activity-create-form";
 
 interface ActivitiesManagerProps {
   tripId: string;
@@ -80,24 +80,21 @@ export function ActivitiesManager({
         open={dialogState.type === "create"}
         onOpenChange={(open) => !open && handleCloseDialog()}
       >
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>Create New Activity</DialogTitle>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="absolute right-4 top-4"
-              onClick={handleCloseDialog}
-            >
-              <X className="h-4 w-4" />
-            </Button>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto rounded-xl">
+          <DialogHeader className="pb-4 border-b border-gray-200 dark:border-gray-800">
+            <DialogTitle className="text-xl font-bold">
+              Create New Activity
+            </DialogTitle>
           </DialogHeader>
-          <ActivityCreateForm
-            tripId={tripId}
-            tripCurrency={tripCurrency}
-            onSuccess={handleActivityCreated}
-            onCancel={handleCloseDialog}
-          />
+          <div className="pt-4">
+            <EnhancedActivityCreateForm
+              tripId={tripId}
+              tripCurrency={tripCurrency}
+              onSuccess={handleActivityCreated}
+              onCancel={handleCloseDialog}
+              defaultMode="google"
+            />
+          </div>
         </DialogContent>
       </Dialog>
 
@@ -106,28 +103,32 @@ export function ActivitiesManager({
         open={dialogState.type === "assign"}
         onOpenChange={(open) => !open && handleCloseDialog()}
       >
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>Assign Activity to Blocks</DialogTitle>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto rounded-xl">
+          <DialogHeader className="pb-4 border-b border-gray-200 dark:border-gray-800">
+            <DialogTitle className="text-xl font-bold">
+              Assign Activity to Blocks
+            </DialogTitle>
             <Button
               variant="ghost"
               size="sm"
-              className="absolute right-4 top-4"
+              className="absolute right-4 top-4 h-8 w-8 p-0 hover:bg-gray-100 dark:hover:bg-gray-800"
               onClick={handleCloseDialog}
             >
               <X className="h-4 w-4" />
             </Button>
           </DialogHeader>
-          {dialogState.type === "assign" && (
-            <BlockSelector
-              tripId={tripId}
-              activityId={dialogState.activityId}
-              activityTitle={dialogState.activityTitle}
-              createdBy={currentUserId}
-              onSuccess={handleAssignmentComplete}
-              onCancel={handleCloseDialog}
-            />
-          )}
+          <div className="pt-4">
+            {dialogState.type === "assign" && (
+              <BlockSelector
+                tripId={tripId}
+                activityId={dialogState.activityId}
+                activityTitle={dialogState.activityTitle}
+                createdBy={currentUserId}
+                onSuccess={handleAssignmentComplete}
+                onCancel={handleCloseDialog}
+              />
+            )}
+          </div>
         </DialogContent>
       </Dialog>
     </div>

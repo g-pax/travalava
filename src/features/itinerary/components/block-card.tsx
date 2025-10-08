@@ -2,6 +2,8 @@
 
 import {
   Check,
+  ChevronDown,
+  ChevronRight,
   Clock,
   DollarSign,
   Edit2,
@@ -12,14 +14,20 @@ import {
   Vote,
   X,
 } from "lucide-react";
+import Image from "next/image";
 import { useState } from "react";
 import { toast } from "sonner";
 import { InlineLoader } from "@/components/loading";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { ActivitySelectorDialog } from "@/features/activities/components/activity-selector-dialog";
 import {
   useBlockProposals,
@@ -53,9 +61,9 @@ export function BlockCard({
 }: BlockCardProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [editLabel, setEditLabel] = useState(block.label);
-  const [activeTab, setActiveTab] = useState<"proposals" | "voting" | "commit">(
-    "proposals",
-  );
+  const [showProposals, setShowProposals] = useState(false);
+  const [showVoting, setShowVoting] = useState(false);
+  const [showCommit, setShowCommit] = useState(false);
   const [showActivitySelector, setShowActivitySelector] = useState(false);
 
   const updateBlockLabel = useUpdateBlockLabel();
@@ -110,20 +118,38 @@ export function BlockCard({
     }
   };
 
+  // Determine voting status
+  const getVotingStatus = () => {
+    if (!block.vote_open_ts) return null;
+    const now = new Date();
+    const voteOpenTs = new Date(block.vote_open_ts);
+    const voteCloseTs = block.vote_close_ts
+      ? new Date(block.vote_close_ts)
+      : null;
+
+    if (now < voteOpenTs) return "soon";
+    if (voteCloseTs && now >= voteOpenTs && now <= voteCloseTs) return "active";
+    if (voteCloseTs && now > voteCloseTs) return "ended";
+    return "open";
+  };
+
+  const votingStatus = getVotingStatus();
+
   return (
-    <Card className="relative flex flex-col h-full">
-      <CardHeader className="pb-3">
-        <CardTitle className="flex items-center justify-between text-lg">
-          {isEditing ? (
-            <div className="flex items-center gap-2 w-full">
-              <Input
-                value={editLabel}
-                onChange={(e) => setEditLabel(e.target.value)}
-                onKeyDown={handleKeyPress}
-                className="text-base font-semibold"
-                autoFocus
-              />
-              <div className="flex gap-1 flex-shrink-0">
+    <Card className="overflow-hidden border-l-4 border-l-blue-500 dark:border-l-blue-600">
+      <CardContent className="p-4 sm:p-6">
+        {/* Block Header with inline edit */}
+        <div className="flex items-start justify-between gap-4 mb-6">
+          <div className="flex-1">
+            {isEditing ? (
+              <div className="flex items-center gap-2">
+                <Input
+                  value={editLabel}
+                  onChange={(e) => setEditLabel(e.target.value)}
+                  onKeyDown={handleKeyPress}
+                  className="text-base font-semibold"
+                  autoFocus
+                />
                 <Button
                   size="sm"
                   variant="ghost"
@@ -143,246 +169,276 @@ export function BlockCard({
                   <X className="h-4 w-4" />
                 </Button>
               </div>
-            </div>
-          ) : (
-            <>
-              <span className="font-semibold">{block.label}</span>
-              <Button
-                size="sm"
-                variant="ghost"
-                onClick={() => setIsEditing(true)}
-                className="h-8 w-8 p-0 flex-shrink-0"
-              >
-                <Edit2 className="h-4 w-4" />
-              </Button>
-            </>
-          )}
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="pt-0 flex-1 flex flex-col">
-        <Tabs
-          value={activeTab}
-          onValueChange={(value) =>
-            setActiveTab(value as "proposals" | "voting" | "commit")
-          }
-          className="flex flex-col flex-1"
-        >
-          <TabsList className="grid w-full grid-cols-3 h-auto">
-            <TabsTrigger
-              value="proposals"
-              className="text-xs sm:text-sm flex-col sm:flex-row gap-1 py-2"
-            >
-              <span className="hidden sm:inline">Proposals</span>
-              <span className="sm:hidden">Props</span>
+            ) : (
+              <div className="flex items-center gap-2">
+                <h4 className="text-lg font-bold text-gray-900 dark:text-white">
+                  {block.label}
+                </h4>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={() => setIsEditing(true)}
+                  className="h-7 w-7 p-0"
+                >
+                  <Edit2 className="h-3.5 w-3.5" />
+                </Button>
+              </div>
+            )}
+          </div>
+
+          {/* Status badges */}
+          <div className="flex items-center gap-2 flex-shrink-0">
+            <TooltipProvider>
               {proposals.length > 0 && (
-                <Badge
-                  variant="secondary"
-                  className="text-[10px] sm:text-xs px-1"
-                >
-                  {proposals.length}
-                </Badge>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Badge variant="secondary" className="gap-1">
+                      <Clock className="h-3 w-3" />
+                      {proposals.length}
+                    </Badge>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    {proposals.length} proposal
+                    {proposals.length !== 1 ? "s" : ""}
+                  </TooltipContent>
+                </Tooltip>
               )}
-            </TabsTrigger>
-            <TabsTrigger
-              value="voting"
-              className="text-xs sm:text-sm flex-col sm:flex-row gap-1 py-2"
-            >
-              <div className="flex items-center gap-1">
-                <Vote className="h-3 w-3" />
-                <span>Voting</span>
-              </div>
-              {block.vote_open_ts && (
-                <Badge
-                  variant="secondary"
-                  className="text-[10px] sm:text-xs px-1"
-                >
-                  {(() => {
-                    const now = new Date();
-                    const voteOpenTs = new Date(block.vote_open_ts);
-                    const voteCloseTs = block.vote_close_ts
-                      ? new Date(block.vote_close_ts)
-                      : null;
 
-                    if (now < voteOpenTs) return "Soon";
-                    if (voteCloseTs && now >= voteOpenTs && now <= voteCloseTs)
-                      return "Active";
-                    if (voteCloseTs && now > voteCloseTs) return "Ended";
-                    return "Open";
-                  })()}
-                </Badge>
+              {votingStatus && (
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Badge
+                      variant={
+                        votingStatus === "active" ? "default" : "secondary"
+                      }
+                      className="gap-1"
+                    >
+                      <Vote className="h-3 w-3" />
+                      {votingStatus === "active"
+                        ? "Active"
+                        : votingStatus === "ended"
+                          ? "Ended"
+                          : votingStatus === "soon"
+                            ? "Soon"
+                            : "Open"}
+                    </Badge>
+                  </TooltipTrigger>
+                  <TooltipContent>Voting {votingStatus}</TooltipContent>
+                </Tooltip>
               )}
-            </TabsTrigger>
-            <TabsTrigger
-              value="commit"
-              className="text-xs sm:text-sm flex-col sm:flex-row gap-1 py-2"
-            >
-              <div className="flex items-center gap-1">
-                <Gavel className="h-3 w-3" />
-                <span>Commit</span>
-              </div>
+
               {existingCommit && (
-                <Badge
-                  variant="default"
-                  className="text-[10px] sm:text-xs px-1 bg-green-600"
-                >
-                  ✓
-                </Badge>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Badge className="gap-1 bg-green-600 hover:bg-green-700">
+                      <Gavel className="h-3 w-3" />
+                      Committed
+                    </Badge>
+                  </TooltipTrigger>
+                  <TooltipContent>Activity committed</TooltipContent>
+                </Tooltip>
               )}
-            </TabsTrigger>
-          </TabsList>
+            </TooltipProvider>
+          </div>
+        </div>
 
-          <TabsContent value="proposals" className="mt-4 flex-1">
-            {/* Add Activity Button */}
-            <div className="mb-4">
+        {/* Proposals Section */}
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <button
+              type="button"
+              onClick={() => setShowProposals(!showProposals)}
+              className="flex items-center gap-2 text-sm font-semibold text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors"
+            >
+              {showProposals ? (
+                <ChevronDown className="h-4 w-4" />
+              ) : (
+                <ChevronRight className="h-4 w-4" />
+              )}
+              Proposals {proposals.length > 0 && `(${proposals.length})`}
+            </button>
+            {showProposals && (
               <Button
                 onClick={() => setShowActivitySelector(true)}
                 variant="outline"
                 size="sm"
-                className="w-full gap-2"
+                className="gap-2"
               >
                 <Plus className="h-4 w-4" />
-                Add Activity
+                <span className="hidden sm:inline">Add Activity</span>
               </Button>
-            </div>
+            )}
+          </div>
 
-            {proposalsLoading ? (
-              <InlineLoader message="Loading proposals..." />
-            ) : proposals.length === 0 ? (
-              <div className="min-h-[140px] border-2 border-dashed border-gray-200 rounded-lg p-6 text-center">
-                <div className="flex flex-col items-center justify-center h-full text-muted-foreground">
-                  <Clock className="h-8 w-8 mb-3 opacity-40" />
-                  <p className="text-sm font-medium">No activities yet</p>
-                  <p className="text-xs mt-1.5">
-                    Click "Add Activity" above to get started
+          {showProposals && (
+            <div className="space-y-3 pl-6 border-l-2 border-gray-200 dark:border-gray-700">
+              {proposalsLoading ? (
+                <InlineLoader message="Loading proposals..." />
+              ) : proposals.length === 0 ? (
+                <div className="border-2 border-dashed border-gray-200 dark:border-gray-700 rounded-lg p-6 text-center">
+                  <Clock className="h-8 w-8 mx-auto mb-2 opacity-40" />
+                  <p className="text-sm text-gray-500 dark:text-gray-400">
+                    No activities yet
                   </p>
-                </div>
-              </div>
-            ) : (
-              <div className="space-y-3">
-                {proposals.map((proposal) => (
-                  <Card
-                    key={proposal.id}
-                    className="border border-gray-200 hover:border-gray-300 transition-colors"
+                  <Button
+                    onClick={() => setShowActivitySelector(true)}
+                    variant="link"
+                    size="sm"
+                    className="mt-2"
                   >
-                    <CardContent className="p-3 sm:p-4">
-                      <div className="flex items-start justify-between gap-2">
-                        <div className="flex-1 min-w-0 space-y-2">
-                          <h4 className="font-semibold text-sm sm:text-base line-clamp-1">
-                            {proposal.activity?.title}
-                          </h4>
-
-                          <div className="flex flex-wrap gap-1.5 sm:gap-2">
-                            {proposal.activity?.category && (
-                              <Badge
-                                variant="secondary"
-                                className="text-[10px] sm:text-xs"
-                              >
-                                {proposal.activity.category}
-                              </Badge>
-                            )}
-
-                            {proposal.activity?.cost_amount && (
-                              <div className="flex items-center gap-0.5 sm:gap-1 text-xs text-muted-foreground">
-                                <DollarSign className="h-3 w-3" />
-                                <span className="text-[10px] sm:text-xs">
-                                  {formatCurrency(
-                                    proposal.activity.cost_amount,
-                                    proposal.activity.cost_currency || "USD",
-                                  )}
-                                </span>
-                              </div>
-                            )}
-
-                            {proposal.activity?.duration_min && (
-                              <div className="flex items-center gap-0.5 sm:gap-1 text-xs text-muted-foreground">
-                                <Clock className="h-3 w-3" />
-                                <span className="text-[10px] sm:text-xs">
-                                  {formatDuration(
-                                    proposal.activity.duration_min,
-                                  )}
-                                </span>
-                              </div>
-                            )}
-                          </div>
-
-                          {proposal.activity?.location && (
-                            <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                              <MapPin className="h-3 w-3 flex-shrink-0" />
-                              <span className="truncate text-[10px] sm:text-xs">
-                                {proposal.activity.location.name}
-                              </span>
-                            </div>
-                          )}
-
-                          {proposal.activity?.notes && (
-                            <p className="text-xs text-muted-foreground line-clamp-2">
-                              {proposal.activity.notes}
-                            </p>
-                          )}
-                        </div>
-
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          onClick={() => handleRemoveProposal(proposal.id)}
-                          disabled={removeProposal.isPending}
-                          className="h-8 w-8 p-0 flex-shrink-0 text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950"
-                          title="Remove activity"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            )}
-
-            {/* Voting status */}
-            {block.vote_open_ts && (
-              <div className="mt-3 pt-3 border-t text-xs text-muted-foreground">
-                <div className="flex items-center gap-1.5">
-                  <Clock className="h-3.5 w-3.5" />
-                  <span>
-                    Voting: {new Date(block.vote_open_ts).toLocaleDateString()}
-                    {block.vote_close_ts &&
-                      ` - ${new Date(block.vote_close_ts).toLocaleDateString()}`}
-                  </span>
+                    Add your first activity
+                  </Button>
                 </div>
-              </div>
-            )}
-          </TabsContent>
+              ) : (
+                proposals.map((proposal) => (
+                  <div
+                    key={proposal.id}
+                    className="flex items-start gap-3 p-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/50 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors group"
+                  >
+                    {(proposal.activity as any)?.src && (
+                      <div className="relative h-16 w-16 flex-shrink-0 overflow-hidden rounded-md">
+                        <Image
+                          src={(proposal.activity as any).src}
+                          alt={proposal.activity?.title || "Activity"}
+                          fill
+                          className="object-cover"
+                          sizes="64px"
+                        />
+                      </div>
+                    )}
 
-          <TabsContent value="voting" className="mt-4 flex-1">
-            <div className="space-y-4">
-              {/* Voting Window Management for Organizers */}
-              {isOrganizer && (
-                <VotingWindowManager
+                    <div className="flex-1 min-w-0">
+                      <h5 className="font-semibold text-sm text-gray-900 dark:text-white line-clamp-1 mb-1">
+                        {proposal.activity?.title}
+                      </h5>
+
+                      <div className="flex flex-wrap gap-2 mb-2">
+                        {proposal.activity?.category && (
+                          <Badge variant="secondary" className="text-xs">
+                            {proposal.activity.category}
+                          </Badge>
+                        )}
+
+                        {proposal.activity?.cost_amount !== null &&
+                          proposal.activity?.cost_amount !== undefined && (
+                            <span className="flex items-center gap-1 text-xs text-gray-600 dark:text-gray-400">
+                              <DollarSign className="h-3 w-3" />
+                              {formatCurrency(
+                                proposal.activity.cost_amount,
+                                proposal.activity.cost_currency || "USD",
+                              )}
+                            </span>
+                          )}
+
+                        {proposal.activity?.duration_min && (
+                          <span className="flex items-center gap-1 text-xs text-gray-600 dark:text-gray-400">
+                            <Clock className="h-3 w-3" />
+                            {formatDuration(proposal.activity.duration_min)}
+                          </span>
+                        )}
+                      </div>
+
+                      {proposal.activity?.location && (
+                        <div className="flex items-center gap-1 text-xs text-gray-600 dark:text-gray-400">
+                          <MapPin className="h-3 w-3 flex-shrink-0" />
+                          <span className="truncate">
+                            {proposal.activity.location.name}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => handleRemoveProposal(proposal.id)}
+                      disabled={removeProposal.isPending}
+                      className="h-8 w-8 p-0 opacity-0 group-hover:opacity-100 transition-opacity text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                ))
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* Voting Section */}
+        {(votingStatus || isOrganizer) && (
+          <div className="space-y-4 mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
+            <button
+              type="button"
+              onClick={() => setShowVoting(!showVoting)}
+              className="flex items-center gap-2 text-sm font-semibold text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors w-full"
+            >
+              {showVoting ? (
+                <ChevronDown className="h-4 w-4" />
+              ) : (
+                <ChevronRight className="h-4 w-4" />
+              )}
+              <Vote className="h-4 w-4" />
+              Voting
+              {votingStatus && (
+                <Badge
+                  variant={votingStatus === "active" ? "default" : "secondary"}
+                  className="ml-2"
+                >
+                  {votingStatus}
+                </Badge>
+              )}
+            </button>
+
+            {showVoting && (
+              <div className="pl-6 space-y-4">
+                {isOrganizer && (
+                  <VotingWindowManager
+                    block={block}
+                    tripId={tripId}
+                    isOrganizer={isOrganizer}
+                  />
+                )}
+                <VotingPanel
                   block={block}
                   tripId={tripId}
+                  proposals={proposals}
+                  currentMemberId={currentMemberId}
                   isOrganizer={isOrganizer}
                 />
-              )}
+              </div>
+            )}
+          </div>
+        )}
 
-              {/* Voting Panel */}
-              <VotingPanel
+        {/* Commit Section */}
+        <div className="space-y-4 mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
+          <button
+            type="button"
+            onClick={() => setShowCommit(!showCommit)}
+            className="flex items-center gap-2 text-sm font-semibold text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors w-full"
+          >
+            {showCommit ? (
+              <ChevronDown className="h-4 w-4" />
+            ) : (
+              <ChevronRight className="h-4 w-4" />
+            )}
+            <Gavel className="h-4 w-4" />
+            Commit
+            {existingCommit && (
+              <Badge className="ml-2 bg-green-600">Committed</Badge>
+            )}
+          </button>
+
+          {showCommit && (
+            <div className="pl-6">
+              <CommitPanel
                 block={block}
                 tripId={tripId}
-                proposals={proposals}
-                currentMemberId={currentMemberId}
                 isOrganizer={isOrganizer}
               />
             </div>
-          </TabsContent>
-
-          <TabsContent value="commit" className="mt-4 flex-1">
-            <CommitPanel
-              block={block}
-              tripId={tripId}
-              isOrganizer={isOrganizer}
-            />
-          </TabsContent>
-        </Tabs>
+          )}
+        </div>
       </CardContent>
 
       {/* Activity Selector Dialog */}

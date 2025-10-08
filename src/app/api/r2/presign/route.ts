@@ -51,7 +51,13 @@ export async function POST(req: Request) {
     const timestamp = Date.now();
     const randomId = nanoid(8);
     const extension = fileName.split(".").pop()?.toLowerCase() || "jpg";
-    const safeFileName = fileName
+
+    // Handle folder paths (e.g., "feedback/screenshot.jpg")
+    const pathParts = fileName.split("/");
+    const actualFileName = pathParts.pop() || fileName;
+    const folderPath = pathParts.join("/");
+
+    const safeFileName = actualFileName
       .replace(/\.[^/.]+$/, "")
       .toLowerCase()
       .replace(/[^a-z0-9\s-]/g, "")
@@ -59,7 +65,8 @@ export async function POST(req: Request) {
       .replace(/-+/g, "-")
       .trim();
 
-    const key = `uploads/thumbnails/${safeFileName}-${timestamp}-${randomId}.${extension}`;
+    const finalFileName = `${safeFileName}-${timestamp}-${randomId}.${extension}`;
+    const key = folderPath ? `${folderPath}/${finalFileName}` : finalFileName;
 
     const cmd = new PutObjectCommand({
       Bucket: process.env.R2_BUCKET,
@@ -76,7 +83,7 @@ export async function POST(req: Request) {
         presignedUrl,
         publicUrl,
         key,
-        fileName: `${safeFileName}-${timestamp}-${randomId}.${extension}`,
+        fileName: finalFileName,
       },
       { headers: corsHeaders },
     );

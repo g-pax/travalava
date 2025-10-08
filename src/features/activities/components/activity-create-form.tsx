@@ -17,17 +17,12 @@ import {
  */
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-import { toast } from "sonner";
+
 import { ThumbnailUpload } from "@/components/common/thumbnail-upload";
+import { useFormErrorHandler } from "@/components/error";
 import { ActionButton } from "@/components/loading";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -40,7 +35,11 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { extractLatLngFromGoogleMapsSrc } from "@/lib/google-maps";
 import type { ThumbnailUploadResult } from "@/lib/image-upload";
-import { type ActivityCreateInput, ActivityCreateSchema } from "@/schemas";
+import {
+  type ActivityCreateInput,
+  ActivityCreateSchema,
+  type RestaurantInput,
+} from "@/schemas";
 import { type Activity, useCreateActivity } from "../hooks/use-activities";
 
 interface ActivityCreateFormProps {
@@ -79,15 +78,22 @@ export function ActivityCreateForm({
   const [thumbnail, setThumbnail] = useState<ThumbnailUploadResult | null>(
     null,
   );
+  const [restaurants, setRestaurants] = useState<RestaurantInput[]>([]);
 
   const form = useForm<ActivityCreateInput>({
     resolver: zodResolver(ActivityCreateSchema),
+    mode: "all",
+    reValidateMode: "onBlur",
     defaultValues: {
       trip_id: tripId,
       cost_currency: tripCurrency,
+      cost_amount: 0,
+      duration_min: 120,
       src: undefined,
     },
   });
+
+  const { handleFormError } = useFormErrorHandler<ActivityCreateInput>();
 
   const handleThumbnailUploaded = (result: ThumbnailUploadResult) => {
     setThumbnail(result);
@@ -95,7 +101,8 @@ export function ActivityCreateForm({
   };
 
   const handleThumbnailUploadError = (error: string) => {
-    toast.error(error);
+    // Use centralized error handler for consistency
+    handleFormError(error, form.setError, { showToast: true });
   };
 
   const handleShortUrlChange = (value: string) => {
@@ -154,7 +161,8 @@ export function ActivityCreateForm({
 
   const onSubmit = async (values: ActivityCreateInput) => {
     try {
-      const activity = await createActivity.mutateAsync(values);
+      const activityData = { ...values, restaurants };
+      const activity = await createActivity.mutateAsync(activityData);
       onSuccess?.(activity);
       form.reset({
         trip_id: tripId,
@@ -166,39 +174,17 @@ export function ActivityCreateForm({
       setExtractedCoords(null);
       setLocationError(null);
       setThumbnail(null);
+      setRestaurants([]);
     } catch (error) {
-      // Clear any previous submission errors
-      form.clearErrors();
-
-      if (error instanceof Error) {
-        // Set field-specific errors if applicable
-        if (error.message.toLowerCase().includes("title")) {
-          form.setError("title", { message: error.message });
-        } else if (error.message.toLowerCase().includes("cost")) {
-          form.setError("cost_amount", { message: error.message });
-        } else if (error.message.toLowerCase().includes("duration")) {
-          form.setError("duration_min", { message: error.message });
-        } else if (
-          error.message.toLowerCase().includes("url") ||
-          error.message.toLowerCase().includes("link")
-        ) {
-          form.setError("link", { message: error.message });
-        }
-      }
+      // Use centralized form error handler
+      handleFormError(error, form.setError, { showToast: true });
       console.error("Failed to create activity:", error);
     }
   };
 
   return (
-    <Card className="w-full max-w-2xl">
-      <CardHeader>
-        <CardTitle>Add Activity</CardTitle>
-        <CardDescription>
-          Create a new activity for your trip. You can assign it to specific
-          time blocks later.
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
+    <Card className="w-full border-none shadow-none">
+      <CardContent className="p-0 m-0">
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
           {/* Title (Required) */}
           <div className="space-y-2">

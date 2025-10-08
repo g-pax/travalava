@@ -1,16 +1,9 @@
 "use client";
 
-import {
-  ArrowLeftRight,
-  Calendar,
-  ChevronDown,
-  ChevronUp,
-  Plus,
-} from "lucide-react";
+import { ArrowLeftRight, Calendar, Plus } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { ActionButton, ItineraryLoader } from "@/components/loading";
-import { Accordion } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -19,10 +12,12 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { CurrentMember } from "@/features/trip/hooks/use-current-member";
 import { useCommittedBlocks } from "@/features/voting/hooks/use-block-commit";
 import { useCreateDays } from "../hooks/use-create-days";
 import { useDays } from "../hooks/use-days";
+import { ConfirmedBlocksView } from "./confirmed-blocks-view";
 import { DayCard } from "./day-card";
 import { DaySwapDialog } from "./day-swap-dialog";
 import { ItinerarySidebar } from "./itinerary-sidebar";
@@ -44,19 +39,18 @@ export function ItineraryView({
   const { data: committedBlocks = [] } = useCommittedBlocks(tripId);
   const createDays = useCreateDays();
 
-  // State for accordion management - using string[] for shadcn Accordion
-  const [expandedDays, setExpandedDays] = useState<string[]>([]);
   const [activeDayId, setActiveDayId] = useState<string | null>(null);
+  const [expandedDays, setExpandedDays] = useState<Set<string>>(new Set());
 
   // Refs for scroll-to functionality
   const dayRefs = useRef<Map<string, HTMLDivElement>>(new Map());
 
-  // Initialize: expand first day by default
+  // Initialize: set first day as active and expanded by default
   // biome-ignore lint/correctness/useExhaustiveDependencies: This should run only once
   useEffect(() => {
-    if (days && days.length > 0 && expandedDays.length === 0) {
-      setExpandedDays([days[0].id]);
+    if (days && days.length > 0 && !activeDayId) {
       setActiveDayId(days[0].id);
+      setExpandedDays(new Set([days[0].id]));
     }
   }, []);
 
@@ -74,26 +68,26 @@ export function ItineraryView({
     }
   };
 
-  const expandAll = useCallback(() => {
-    if (days) {
-      setExpandedDays(days.map((d) => d.id));
-    }
-  }, [days]);
-
-  const collapseAll = useCallback(() => {
-    setExpandedDays([]);
-  }, []);
-
   const scrollToDay = useCallback((dayId: string) => {
     const element = dayRefs.current.get(dayId);
     if (element) {
       element.scrollIntoView({ behavior: "smooth", block: "start" });
       setActiveDayId(dayId);
       // Expand the day when navigating to it
-      setExpandedDays((prev) =>
-        prev.includes(dayId) ? prev : [...prev, dayId],
-      );
+      setExpandedDays((prev) => new Set(prev).add(dayId));
     }
+  }, []);
+
+  const toggleDay = useCallback((dayId: string) => {
+    setExpandedDays((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(dayId)) {
+        newSet.delete(dayId);
+      } else {
+        newSet.add(dayId);
+      }
+      return newSet;
+    });
   }, []);
 
   const setDayRef = useCallback(
@@ -157,82 +151,80 @@ export function ItineraryView({
     );
   }
 
-  const allExpanded = days && expandedDays.length === days.length;
-
   return (
-    <div className="flex flex-col lg:flex-row gap-8">
-      {/* Sidebar Navigation */}
-      <ItinerarySidebar
-        days={days || []}
-        activeDayId={activeDayId}
-        onDayClick={scrollToDay}
-      />
-
-      {/* Main Content */}
-      <div className="flex-1 min-w-0 space-y-6">
-        {/* Header with controls */}
-        <div className="flex items-center justify-between flex-wrap gap-4">
-          <div>
-            <h2 className="text-2xl font-bold">Itinerary</h2>
-            <div className="text-sm text-muted-foreground mt-1">
-              {days?.length || 0} day{days?.length !== 1 ? "s" : ""}
-            </div>
-          </div>
-
-          <div className="flex items-center gap-2">
-            {currentMember?.role === "organizer" &&
-              committedBlocks.length >= 2 && (
-                <DaySwapDialog
-                  tripId={tripId}
-                  committedBlocks={committedBlocks}
-                >
-                  <Button variant="outline" size="sm" className="gap-2">
-                    <ArrowLeftRight className="h-4 w-4" />
-                    Swap Days
-                  </Button>
-                </DaySwapDialog>
-              )}
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={allExpanded ? collapseAll : expandAll}
-              className="gap-2"
-            >
-              {allExpanded ? (
-                <>
-                  <ChevronUp className="h-4 w-4" />
-                  Collapse All
-                </>
-              ) : (
-                <>
-                  <ChevronDown className="h-4 w-4" />
-                  Expand All
-                </>
-              )}
-            </Button>
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex items-center justify-between flex-wrap gap-4">
+        <div>
+          <h2 className="text-2xl font-bold">Itinerary</h2>
+          <div className="text-sm text-muted-foreground mt-1">
+            {days?.length || 0} day{days?.length !== 1 ? "s" : ""} •{" "}
+            {committedBlocks.length} confirmed activit
+            {committedBlocks.length !== 1 ? "ies" : "y"}
           </div>
         </div>
 
-        {/* Day Cards with Accordion */}
-        <Accordion
-          type="multiple"
-          value={expandedDays}
-          onValueChange={setExpandedDays}
-          className="space-y-4"
-        >
-          {days?.map((day, index) => (
-            <DayCard
-              key={day.id}
-              ref={(el) => setDayRef(day.id, el)}
-              day={day}
-              tripId={tripId}
-              dayNumber={index + 1}
-              currentMember={currentMember}
-              dayId={day.id}
-            />
-          ))}
-        </Accordion>
+        <div className="flex items-center gap-2">
+          {currentMember?.role === "organizer" &&
+            committedBlocks.length >= 2 && (
+              <DaySwapDialog tripId={tripId} committedBlocks={committedBlocks}>
+                <Button variant="outline" size="sm" className="gap-2">
+                  <ArrowLeftRight className="h-4 w-4" />
+                  Swap Days
+                </Button>
+              </DaySwapDialog>
+            )}
+        </div>
       </div>
+
+      {/* Tabs for different views */}
+      <Tabs defaultValue="planning" className="w-full">
+        <TabsList className="grid w-full grid-cols-2">
+          <TabsTrigger value="planning">Planning View</TabsTrigger>
+          <TabsTrigger value="confirmed">
+            Final Itinerary
+            {committedBlocks.length > 0 && (
+              <span className="ml-2 bg-green-600 text-white text-xs px-2 py-0.5 rounded-full">
+                {committedBlocks.length}
+              </span>
+            )}
+          </TabsTrigger>
+        </TabsList>
+
+        {/* Planning View Tab */}
+        <TabsContent value="planning" className="mt-6">
+          <div className="flex flex-col lg:flex-row gap-8">
+            {/* Sidebar Navigation */}
+            <ItinerarySidebar
+              days={days || []}
+              activeDayId={activeDayId}
+              onDayClick={scrollToDay}
+            />
+
+            {/* Main Content */}
+            <div className="flex-1 min-w-0 space-y-12">
+              {days?.map((day, index) => (
+                <DayCard
+                  key={day.id}
+                  ref={(el) => setDayRef(day.id, el)}
+                  day={day}
+                  tripId={tripId}
+                  dayNumber={index + 1}
+                  currentMember={currentMember}
+                  dayId={day.id}
+                  isExpanded={expandedDays.has(day.id)}
+                  onToggle={() => toggleDay(day.id)}
+                />
+              ))}
+            </div>
+          </div>
+        </TabsContent>
+
+        {/* Confirmed View Tab */}
+        <TabsContent value="confirmed" className="mt-6">
+          <ConfirmedBlocksView tripId={tripId} />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }
