@@ -102,7 +102,7 @@ jobs:
             // Build artifact page link if found
             const artifactLink = artifact
               ? `🔗 **HTML reports:** https://github.com/${owner}/${repo}/actions/runs/${run_id}/artifacts/${artifact.id}`
-              : '⚠️ Artifact not found. Check the workflow logs.';
+              : '⚠️ Artifact not found. Check the workflow logs!';
 
             const body = `<!-- lhci-summary -->\n${summary}\n\n${artifactLink}`;
 
