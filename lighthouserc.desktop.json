@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json.schemastore.org/lighthouserc.json",
+  "ci": {
+    "collect": {
+      "numberOfRuns": 1,
+      "settings": {
+        "preset": "desktop",
+        "chromeFlags": [
+          "--headless=new",
+          "--no-sandbox",
+          "--disable-dev-shm-usage"
+        ],
+        "output": ["html", "json"]
+      },
+      "url": ["http://127.0.0.1:4317/", "http://127.0.0.1:4317/login"]
+    },
+    "assert": {
+      "assertions": {
+        "categories:performance": ["warn", { "minScore": 0.8 }],
+        "categories:accessibility": ["warn", { "minScore": 0.8 }],
+        "total-byte-weight": ["warn", { "maxNumericValue": 500000 }],
+        "cumulative-layout-shift": ["warn", { "maxNumericValue": 0.1 }]
+      }
+    },
+    "upload": {
+      "target": "filesystem",
+      "outputDir": ".lhci/desktop",
+      "reportFilenamePattern": "%%PATHNAME%%.report.html"
+    }
+  }
+}

@@ -1,0 +1,167 @@
+name: lighthouse
+
+on:
+  pull_request:
+    branches: ["main"]
+    types: [opened, synchronize, reopened]
+    paths:
+      - "app/**"
+      - "components/**"
+      - "public/**"
+      - "styles/**"
+      - "next.config.*"
+      - "package.json"
+
+jobs:
+  lhci:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+      statuses: write
+      actions: read
+
+    env:
+      NEXT_TELEMETRY_DISABLED: "1"
+      NODE_ENV: production
+      PORT: 4317
+      NEXTAUTH_URL: http://127.0.0.1:4317
+      NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+      NEXTAUTH_SECRET: ${{ secrets.NEXTAUTH_SECRET }}
+      NEXT_PUBLIC_GOOGLE_MAPS_API_KEY: ${{ secrets.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY }}
+      R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+      R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+      R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+      R2_BUCKET: ${{ secrets.R2_BUCKET }}
+      NEXT_PUBLIC_R2_PUBLIC_URL: ${{ secrets.NEXT_PUBLIC_R2_PUBLIC_URL }}
+      GOOGLE_PLACES_API_KEY: ${{ secrets.GOOGLE_PLACES_API_KEY }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: "npm"
+
+      - name: Install deps
+        run: npm ci
+
+      - name: Build Next.js
+        run: npm run build
+
+      - name: Start server
+        run: |
+          npx next start -p $PORT -H 127.0.0.1 & \
+          npx --yes wait-on http://127.0.0.1:$PORT
+
+      - name: Run LHCI (desktop)
+        run: npx lhci autorun --config=./lighthouserc.desktop.json
+
+      - name: Run LHCI (mobile)
+        run: npx lhci autorun --config=./lighthouserc.mobile.json
+
+      - name: Generate PR markdown summary
+        id: genmd
+        run: |
+          node - <<'NODE'
+          const fs = require('fs');
+          const path = p => `.lhci/${p}`;
+          function tableFor(dir, label){
+            const manifestPath = path(`${dir}/manifest.json`);
+            if (!fs.existsSync(manifestPath)) return `_${label}: no results._\n`;
+            const m = JSON.parse(fs.readFileSync(manifestPath,'utf8'));
+            const lastByUrl = {};
+            for (const r of m) lastByUrl[r.url] = r;
+            const pct = v => Math.round((v||0)*100);
+            let md = `### ${label}\n\n| Page | Perf | A11y | SEO | Best | Notes |\n|---|---:|---:|---:|---:|---|\n`;
+            for (const [url, r] of Object.entries(lastByUrl)) {
+              const s = r.summary || {};
+              md += `| ${url} | ${pct(s.performance)} | ${pct(s.accessibility)} | ${pct(s.seo)} | ${pct(s['best-practices']||0)} |  |\n`;
+            }
+            return md + '\n';
+          }
+          function topFindings(dir, label){
+            const manifestPath = path(`${dir}/manifest.json`);
+            if (!fs.existsSync(manifestPath)) return '';
+            const m = JSON.parse(fs.readFileSync(manifestPath,'utf8'));
+            const files = m.filter(x=>x.jsonPath).map(x=>x.jsonPath);
+            const audits = {};
+            for (const jf of files){
+              const j = JSON.parse(fs.readFileSync(jf,'utf8'));
+              const interesting = ['largest-contentful-paint','total-byte-weight','unused-javascript','uses-responsive-images','cumulative-layout-shift','first-contentful-paint','server-response-time'];
+              for (const id of interesting){
+                const a = j.audits[id];
+                if (!a || a.score === 1) continue;
+                const key = `${id}`;
+                audits[key] = audits[key] || [];
+                audits[key].push({url: j.requestedUrl, score: a.score, title: a.title, displayValue: a.displayValue});
+              }
+            }
+            const entries = Object.entries(audits);
+            if (!entries.length) return '';
+            let md = `**Key findings (${label}):**\n`;
+            md += `<details><summary>Expand</summary>\n\n`;
+            for (const [id, arr] of entries){
+              md += `- **${id}**\n`;
+              for (const it of arr.slice(0,3)){
+                md += `  - ${it.url} — ${it.title}${it.displayValue?` (${it.displayValue})`:''}\n`;
+              }
+            }
+            md += `\n</details>\n\n`;
+            return md;
+          }
+
+          let out = `## Lighthouse results\n`;
+          out += tableFor('desktop', 'Desktop');
+          out += topFindings('desktop','desktop');
+          out += tableFor('mobile', 'Mobile');
+          out += topFindings('mobile','mobile');
+          fs.writeFileSync('.lhci/summary.md', out);
+          console.log(out);
+          NODE
+
+      - name: Upload HTML reports (optional)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lighthouse-report
+          path: |
+            .lhci/desktop/*.report.html
+            .lhci/mobile/*.report.html
+          if-no-files-found: warn
+
+      - name: Sticky PR comment with results
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const {owner, repo} = context.repo;
+            const pr = context.payload.pull_request.number;
+            const body = `<!-- lhci-summary -->\n` + fs.readFileSync('.lhci/summary.md','utf8');
+            const { data: comments } = await github.rest.issues.listComments({ owner, repo, issue_number: pr });
+            const existing = comments.find(c => c.body && c.body.includes('<!-- lhci-summary -->'));
+            if (existing) {
+              await github.rest.issues.updateComment({ owner, repo, comment_id: existing.id, body });
+            } else {
+              await github.rest.issues.createComment({ owner, repo, issue_number: pr, body });
+            }
+
+      - name: Create Check Run summary (nice Checks tab)
+        if: always()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const {owner, repo} = context.repo;
+            const md = fs.readFileSync('.lhci/summary.md','utf8');
+            await github.rest.checks.create({
+              owner, repo,
+              name: "Lighthouse",
+              head_sha: context.payload.pull_request ? context.payload.pull_request.head.sha : context.sha,
+              status: "completed",
+              conclusion: "neutral",
+              output: { title: "Lighthouse summary", summary: md }
+            })

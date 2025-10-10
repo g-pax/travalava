@@ -23,96 +23,91 @@ import { useAuth } from "@/lib/auth-context";
 
 function LandingPage() {
   return (
-    <div className="text-8xl text-center">
-      Coming soon after Anto stops harassing me
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+      {/* Navigation */}
+      <nav className="flex items-center justify-between px-6 py-4">
+        <div className="flex items-center space-x-2">
+          <Calendar className="h-8 w-8 text-blue-600" />
+          <span className="text-xl font-bold text-gray-900">Travalava</span>
+        </div>
+        <div className="flex items-center space-x-4">
+          <Link href="/auth/login">
+            <Button variant="ghost">Sign In</Button>
+          </Link>
+          <Link href="/auth/register">
+            <Button>Get Started</Button>
+          </Link>
+        </div>
+      </nav>
+
+      {/* Hero Section */}
+      <div className="px-6 py-20">
+        <div className="mx-auto max-w-4xl text-center">
+          <h1 className="text-4xl font-bold tracking-tight text-gray-900 sm:text-6xl">
+            Plan Amazing Trips <span className="text-blue-600">Together</span>
+          </h1>
+          <p className="mx-auto mt-6 max-w-2xl text-lg leading-8 text-gray-600">
+            Collaborate with friends and family to create the perfect itinerary.
+            Vote on activities, manage expenses, and make memories that last a
+            lifetime.
+          </p>
+          <div className="mt-10 flex items-center justify-center gap-x-6">
+            <Link href="/auth/register">
+              <Button size="lg" className="px-8">
+                Start Planning
+              </Button>
+            </Link>
+            <Link
+              href="/auth/login"
+              className="text-sm font-semibold leading-6 text-gray-900"
+            >
+              Already have an account? <span aria-hidden="true">→</span>
+            </Link>
+          </div>
+        </div>
+      </div>
+
+      {/* Features */}
+      <div className="px-6 py-16">
+        <div className="mx-auto max-w-6xl">
+          <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
+            <Card>
+              <CardHeader>
+                <Users className="h-8 w-8 text-blue-600 mb-2" />
+                <CardTitle>Collaborative Planning</CardTitle>
+                <CardDescription>
+                  Invite friends and family to plan together. Everyone can
+                  contribute ideas and vote on activities.
+                </CardDescription>
+              </CardHeader>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <Calendar className="h-8 w-8 text-blue-600 mb-2" />
+                <CardTitle>Smart Scheduling</CardTitle>
+                <CardDescription>
+                  Organize your trip by days and time blocks. Vote on activities
+                  and let the group decide.
+                </CardDescription>
+              </CardHeader>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <MapPin className="h-8 w-8 text-blue-600 mb-2" />
+                <CardTitle>Location Integration</CardTitle>
+                <CardDescription>
+                  Add locations with Google Maps integration. Get directions and
+                  weather information.
+                </CardDescription>
+              </CardHeader>
+            </Card>
+          </div>
+        </div>
+      </div>
     </div>
   );
-  // return (
-  //   <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
-  //     {/* Navigation */}
-  //     <nav className="flex items-center justify-between px-6 py-4">
-  //       <div className="flex items-center space-x-2">
-  //         <Calendar className="h-8 w-8 text-blue-600" />
-  //         <span className="text-xl font-bold text-gray-900">Travalava</span>
-  //       </div>
-  //       <div className="flex items-center space-x-4">
-  //         <Link href="/auth/login">
-  //           <Button variant="ghost">Sign In</Button>
-  //         </Link>
-  //         <Link href="/auth/register">
-  //           <Button>Get Started</Button>
-  //         </Link>
-  //       </div>
-  //     </nav>
-
-  //     {/* Hero Section */}
-  //     <div className="px-6 py-20">
-  //       <div className="mx-auto max-w-4xl text-center">
-  //         <h1 className="text-4xl font-bold tracking-tight text-gray-900 sm:text-6xl">
-  //           Plan Amazing Trips <span className="text-blue-600">Together</span>
-  //         </h1>
-  //         <p className="mx-auto mt-6 max-w-2xl text-lg leading-8 text-gray-600">
-  //           Collaborate with friends and family to create the perfect itinerary.
-  //           Vote on activities, manage expenses, and make memories that last a
-  //           lifetime.
-  //         </p>
-  //         <div className="mt-10 flex items-center justify-center gap-x-6">
-  //           <Link href="/auth/register">
-  //             <Button size="lg" className="px-8">
-  //               Start Planning
-  //             </Button>
-  //           </Link>
-  //           <Link
-  //             href="/auth/login"
-  //             className="text-sm font-semibold leading-6 text-gray-900"
-  //           >
-  //             Already have an account? <span aria-hidden="true">→</span>
-  //           </Link>
-  //         </div>
-  //       </div>
-  //     </div>
-
-  //     {/* Features */}
-  //     <div className="px-6 py-16">
-  //       <div className="mx-auto max-w-6xl">
-  //         <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
-  //           <Card>
-  //             <CardHeader>
-  //               <Users className="h-8 w-8 text-blue-600 mb-2" />
-  //               <CardTitle>Collaborative Planning</CardTitle>
-  //               <CardDescription>
-  //                 Invite friends and family to plan together. Everyone can
-  //                 contribute ideas and vote on activities.
-  //               </CardDescription>
-  //             </CardHeader>
-  //           </Card>
-
-  //           <Card>
-  //             <CardHeader>
-  //               <Calendar className="h-8 w-8 text-blue-600 mb-2" />
-  //               <CardTitle>Smart Scheduling</CardTitle>
-  //               <CardDescription>
-  //                 Organize your trip by days and time blocks. Vote on activities
-  //                 and let the group decide.
-  //               </CardDescription>
-  //             </CardHeader>
-  //           </Card>
-
-  //           <Card>
-  //             <CardHeader>
-  //               <MapPin className="h-8 w-8 text-blue-600 mb-2" />
-  //               <CardTitle>Location Integration</CardTitle>
-  //               <CardDescription>
-  //                 Add locations with Google Maps integration. Get directions and
-  //                 weather information.
-  //               </CardDescription>
-  //             </CardHeader>
-  //           </Card>
-  //         </div>
-  //       </div>
-  //     </div>
-  //   </div>
-  // );
 }
 
 function UserDashboard() {
