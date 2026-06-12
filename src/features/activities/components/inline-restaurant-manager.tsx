@@ -11,6 +11,7 @@
 
 import { Plus, Utensils } from "lucide-react";
 import { useState } from "react";
+import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -97,10 +98,11 @@ export function InlineRestaurantManager({
   ) => {
     try {
       if (editingRestaurant) {
-        // Update existing restaurant
+        // Update existing restaurant; the edited record's id must win over
+        // any id carried in the form data
         await updateRestaurant.mutateAsync({
-          id: editingRestaurant.id,
           ...restaurantData,
+          id: editingRestaurant.id,
         });
       } else if (restaurantData.id) {
         // Link existing restaurant from saved list to this activity
@@ -110,16 +112,20 @@ export function InlineRestaurantManager({
           sort_order: restaurants.length,
         });
       } else {
-        // Create new restaurant and link to activity
+        // Create new restaurant, then link it to this activity
         const newRestaurant = await createRestaurant.mutateAsync({
           ...restaurantData,
           trip_id: tripId,
         });
 
-        // Link the new restaurant to this activity
+        if (!newRestaurant?.id) {
+          toast.error("Failed to create restaurant. Please try again.");
+          throw new Error("Restaurant creation returned no id");
+        }
+
         await linkRestaurant.mutateAsync({
           activity_id: activityId,
-          restaurant_id: newRestaurant?.id ?? "",
+          restaurant_id: newRestaurant.id,
           sort_order: restaurants.length,
         });
       }

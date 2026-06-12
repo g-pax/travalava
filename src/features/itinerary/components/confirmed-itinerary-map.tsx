@@ -236,13 +236,12 @@ export function ConfirmedItineraryMap({
                     </p>
                     <div className="flex items-center justify-between text-xs">
                       <span className="text-gray-500">
-                        {new Date(activity.dayDate).toLocaleDateString(
-                          undefined,
-                          {
-                            month: "short",
-                            day: "numeric",
-                          },
-                        )}
+                        {new Date(
+                          `${activity.dayDate}T00:00:00`,
+                        ).toLocaleDateString(undefined, {
+                          month: "short",
+                          day: "numeric",
+                        })}
                       </span>
                       <span
                         className="px-2 py-1 rounded text-white text-xs font-medium"
@@ -262,11 +261,14 @@ export function ConfirmedItineraryMap({
       {/* Legend */}
       <div className="mt-4 flex flex-wrap gap-2">
         {uniqueDays.map((day) => {
-          const dayLabel = new Date(day).toLocaleDateString(undefined, {
-            weekday: "short",
-            month: "short",
-            day: "numeric",
-          });
+          const dayLabel = new Date(`${day}T00:00:00`).toLocaleDateString(
+            undefined,
+            {
+              weekday: "short",
+              month: "short",
+              day: "numeric",
+            },
+          );
           const color = getDayColor(day);
           const activitiesCount = activities.filter(
             (a) => a.dayDate === day,

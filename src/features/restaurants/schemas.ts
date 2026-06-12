@@ -1,5 +1,22 @@
 import { z } from "zod";
 
+// Form inputs submit "" for untouched text fields and NaN for empty
+// valueAsNumber fields; both must collapse to undefined before optional
+// validators run, otherwise optional fields block submission.
+const emptyToUndefined = (value: unknown) =>
+  typeof value === "string" && value.trim() === "" ? undefined : value;
+const nanToUndefined = (value: unknown) =>
+  typeof value === "number" && Number.isNaN(value) ? undefined : value;
+
+const OptionalTextSchema = z.preprocess(
+  emptyToUndefined,
+  z.string().optional(),
+);
+const OptionalUrlSchema = z.preprocess(
+  emptyToUndefined,
+  z.url("Please enter a valid URL").optional(),
+);
+
 // Base restaurant schema for database operations
 export const RestaurantSchema = z.object({
   id: z.string().uuid().optional(),
@@ -7,18 +24,21 @@ export const RestaurantSchema = z.object({
 
   // Basic restaurant information
   name: z.string().min(1, "Restaurant name is required"),
-  cuisine_type: z.string().optional(),
-  price_range: z.enum(["$", "$$", "$$$", "$$$$"]).optional(),
-  description: z.string().optional(),
-  address: z.string().optional(),
-  phone: z.string().optional(),
-  website: z.url().optional(),
-  image_url: z.url().optional(),
-  rating: z.number().min(0).max(5).optional(),
-  review_count: z.number().min(0).optional(),
+  cuisine_type: OptionalTextSchema,
+  price_range: z.preprocess(
+    emptyToUndefined,
+    z.enum(["$", "$$", "$$$", "$$$$"]).optional(),
+  ),
+  description: OptionalTextSchema,
+  address: OptionalTextSchema,
+  phone: OptionalTextSchema,
+  website: OptionalUrlSchema,
+  image_url: OptionalUrlSchema,
+  rating: z.preprocess(nanToUndefined, z.number().min(0).max(5).optional()),
+  review_count: z.preprocess(nanToUndefined, z.number().min(0).optional()),
 
   // Google Places data
-  place_id: z.string().optional(),
+  place_id: OptionalTextSchema,
 
   // Location data (expires after 30 days)
   lat: z.number().optional(),

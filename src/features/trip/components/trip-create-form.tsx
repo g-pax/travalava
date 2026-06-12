@@ -164,8 +164,9 @@ export function TripCreateForm({ onSuccess }: TripCreateFormProps) {
         <Label htmlFor="pin">PIN (optional)</Label>
         <Input
           id="pin"
-          type="password"
-          placeholder="4+ characters"
+          inputMode="numeric"
+          maxLength={8}
+          placeholder="4-8 digits"
           {...form.register("pin")}
         />
         {form.formState.errors.pin && (
@@ -174,7 +175,7 @@ export function TripCreateForm({ onSuccess }: TripCreateFormProps) {
           </p>
         )}
         <p className="text-sm text-gray-600">
-          Set a PIN to require collaborators to enter it when joining
+          Set a 4-8 digit PIN to require collaborators to enter it when joining
         </p>
       </div>
 

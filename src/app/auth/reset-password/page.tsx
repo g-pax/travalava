@@ -1,14 +1,17 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ArrowLeft, Mail } from "lucide-react";
+import { ArrowLeft, KeyRound, Mail } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 /**
- * Password reset page
- * - Send password reset email
- * - Handle password reset confirmation
+ * Password reset page with two modes:
+ * - request: send the recovery email
+ * - update: shown when the user arrives via the recovery link (Supabase fires
+ *   PASSWORD_RECOVERY after the browser client exchanges the URL code);
+ *   sets the new password via auth.updateUser
  */
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -22,14 +25,42 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/lib/auth-context";
-import { type ResetPasswordInput, ResetPasswordSchema } from "@/schemas";
+import { supabase } from "@/lib/supabase";
+import {
+  type ResetPasswordInput,
+  ResetPasswordSchema,
+  type UpdatePasswordInput,
+  UpdatePasswordSchema,
+} from "@/schemas";
 
 export default function ResetPasswordPage() {
-  const { resetPassword } = useAuth();
+  const { resetPassword, updatePassword } = useAuth();
+  const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [emailSent, setEmailSent] = useState(false);
+  const [recoveryMode, setRecoveryMode] = useState(false);
 
-  const form = useForm<ResetPasswordInput>({
+  useEffect(() => {
+    // Arriving via the email link puts a recovery code in the URL; the browser
+    // client exchanges it and emits PASSWORD_RECOVERY. Also check for the
+    // code param directly in case the event fired before this page mounted.
+    const params = new URLSearchParams(window.location.search);
+    if (params.has("code")) {
+      setRecoveryMode(true);
+    }
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((event) => {
+      if (event === "PASSWORD_RECOVERY") {
+        setRecoveryMode(true);
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const requestForm = useForm<ResetPasswordInput>({
     resolver: zodResolver(ResetPasswordSchema),
     mode: "all",
     reValidateMode: "onChange",
@@ -38,19 +69,117 @@ export default function ResetPasswordPage() {
     },
   });
 
-  const onSubmit = async (data: ResetPasswordInput) => {
+  const updateForm = useForm<UpdatePasswordInput>({
+    resolver: zodResolver(UpdatePasswordSchema),
+    mode: "all",
+    reValidateMode: "onChange",
+    defaultValues: {
+      password: "",
+      confirmPassword: "",
+    },
+  });
+
+  const onRequestSubmit = async (data: ResetPasswordInput) => {
     setIsLoading(true);
     try {
       await resetPassword(data.email);
       setEmailSent(true);
       toast.success("Password reset email sent! Check your inbox.");
-      // biome-ignore lint/suspicious/noExplicitAny: its ok here
-    } catch (error: any) {
-      toast.error(error.message || "Failed to send reset email");
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : "Failed to send reset email",
+      );
     } finally {
       setIsLoading(false);
     }
   };
+
+  const onUpdateSubmit = async (data: UpdatePasswordInput) => {
+    setIsLoading(true);
+    try {
+      await updatePassword(data.password);
+      toast.success("Password updated! You're signed in.");
+      router.replace("/trips");
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : "Failed to update password",
+      );
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  if (recoveryMode) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-950 px-4 py-12">
+        <Card className="w-full max-w-md border-2 shadow-lg">
+          <CardHeader className="space-y-4 text-center pb-6">
+            <div className="mx-auto h-16 w-16 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 dark:from-blue-600 dark:to-blue-700 flex items-center justify-center shadow-lg">
+              <KeyRound className="h-8 w-8 text-white" />
+            </div>
+            <div>
+              <CardTitle className="text-2xl">Set a new password</CardTitle>
+              <CardDescription className="text-base mt-2">
+                Choose a new password for your account
+              </CardDescription>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <form
+              onSubmit={updateForm.handleSubmit(onUpdateSubmit)}
+              className="space-y-4"
+            >
+              <div className="space-y-2">
+                <Label htmlFor="password">New password</Label>
+                <Input
+                  id="password"
+                  type="password"
+                  placeholder="Enter new password"
+                  {...updateForm.register("password")}
+                  disabled={isLoading}
+                />
+                {updateForm.formState.errors.password && (
+                  <p className="text-sm text-red-600 dark:text-red-400">
+                    {updateForm.formState.errors.password.message}
+                  </p>
+                )}
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="confirmPassword">Confirm password</Label>
+                <Input
+                  id="confirmPassword"
+                  type="password"
+                  placeholder="Repeat new password"
+                  {...updateForm.register("confirmPassword")}
+                  disabled={isLoading}
+                />
+                {updateForm.formState.errors.confirmPassword && (
+                  <p className="text-sm text-red-600 dark:text-red-400">
+                    {updateForm.formState.errors.confirmPassword.message}
+                  </p>
+                )}
+              </div>
+
+              <Button
+                type="submit"
+                className="w-full gap-2"
+                disabled={isLoading}
+              >
+                {isLoading ? (
+                  "Updating..."
+                ) : (
+                  <>
+                    <KeyRound className="h-4 w-4" />
+                    Update Password
+                  </>
+                )}
+              </Button>
+            </form>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   if (emailSent) {
     return (
@@ -66,7 +195,7 @@ export default function ResetPasswordPage() {
                 We've sent a password reset link to
                 <br />
                 <span className="font-medium text-gray-900 dark:text-white">
-                  {form.getValues("email")}
+                  {requestForm.getValues("email")}
                 </span>
               </CardDescription>
             </div>
@@ -118,19 +247,22 @@ export default function ResetPasswordPage() {
           </div>
         </CardHeader>
         <CardContent>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          <form
+            onSubmit={requestForm.handleSubmit(onRequestSubmit)}
+            className="space-y-4"
+          >
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
               <Input
                 id="email"
                 type="email"
                 placeholder="Enter your email"
-                {...form.register("email")}
+                {...requestForm.register("email")}
                 disabled={isLoading}
               />
-              {form.formState.errors.email && (
+              {requestForm.formState.errors.email && (
                 <p className="text-sm text-red-600 dark:text-red-400">
-                  {form.formState.errors.email.message}
+                  {requestForm.formState.errors.email.message}
                 </p>
               )}
             </div>

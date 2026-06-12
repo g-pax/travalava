@@ -204,7 +204,7 @@ export function CommitPanel({ block, tripId, isOrganizer }: CommitPanelProps) {
                     {existingCommit.activity.category}
                   </Badge>
                 )}
-                {existingCommit.activity?.cost_amount && (
+                {existingCommit.activity?.cost_amount != null && (
                   <span>
                     {formatCurrency(
                       existingCommit.activity.cost_amount,
@@ -456,7 +456,9 @@ export function CommitPanel({ block, tripId, isOrganizer }: CommitPanelProps) {
                       >
                         <div className="font-medium">{commit.blockLabel}</div>
                         <div className="text-gray-600">
-                          {new Date(commit.dayDate).toLocaleDateString()}
+                          {new Date(
+                            `${commit.dayDate}T00:00:00`,
+                          ).toLocaleDateString()}
                         </div>
                       </div>
                     ))}

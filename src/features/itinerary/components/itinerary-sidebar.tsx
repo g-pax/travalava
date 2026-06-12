@@ -70,7 +70,8 @@ export function ItinerarySidebar({
   onDayClick,
 }: ItinerarySidebarProps) {
   const formatDayLabel = (date: string, index: number) => {
-    const d = new Date(date);
+    // parse date-only strings as local time (UTC parse shifts the day west of UTC)
+    const d = new Date(`${date}T00:00:00`);
     return {
       day: `Day ${index + 1}`,
       date: d.toLocaleDateString("en-US", { month: "short", day: "numeric" }),

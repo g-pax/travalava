@@ -18,12 +18,15 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { TripCreateForm } from "@/features/trip/components/trip-create-form";
 import { useUserTrips } from "@/features/trip/hooks/use-user-trips";
-import { formatDate } from "@/lib/utils";
+import { formatDate, parseLocalDate } from "@/lib/utils";
 
 function TripCard({ trip, role }: { trip: any; role: string }) {
   const memberCount = trip.trip_members?.length || 0;
-  const startDate = new Date(trip.start_date);
-  const isUpcoming = startDate > new Date();
+  // Parse as local midnight and treat a trip starting today as upcoming
+  const startDate = parseLocalDate(trip.start_date);
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const isUpcoming = startDate >= today;
 
   return (
     <Link href={`/trips/${trip.id}`}>
@@ -149,10 +152,12 @@ function TripsPageContent() {
   }
 
   const trips =
-    tripMemberships?.map((membership) => ({
-      ...membership.trip,
-      membershipRole: membership.role,
-    })) || [];
+    tripMemberships
+      ?.filter((membership) => membership.trip)
+      .map((membership) => ({
+        ...membership.trip,
+        membershipRole: membership.role,
+      })) || [];
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
@@ -236,10 +241,9 @@ function TripsPageContent() {
 
             {/* Trips Grid */}
             <div className="grid md:grid-cols-2 lg:grid-cols-2 gap-6">
-              {trips.map((trip, index) => (
+              {trips.map((trip) => (
                 <TripCard
-                  // biome-ignore lint/suspicious/noArrayIndexKey: safe index
-                  key={index}
+                  key={trip.id}
                   trip={trip}
                   role={trip.membershipRole}
                 />

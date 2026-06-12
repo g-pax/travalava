@@ -25,21 +25,20 @@ export function useUpdateVotingWindow() {
   return useMutation({
     mutationFn: async ({
       blockId,
-      tripId,
       vote_open_ts,
       vote_close_ts,
     }: UpdateVotingWindowParams) => {
       const clientMutationId = nanoid();
 
+      // blocks have no trip_id column (they hang off days); trip scoping is
+      // enforced by RLS through the day -> trip join.
       const { data, error } = await supabase
         .from("blocks")
         .update({
           vote_open_ts,
           vote_close_ts,
-          updated_at: new Date().toISOString(),
         })
         .eq("id", blockId)
-        .eq("trip_id", tripId) // RLS check
         .select()
         .maybeSingle();
 
@@ -69,7 +68,7 @@ export function useClearVotingWindow() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ blockId, tripId }: ClearVotingWindowParams) => {
+    mutationFn: async ({ blockId }: ClearVotingWindowParams) => {
       const clientMutationId = nanoid();
 
       const { data, error } = await supabase
@@ -77,10 +76,8 @@ export function useClearVotingWindow() {
         .update({
           vote_open_ts: null,
           vote_close_ts: null,
-          updated_at: new Date().toISOString(),
         })
         .eq("id", blockId)
-        .eq("trip_id", tripId)
         .select()
         .maybeSingle();
 

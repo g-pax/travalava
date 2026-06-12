@@ -13,7 +13,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
-import { RequireGuest } from "@/components/auth/auth-guard";
+import { RequireGuest, safeRedirectPath } from "@/components/auth/auth-guard";
 import { ActionButton } from "@/components/loading";
 import {
   Card,
@@ -30,7 +30,7 @@ import { type SignInInput, SignInSchema } from "@/schemas";
 export default function LoginPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const redirectTo = searchParams.get("redirectTo") || "/";
+  const redirectTo = safeRedirectPath(searchParams.get("redirectTo"));
 
   const { signIn } = useAuth();
   const [showPassword, setShowPassword] = useState(false);

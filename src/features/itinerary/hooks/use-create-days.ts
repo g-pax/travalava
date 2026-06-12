@@ -1,7 +1,7 @@
 "use client";
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { nanoid } from "nanoid";
+import { DateTime } from "luxon";
 import { supabase } from "@/lib/supabase";
 
 interface CreateDaysInput {
@@ -10,70 +10,66 @@ interface CreateDaysInput {
   endDate: string;
 }
 
+const BLOCK_TEMPLATE = [
+  { label: "Morning", position: 0 },
+  { label: "Afternoon", position: 1 },
+  { label: "Evening", position: 2 },
+] as const;
+
 export function useCreateDays() {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: async ({ tripId, startDate, endDate }: CreateDaysInput) => {
-      const clientMutationId = nanoid();
-
-      // Generate array of dates between start and end
-      const dates = [];
-      const start = new Date(startDate);
-      const end = new Date(endDate);
-
-      for (
-        let date = new Date(start);
-        date <= end;
-        date.setDate(date.getDate() + 1)
-      ) {
-        dates.push(new Date(date).toISOString().split("T")[0]);
+      // Calendar-date iteration with Luxon: raw Date math mixes UTC parsing
+      // with local stepping and drops/duplicates days across DST changes.
+      const start = DateTime.fromISO(startDate);
+      const end = DateTime.fromISO(endDate);
+      if (!start.isValid || !end.isValid || end < start) {
+        throw new Error("Invalid trip date range");
       }
 
-      // Create days
-      const daysToInsert = dates.map((date) => ({
-        trip_id: tripId,
-        date,
-      }));
+      const dates: string[] = [];
+      for (let d = start; d <= end; d = d.plus({ days: 1 })) {
+        const iso = d.toISODate();
+        if (iso) dates.push(iso);
+      }
 
+      // Idempotent on (trip_id, date): double-clicking "Create Itinerary"
+      // or retrying after a partial failure won't duplicate days.
       const { data: days, error: daysError } = await supabase
         .from("days")
-        .insert(daysToInsert)
+        .upsert(
+          dates.map((date) => ({ trip_id: tripId, date })),
+          { onConflict: "trip_id,date", ignoreDuplicates: false },
+        )
         .select();
 
       if (daysError) throw daysError;
 
-      // Create blocks for each day
-      const blocksToInsert = days.flatMap((day) => [
-        {
+      const blocksToInsert = days.flatMap((day) =>
+        BLOCK_TEMPLATE.map((block) => ({
           day_id: day.id,
-          label: "Morning",
-          position: 0,
-        },
-        {
-          day_id: day.id,
-          label: "Afternoon",
-          position: 1,
-        },
-        {
-          day_id: day.id,
-          label: "Evening",
-          position: 2,
-        },
-      ]);
+          label: block.label,
+          position: block.position,
+        })),
+      );
 
       const { data: blocks, error: blocksError } = await supabase
         .from("blocks")
-        .insert(blocksToInsert)
+        .upsert(blocksToInsert, {
+          onConflict: "day_id,position",
+          ignoreDuplicates: true,
+        })
         .select();
 
       if (blocksError) throw blocksError;
 
-      return { days, blocks, clientMutationId };
+      return { days, blocks };
     },
-    onSuccess: (_data) => {
-      queryClient.invalidateQueries({ queryKey: ["days"] });
-      queryClient.invalidateQueries({ queryKey: ["blocks"] });
+    onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({ queryKey: ["days", variables.tripId] });
+      queryClient.invalidateQueries({ queryKey: ["blocks", variables.tripId] });
     },
   });
 }

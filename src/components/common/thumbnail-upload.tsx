@@ -123,6 +123,8 @@ export function ThumbnailUpload({
               className="w-32 h-32 object-cover rounded-lg border"
               width={128}
               height={128}
+              // blob: preview URLs can't go through the Next image optimizer
+              unoptimized
             />
             {previewUrl && (
               <button

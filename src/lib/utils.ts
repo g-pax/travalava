@@ -39,16 +39,27 @@ export function formatDuration(minutes: number): string {
 }
 
 /**
+ * Parse a date string as local time. Bare YYYY-MM-DD strings get a midnight
+ * time suffix — new Date("2026-07-01") parses as UTC midnight, which renders
+ * as the previous day for anyone west of UTC.
+ */
+export function parseLocalDate(dateString: string): Date {
+  return /^\d{4}-\d{2}-\d{2}$/.test(dateString)
+    ? new Date(`${dateString}T00:00:00`)
+    : new Date(dateString);
+}
+
+/**
  * Format date string to human-readable format
  */
 export function formatDate(dateString: string): string {
   try {
-    const date = new Date(dateString);
     return new Intl.DateTimeFormat("en-US", {
       weekday: "long",
       month: "long",
       day: "numeric",
-    }).format(date);
+      year: "numeric",
+    }).format(parseLocalDate(dateString));
   } catch {
     return dateString;
   }

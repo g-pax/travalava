@@ -8,11 +8,11 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Eye, EyeOff, UserPlus } from "lucide-react";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
-import { RequireGuest } from "@/components/auth/auth-guard";
+import { RequireGuest, safeRedirectPath } from "@/components/auth/auth-guard";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -24,11 +24,13 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/lib/auth-context";
+import { supabase } from "@/lib/supabase";
 import { type SignUpInput, SignUpSchema } from "@/schemas";
 
 export default function RegisterPage() {
+  const router = useRouter();
   const searchParams = useSearchParams();
-  const redirectTo = searchParams.get("redirectTo") || "/";
+  const redirectTo = safeRedirectPath(searchParams.get("redirectTo"));
 
   const { signUp } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
@@ -52,6 +54,18 @@ export default function RegisterPage() {
     setIsLoading(true);
     try {
       await signUp(data.email, data.password, data.displayName);
+
+      // When email confirmation is disabled, signUp yields a session right
+      // away — go straight in instead of telling the user to check email.
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      if (session) {
+        toast.success("Welcome to Travalava!");
+        router.replace(redirectTo);
+        return;
+      }
+
       setEmailSent(true);
       toast.success(
         "Registration successful! Please check your email to confirm your account.",

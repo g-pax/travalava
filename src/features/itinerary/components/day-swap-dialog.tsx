@@ -157,7 +157,7 @@ export function DaySwapDialog({
                       </Badge>
                     </>
                   )}
-                  {block1Info.activity.cost_amount && (
+                  {block1Info.activity.cost_amount != null && (
                     <>
                       <span>•</span>
                       <span>
@@ -230,7 +230,7 @@ export function DaySwapDialog({
                       </Badge>
                     </>
                   )}
-                  {block2Info.activity.cost_amount && (
+                  {block2Info.activity.cost_amount != null && (
                     <>
                       <span>•</span>
                       <span>

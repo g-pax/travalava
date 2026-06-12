@@ -314,6 +314,16 @@ class GooglePlacesService {
   }
 
   /**
+   * Convert Google price level (1-4) to a typed price range.
+   * Returns undefined (never "") when the level is missing or out of range,
+   * matching the restaurants.price_range DB check constraint.
+   */
+  toPriceRange(priceLevel?: number): "$" | "$$" | "$$$" | "$$$$" | undefined {
+    const levels = ["$", "$$", "$$$", "$$$$"] as const;
+    return typeof priceLevel === "number" ? levels[priceLevel - 1] : undefined;
+  }
+
+  /**
    * Check if a place is suitable for activities (tourist attractions, museums, etc.)
    */
   isActivityPlace(types: string[]): boolean {
@@ -407,7 +417,7 @@ class GooglePlacesService {
       // Fields for DISPLAY ONLY (do not cache in database)
       location_updated_at: new Date().toISOString(),
       cuisine_type: this.getCuisineFromTypes(place.types),
-      price_range: this.formatPriceLevel(place.price_level),
+      price_range: this.toPriceRange(place.price_level),
       description: details?.editorial_summary?.overview || "",
       address: place.formatted_address,
       phone: details?.formatted_phone_number || "",

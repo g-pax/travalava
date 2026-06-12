@@ -92,7 +92,8 @@ export function useActivities(tripId: string) {
         throw new Error(`Failed to fetch activities: ${error.message}`);
       }
 
-      return data || [];
+      // location is jsonb in the DB; the app-level Activity type narrows it
+      return (data || []) as unknown as Activity[];
     },
     enabled: !!tripId && tripId !== "undefined" && tripId !== "null",
   });
@@ -139,7 +140,7 @@ export function useActivity(activityId: string) {
         throw new Error("Activity not found");
       }
 
-      return data;
+      return data as unknown as Activity;
     },
     enabled:
       !!activityId && activityId !== "undefined" && activityId !== "null",
@@ -158,22 +159,31 @@ export function useCreateActivity() {
     ) => {
       const clientMutationId = input.clientMutationId || nanoid();
 
+      // Strip fields that aren't activities columns: `restaurants` is a
+      // separate table (linked after creation) and clientMutationId maps to
+      // client_mutation_id. Unknown keys make PostgREST reject the insert.
+      const {
+        restaurants: _restaurants,
+        clientMutationId: _cmid,
+        ...activityColumns
+      } = input;
+
       const { data, error } = await supabase
         .from("activities")
         .insert([
           {
-            ...input,
+            ...activityColumns,
             client_mutation_id: clientMutationId,
           },
         ])
         .select()
-        .maybeSingle();
+        .single();
 
       if (error) {
         throw new Error(`Failed to create activity: ${error.message}`);
       }
 
-      return data;
+      return data as unknown as Activity;
     },
     // onMutate: async (input) => {
     //   // Cancel outgoing refetches
@@ -250,12 +260,14 @@ export function useUpdateActivity() {
     }) => {
       const mutationId = clientMutationId || nanoid();
 
+      // `restaurants` is not an activities column — see useCreateActivity
+      const { restaurants: _restaurants, ...activityUpdates } = updates;
+
       const { data, error } = await supabase
         .from("activities")
         .update({
-          ...updates,
+          ...activityUpdates,
           client_mutation_id: mutationId,
-          updated_at: new Date().toISOString(),
         })
         .eq("id", id)
         .select()
@@ -269,10 +281,9 @@ export function useUpdateActivity() {
         throw new Error("Activity not found or update failed");
       }
 
-      return data;
+      return data as unknown as Activity;
     },
-    onError: (error) => {
-      console.log("🚀 ~ useUpdateActivity ~ error:", error);
+    onError: () => {
       toast.error("Failed to update activity");
     },
     onSuccess: (data) => {

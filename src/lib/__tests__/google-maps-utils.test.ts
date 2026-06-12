@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   extractLatLngFromGoogleMapsSrc,
   isGoogleMapsInput,
-} from "../google-maps-utils";
+} from "../google-maps";
 
 describe("google-maps-utils", () => {
   describe("extractLatLngFromGoogleMapsSrc", () => {

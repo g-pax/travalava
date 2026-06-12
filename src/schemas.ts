@@ -1,25 +1,61 @@
 import { z } from "zod";
 
+// Form inputs submit "" for untouched text fields and NaN for empty
+// valueAsNumber fields; both must collapse to undefined instead of failing
+// the optional validators (which would block submission). Built with
+// union + transform (not preprocess) so z.input<> keeps concrete field types
+// for react-hook-form.
+export const OptionalUrlSchema = z
+  .union([z.literal(""), z.url("Please enter a valid URL")])
+  .optional()
+  .transform((value) => (value === "" ? undefined : value));
+
+export const OptionalNumberSchema = z
+  .union([z.nan(), z.number()])
+  .optional()
+  .transform((value) =>
+    value === undefined || Number.isNaN(value) ? undefined : value,
+  );
+
+const optionalTrimmedString = () =>
+  z
+    .string()
+    .optional()
+    .transform((value) => (value?.trim() === "" ? undefined : value));
+
 // Common schemas
 export const TripIdSchema = z.string();
 export const MemberIdSchema = z.string();
 
+export const PinSchema = z
+  .union([
+    z.literal(""),
+    z.string().regex(/^\d{4,8}$/, "PIN must be 4-8 digits"),
+  ])
+  .optional()
+  .transform((value) => (value === "" ? undefined : value));
+
 // Trip schemas
-export const TripCreateSchema = z.object({
-  name: z.string().min(1, "Trip name is required"),
-  destination_text: z.string().min(1, "Destination is required"),
-  lat: z.number().optional(),
-  lon: z.number().optional(),
-  start_date: z.string().min(1, "Start date is required"),
-  end_date: z.string().min(1, "End date is required"),
-  timezone: z.string().default("UTC").optional(),
-  currency: z.string().length(3).default("EUR").optional(),
-  duplicate_policy: z
-    .enum(["soft_block", "prevent", "allow"])
-    .default("soft_block")
-    .optional(),
-  pin: z.string().optional(),
-});
+export const TripCreateSchema = z
+  .object({
+    name: z.string().min(1, "Trip name is required"),
+    destination_text: z.string().min(1, "Destination is required"),
+    lat: z.number().optional(),
+    lon: z.number().optional(),
+    start_date: z.string().min(1, "Start date is required"),
+    end_date: z.string().min(1, "End date is required"),
+    timezone: z.string().optional().default("UTC"),
+    currency: z.string().length(3).optional().default("EUR"),
+    duplicate_policy: z
+      .enum(["soft_block", "prevent", "allow"])
+      .optional()
+      .default("soft_block"),
+    pin: PinSchema,
+  })
+  .refine((data) => data.end_date >= data.start_date, {
+    message: "End date must be on or after the start date",
+    path: ["end_date"],
+  });
 
 export const JoinTripSchema = z
   .object({
@@ -28,15 +64,53 @@ export const JoinTripSchema = z
       .string()
       .min(1, "Display name is required")
       .max(50, "Display name must be 50 characters or less"),
-    email: z.email("Please enter a valid email address"),
-    password: z.string().min(8, "Password must be at least 8 characters"),
-    confirmPassword: z.string(),
-    pin: z.string().min(1, "PIN is required"),
-    clientDeviceId: z.string().min(1, "Device ID is required"),
+    // Account fields are only needed when the visitor isn't signed in yet.
+    isAuthenticated: z.boolean().default(false),
+    email: z
+      .union([z.literal(""), z.email("Please enter a valid email address")])
+      .optional()
+      .transform((value) => (value === "" ? undefined : value)),
+    password: z
+      .union([
+        z.literal(""),
+        z.string().min(8, "Password must be at least 8 characters"),
+      ])
+      .optional()
+      .transform((value) => (value === "" ? undefined : value)),
+    confirmPassword: optionalTrimmedString(),
+    requiresPin: z.boolean().default(false),
+    pin: PinSchema,
   })
-  .refine((data) => data.password === data.confirmPassword, {
-    message: "Passwords don't match",
-    path: ["confirmPassword"],
+  .superRefine((data, ctx) => {
+    if (!data.isAuthenticated) {
+      if (!data.email) {
+        ctx.addIssue({
+          code: "custom",
+          path: ["email"],
+          message: "Email is required",
+        });
+      }
+      if (!data.password) {
+        ctx.addIssue({
+          code: "custom",
+          path: ["password"],
+          message: "Password is required",
+        });
+      } else if (data.password !== data.confirmPassword) {
+        ctx.addIssue({
+          code: "custom",
+          path: ["confirmPassword"],
+          message: "Passwords don't match",
+        });
+      }
+    }
+    if (data.requiresPin && !data.pin) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["pin"],
+        message: "PIN is required",
+      });
+    }
   });
 
 // Restaurant schemas (DEPRECATED - Use @/features/restaurants/schemas instead)
@@ -48,7 +122,7 @@ export const RestaurantSchema = z.object({
   description: z.string().optional(),
   address: z.string().optional(),
   phone: z.string().optional(),
-  website: z.url().optional(),
+  website: OptionalUrlSchema,
   location: z
     .object({
       name: z.string(),
@@ -56,21 +130,34 @@ export const RestaurantSchema = z.object({
       lon: z.number(),
     })
     .optional(),
-  image_url: z.url().optional(),
-  rating: z.number().min(0).max(5).optional(),
-  review_count: z.number().min(0).optional(),
+  image_url: OptionalUrlSchema,
+  rating: z
+    .union([z.nan(), z.number().min(0).max(5)])
+    .optional()
+    .transform((value) =>
+      value === undefined || Number.isNaN(value) ? undefined : value,
+    ),
+  review_count: z
+    .union([z.nan(), z.number().min(0)])
+    .optional()
+    .transform((value) =>
+      value === undefined || Number.isNaN(value) ? undefined : value,
+    ),
 });
 
 // Activity schemas
 export const ActivityCreateSchema = z.object({
   trip_id: TripIdSchema,
   title: z.string().min(1, "Activity title is required"),
-  category: z.string().optional(),
-  cost_amount: z.number().optional(),
-  cost_currency: z.string().length(3).optional(),
-  duration_min: z.number().optional(),
-  notes: z.string().optional(),
-  link: z.url().optional(),
+  category: optionalTrimmedString(),
+  cost_amount: OptionalNumberSchema,
+  cost_currency: z
+    .union([z.literal(""), z.string().length(3)])
+    .optional()
+    .transform((value) => (value === "" ? undefined : value)),
+  duration_min: OptionalNumberSchema,
+  notes: optionalTrimmedString(),
+  link: OptionalUrlSchema,
   location: z
     .object({
       name: z.string(),
@@ -78,7 +165,7 @@ export const ActivityCreateSchema = z.object({
       lon: z.number(),
     })
     .optional(),
-  src: z.url().optional(),
+  src: OptionalUrlSchema,
   restaurants: z.array(RestaurantSchema).optional(),
 });
 
@@ -144,9 +231,9 @@ export const VotingWindowSchema = z
   })
   .refine(
     (data) => {
-      const openTime = new Date(data.vote_open_ts);
-      const closeTime = new Date(data.vote_close_ts);
-      return openTime < closeTime;
+      // Both values are datetime-local strings in the same zone, so
+      // lexicographic comparison is correct.
+      return data.vote_open_ts < data.vote_close_ts;
     },
     {
       message: "Start time must be before end time",
@@ -154,10 +241,10 @@ export const VotingWindowSchema = z
     },
   );
 
-export type TripCreateInput = z.infer<typeof TripCreateSchema>;
-export type JoinTripInput = z.infer<typeof JoinTripSchema>;
-export type ActivityCreateInput = z.infer<typeof ActivityCreateSchema>;
-export type RestaurantInput = z.infer<typeof RestaurantSchema>;
+export type TripCreateInput = z.input<typeof TripCreateSchema>;
+export type JoinTripInput = z.input<typeof JoinTripSchema>;
+export type ActivityCreateInput = z.input<typeof ActivityCreateSchema>;
+export type RestaurantInput = z.input<typeof RestaurantSchema>;
 export type VoteCastInput = z.infer<typeof VoteCastSchema>;
 export type BlockCommitInput = z.infer<typeof BlockCommitSchema>;
 export type VotingWindowInput = z.infer<typeof VotingWindowSchema>;

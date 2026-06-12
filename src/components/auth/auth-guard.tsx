@@ -1,6 +1,6 @@
 "use client";
 
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 /**
  * Authentication guard component
  * - Redirects unauthenticated users to login
@@ -10,6 +10,14 @@ import { usePathname, useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { AuthLoader } from "@/components/loading";
 import { useAuth } from "@/lib/auth-context";
+
+/** Only allow same-origin paths to prevent open redirects. */
+export function safeRedirectPath(path: string | null, fallback = "/"): string {
+  if (path?.startsWith("/") && !path.startsWith("//")) {
+    return path;
+  }
+  return fallback;
+}
 
 interface AuthGuardProps {
   children: React.ReactNode;
@@ -30,7 +38,7 @@ export function AuthGuard({
     if (!loading && requireAuth && !user) {
       const destination = redirectTo || pathname;
       const loginUrl = `/auth/login${destination !== "/" ? `?redirectTo=${encodeURIComponent(destination)}` : ""}`;
-      router.push(loginUrl);
+      router.replace(loginUrl);
     }
   }, [user, loading, requireAuth, router, pathname, redirectTo]);
 
@@ -56,17 +64,20 @@ export function RequireAuth({ children }: { children: React.ReactNode }) {
 }
 
 /**
- * Component that only renders for unauthenticated users
+ * Component that only renders for unauthenticated users.
+ * Honors ?redirectTo= so it doesn't fight the login form's own navigation
+ * (both resolve to the same destination).
  */
 export function RequireGuest({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
   const router = useRouter();
+  const searchParams = useSearchParams();
 
   useEffect(() => {
     if (!loading && user) {
-      router.push("/");
+      router.replace(safeRedirectPath(searchParams.get("redirectTo")));
     }
-  }, [user, loading, router]);
+  }, [user, loading, router, searchParams]);
 
   if (loading) {
     return <AuthLoader />;

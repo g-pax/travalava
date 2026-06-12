@@ -1,10 +1,21 @@
 import { type NextRequest, NextResponse } from "next/server";
+import { createClient } from "@/lib/supabaseServer";
 
 // Server-side API key - not exposed to browser
 const GOOGLE_PLACES_API_KEY = process.env.GOOGLE_PLACES_API_KEY;
 
 export async function GET(request: NextRequest) {
   try {
+    // Same-origin API: require an authenticated Supabase user
+    const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     if (!GOOGLE_PLACES_API_KEY) {
       return NextResponse.json(
         { error: "Google Places API key not configured" },
@@ -39,25 +50,19 @@ export async function GET(request: NextRequest) {
     const response = await fetch(detailsUrl.toString());
     const data = await response.json();
 
+    if (data.status === "NOT_FOUND") {
+      return NextResponse.json({ error: "Place not found" }, { status: 404 });
+    }
+
     if (data.status !== "OK") {
       console.error("Place Details API error:", data);
       return NextResponse.json(
         { error: `Place Details API error: ${data.status}` },
-        { status: 500 },
+        { status: 502 },
       );
     }
 
-    // Return result with CORS headers
-    return NextResponse.json(
-      { result: data.result },
-      {
-        headers: {
-          "Access-Control-Allow-Origin": "*",
-          "Access-Control-Allow-Methods": "GET",
-          "Access-Control-Allow-Headers": "Content-Type",
-        },
-      },
-    );
+    return NextResponse.json({ result: data.result });
   } catch (error) {
     console.error("Place details error:", error);
     return NextResponse.json(
@@ -65,15 +70,4 @@ export async function GET(request: NextRequest) {
       { status: 500 },
     );
   }
-}
-
-export async function OPTIONS() {
-  return new Response(null, {
-    status: 200,
-    headers: {
-      "Access-Control-Allow-Origin": "*",
-      "Access-Control-Allow-Methods": "GET",
-      "Access-Control-Allow-Headers": "Content-Type",
-    },
-  });
 }

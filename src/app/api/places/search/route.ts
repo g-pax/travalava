@@ -1,10 +1,21 @@
 import { type NextRequest, NextResponse } from "next/server";
+import { createClient } from "@/lib/supabaseServer";
 
 // Server-side API key - not exposed to browser
 const GOOGLE_PLACES_API_KEY = process.env.GOOGLE_PLACES_API_KEY;
 
 export async function GET(request: NextRequest) {
   try {
+    // Same-origin API: require an authenticated Supabase user
+    const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     if (!GOOGLE_PLACES_API_KEY) {
       return NextResponse.json(
         { error: "Google Places API key not configured" },
@@ -25,18 +36,12 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Build Google Places API URL
+    // Build Google Places API URL (legacy Text Search; no `fields` support)
     const placesUrl = new URL(
       "https://maps.googleapis.com/maps/api/place/textsearch/json",
     );
     placesUrl.searchParams.set("query", query);
     placesUrl.searchParams.set("key", GOOGLE_PLACES_API_KEY);
-
-    // Only request essential fields to minimize cost
-    placesUrl.searchParams.set(
-      "fields",
-      "place_id,name,formatted_address,geometry,photos,rating,user_ratings_total,price_level,types,business_status,editorial_summary",
-    );
 
     if (location) {
       placesUrl.searchParams.set("location", location);
@@ -59,17 +64,7 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Return results with CORS headers
-    return NextResponse.json(
-      { results: data.results || [] },
-      {
-        headers: {
-          "Access-Control-Allow-Origin": "*",
-          "Access-Control-Allow-Methods": "GET",
-          "Access-Control-Allow-Headers": "Content-Type",
-        },
-      },
-    );
+    return NextResponse.json({ results: data.results || [] });
   } catch (error) {
     console.error("Places search error:", error);
     return NextResponse.json(
@@ -77,15 +72,4 @@ export async function GET(request: NextRequest) {
       { status: 500 },
     );
   }
-}
-
-export async function OPTIONS() {
-  return new Response(null, {
-    status: 200,
-    headers: {
-      "Access-Control-Allow-Origin": "*",
-      "Access-Control-Allow-Methods": "GET",
-      "Access-Control-Allow-Headers": "Content-Type",
-    },
-  });
 }

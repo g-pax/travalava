@@ -23,13 +23,20 @@ export const restaurantKeys = {
     [...restaurantKeys.all, "activity", activityId] as const,
 };
 
+// Sentinel values the filter UI may pass for "no filter selected".
+const FILTER_SENTINELS = new Set(["", "Any cuisine", "Any price range"]);
+
+// Treat empty strings and sentinel labels as "filter not applied".
+const isActiveFilterValue = (value?: string): value is string =>
+  !!value && !FILTER_SENTINELS.has(value);
+
 // Fetch restaurants for a trip
 export function useRestaurants(tripId: string, filters?: RestaurantSearch) {
   return useQuery({
     enabled: !!tripId,
     queryKey: restaurantKeys.list(tripId, filters),
     queryFn: async (): Promise<RestaurantWithActivityLinks[]> => {
-      const query = supabase
+      let query = supabase
         .from("restaurants")
         .select(`
           *,
@@ -42,10 +49,25 @@ export function useRestaurants(tripId: string, filters?: RestaurantSearch) {
             linked_by
           )
         `)
-        .eq("trip_id", tripId)
-        .order("created_at", { ascending: false });
+        .eq("trip_id", tripId);
 
-      const { data, error } = await query;
+      const search = filters?.search?.trim();
+      const cuisineType = filters?.cuisine_type;
+      const priceRange = filters?.price_range;
+
+      if (isActiveFilterValue(search)) {
+        query = query.ilike("name", `%${search}%`);
+      }
+      if (isActiveFilterValue(cuisineType)) {
+        query = query.eq("cuisine_type", cuisineType);
+      }
+      if (isActiveFilterValue(priceRange)) {
+        query = query.eq("price_range", priceRange);
+      }
+
+      const { data, error } = await query.order("created_at", {
+        ascending: false,
+      });
 
       if (error) {
         throw new Error(`Failed to fetch restaurants: ${error.message}`);
@@ -216,7 +238,9 @@ export function useDeleteRestaurant() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (restaurantId: string): Promise<void> => {
+    mutationFn: async (
+      restaurantId: string,
+    ): Promise<{ id: string; tripId: string }> => {
       // First, get the restaurant to know which trip it belongs to
       const { data: restaurant, error: fetchError } = await supabase
         .from("restaurants")
@@ -238,10 +262,13 @@ export function useDeleteRestaurant() {
         throw new Error(`Failed to delete restaurant: ${error.message}`);
       }
 
-      return { tripId: restaurant.trip_id } as any;
+      return { id: restaurantId, tripId: restaurant.trip_id };
     },
-    onSuccess: (_, restaurantId) => {
-      // Invalidate all restaurant queries since we don't know the trip_id here
+    onSuccess: ({ tripId }) => {
+      // Refresh the trip's restaurant list and any other cached restaurant views
+      queryClient.invalidateQueries({
+        queryKey: restaurantKeys.list(tripId),
+      });
       queryClient.invalidateQueries({
         queryKey: restaurantKeys.all,
       });

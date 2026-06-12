@@ -12,6 +12,7 @@ import {
   type ReactNode,
   useContext,
   useEffect,
+  useMemo,
   useState,
 } from "react";
 import { supabase } from "./supabase";
@@ -27,6 +28,7 @@ interface AuthContextType {
   signIn: (email: string, password: string) => Promise<void>;
   signOut: () => Promise<void>;
   resetPassword: (email: string) => Promise<void>;
+  updatePassword: (password: string) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -43,11 +45,31 @@ interface AuthProviderProps {
   children: ReactNode;
 }
 
+/**
+ * Backup for the on_auth_user_created DB trigger (e.g. users created before
+ * the trigger existed). Idempotent upsert; never awaited from the auth
+ * callback — awaiting Supabase queries inside onAuthStateChange deadlocks
+ * the client (it blocks getSession for every other query).
+ */
+function ensureUserProfile(user: User) {
+  void supabase
+    .from("user_profiles")
+    .upsert(
+      {
+        id: user.id,
+        email: user.email,
+        display_name:
+          user.user_metadata?.display_name || user.email?.split("@")[0],
+      },
+      { onConflict: "id", ignoreDuplicates: true },
+    )
+    .then(() => undefined);
+}
+
 export function AuthProvider({ children }: AuthProviderProps) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: is fine
   useEffect(() => {
     // Get initial session
     const getInitialSession = async () => {
@@ -60,103 +82,73 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
     getInitialSession();
 
-    // Listen for auth state changes
+    // Listen for auth state changes. The callback must stay synchronous —
+    // see ensureUserProfile.
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (event, session) => {
+    } = supabase.auth.onAuthStateChange((event, session) => {
       setUser(session?.user ?? null);
       setLoading(false);
 
-      // Handle sign in - create/update user profile
       if (event === "SIGNED_IN" && session?.user) {
-        await ensureUserProfile(session.user);
+        setTimeout(() => ensureUserProfile(session.user), 0);
       }
     });
 
     return () => subscription.unsubscribe();
   }, []);
 
-  const ensureUserProfile = async (user: User) => {
-    // Check if user profile exists, create if not
-    const { data: existingProfile } = await supabase
-      .from("user_profiles")
-      .select("id")
-      .eq("id", user.id)
-      .maybeSingle();
-
-    if (!existingProfile) {
-      // Create user profile
-      const { error } = await supabase.from("user_profiles").insert({
-        id: user.id,
-        email: user.email,
-        display_name:
-          user.user_metadata?.display_name || user.email?.split("@")[0],
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-      });
-
-      if (error) {
-        console.error("Failed to create user profile:", error);
-      }
-    }
-  };
-
-  const signUp = async (
-    email: string,
-    password: string,
-    displayName: string,
-  ) => {
-    const { error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        data: {
-          display_name: displayName,
-        },
+  const value = useMemo<AuthContextType>(
+    () => ({
+      user,
+      loading,
+      signUp: async (email, password, displayName) => {
+        const { error } = await supabase.auth.signUp({
+          email,
+          password,
+          options: {
+            emailRedirectTo: `${window.location.origin}/api/auth/callback`,
+            data: {
+              display_name: displayName,
+            },
+          },
+        });
+        if (error) {
+          throw error;
+        }
       },
-    });
-
-    if (error) {
-      throw error;
-    }
-  };
-
-  const signIn = async (email: string, password: string) => {
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
-
-    if (error) {
-      throw error;
-    }
-  };
-
-  const signOut = async () => {
-    const { error } = await supabase.auth.signOut();
-    if (error) {
-      throw error;
-    }
-  };
-
-  const resetPassword = async (email: string) => {
-    const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/auth/reset-password`,
-    });
-
-    if (error) {
-      throw error;
-    }
-  };
-
-  const value = {
-    user,
-    loading,
-    signUp,
-    signIn,
-    signOut,
-    resetPassword,
-  };
+      signIn: async (email, password) => {
+        const { error } = await supabase.auth.signInWithPassword({
+          email,
+          password,
+        });
+        if (error) {
+          throw error;
+        }
+      },
+      signOut: async () => {
+        const { error } = await supabase.auth.signOut();
+        if (error) {
+          throw error;
+        }
+      },
+      resetPassword: async (email) => {
+        const { error } = await supabase.auth.resetPasswordForEmail(email, {
+          redirectTo: `${window.location.origin}/auth/reset-password`,
+        });
+        if (error) {
+          throw error;
+        }
+      },
+      updatePassword: async (password) => {
+        const { error } = await supabase.auth.updateUser({ password });
+        if (error) {
+          throw error;
+        }
+      },
+    }),
+    [user, loading],
+  );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

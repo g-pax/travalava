@@ -2,6 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Calendar, Clock } from "lucide-react";
+import { DateTime } from "luxon";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { ActionButton } from "@/components/loading";
@@ -28,6 +29,16 @@ import {
  * - Updates block voting windows
  */
 
+/**
+ * datetime-local inputs hold wall-clock strings in the viewer's timezone.
+ * Round-trip through Luxon's local zone — feeding them UTC ISO slices (the
+ * old behavior) shifted the window by the UTC offset on every save.
+ */
+const toLocalInputValue = (ts: string | null): string =>
+  ts ? (DateTime.fromISO(ts).toFormat("yyyy-MM-dd'T'HH:mm") ?? "") : "";
+const fromLocalInputValue = (value: string): string =>
+  DateTime.fromISO(value).toUTC().toISO() ?? value;
+
 interface VotingWindowManagerProps {
   block: {
     id: string;
@@ -53,12 +64,8 @@ export function VotingWindowManager({
     mode: "all",
     reValidateMode: "onChange",
     defaultValues: {
-      vote_open_ts: block.vote_open_ts
-        ? new Date(block.vote_open_ts).toISOString().slice(0, 16)
-        : "",
-      vote_close_ts: block.vote_close_ts
-        ? new Date(block.vote_close_ts).toISOString().slice(0, 16)
-        : "",
+      vote_open_ts: toLocalInputValue(block.vote_open_ts),
+      vote_close_ts: toLocalInputValue(block.vote_close_ts),
     },
   });
 
@@ -66,12 +73,8 @@ export function VotingWindowManager({
   useEffect(() => {
     if (open) {
       form.reset({
-        vote_open_ts: block.vote_open_ts
-          ? new Date(block.vote_open_ts).toISOString().slice(0, 16)
-          : "",
-        vote_close_ts: block.vote_close_ts
-          ? new Date(block.vote_close_ts).toISOString().slice(0, 16)
-          : "",
+        vote_open_ts: toLocalInputValue(block.vote_open_ts),
+        vote_close_ts: toLocalInputValue(block.vote_close_ts),
       });
     }
   }, [open, block.vote_open_ts, block.vote_close_ts, form]);
@@ -92,8 +95,8 @@ export function VotingWindowManager({
       await updateVotingWindow.mutateAsync({
         blockId: block.id,
         tripId,
-        vote_open_ts: new Date(values.vote_open_ts).toISOString(),
-        vote_close_ts: new Date(values.vote_close_ts).toISOString(),
+        vote_open_ts: fromLocalInputValue(values.vote_open_ts),
+        vote_close_ts: fromLocalInputValue(values.vote_close_ts),
       });
       setOpen(false);
     } catch (error) {
@@ -166,7 +169,7 @@ export function VotingWindowManager({
                 id="vote_open_ts"
                 type="datetime-local"
                 {...form.register("vote_open_ts")}
-                min={new Date().toISOString().slice(0, 16)}
+                min={DateTime.now().toFormat("yyyy-MM-dd'T'HH:mm")}
               />
               {form.formState.errors.vote_open_ts && (
                 <p className="text-sm text-red-600 dark:text-red-400">

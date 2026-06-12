@@ -196,12 +196,15 @@ export function ConfirmedBlocksView({ tripId }: ConfirmedBlocksViewProps) {
       <div className="space-y-8">
         {sortedDays.map((day) => {
           const dayBlocks = blocksByDay[day];
-          const dayLabel = new Date(day).toLocaleDateString(undefined, {
-            weekday: "long",
-            year: "numeric",
-            month: "long",
-            day: "numeric",
-          });
+          const dayLabel = new Date(`${day}T00:00:00`).toLocaleDateString(
+            undefined,
+            {
+              weekday: "long",
+              year: "numeric",
+              month: "long",
+              day: "numeric",
+            },
+          );
 
           return (
             <Card key={day}>

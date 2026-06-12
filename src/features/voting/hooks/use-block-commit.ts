@@ -259,13 +259,16 @@ export function useBlockCommit() {
             location
           )
         `)
-        .maybeSingle();
+        .single();
 
       if (commitError) throw commitError;
 
-      // Step 9: Handle duplicate policy post-commit actions
-      if (trip.duplicate_policy === "soft_block") {
-        // Remove proposals for this activity in other blocks
+      // Step 9: Handle duplicate policy post-commit actions (FR-403).
+      // Under "prevent" the activity can never be committed elsewhere, so
+      // its other-block proposals are dead weight — remove them. Under
+      // "soft_block" the user may still intentionally schedule it again,
+      // so proposals are left in place.
+      if (trip.duplicate_policy === "prevent") {
         const { error: removeProposalsError } = await supabase
           .from("block_proposals")
           .delete()
@@ -273,11 +276,11 @@ export function useBlockCommit() {
           .eq("activity_id", winningActivityId)
           .neq("block_id", blockId);
 
-        // Log but don't fail the commit if this fails
+        // Don't fail the commit if cleanup fails; lists refetch anyway.
         if (removeProposalsError) {
-          console.error(
+          console.warn(
             "Failed to remove duplicate proposals:",
-            removeProposalsError,
+            removeProposalsError.message,
           );
         }
       }
@@ -291,28 +294,33 @@ export function useBlockCommit() {
         message: "Activity committed successfully",
       };
     },
-    onSuccess: (_data, variables) => {
-      // Invalidate related queries
+    onSuccess: (data, variables) => {
       queryClient.invalidateQueries({
         queryKey: ["votes", variables.blockId],
       });
-
       queryClient.invalidateQueries({
-        queryKey: ["proposals", variables.blockId],
+        queryKey: ["block-proposals", variables.blockId],
       });
-
+      // Drives CommitPanel/BlockCard committed state
+      queryClient.invalidateQueries({
+        queryKey: ["commit", variables.blockId],
+      });
       queryClient.invalidateQueries({
         queryKey: ["commits", variables.tripId],
       });
-
+      // Drives the Final Itinerary tab
+      queryClient.invalidateQueries({
+        queryKey: ["committed-blocks", variables.tripId],
+      });
       queryClient.invalidateQueries({
         queryKey: ["days", variables.tripId],
       });
 
-      // If soft_block duplicate policy, invalidate all proposals for the trip
-      if (_data.duplicatePolicy === "soft_block") {
+      // Cross-block proposal cleanup ran under the "prevent" policy
+      if (data.duplicatePolicy === "prevent") {
+        queryClient.invalidateQueries({ queryKey: ["block-proposals"] });
         queryClient.invalidateQueries({
-          queryKey: ["proposals"],
+          queryKey: ["trip-proposals", variables.tripId],
         });
       }
     },
@@ -337,7 +345,7 @@ export function useCommits(tripId: string) {
             notes,
             location
           ),
-          committed_by_member:trip_members!commits_commited_by_fkey(
+          committed_by_member:trip_members!commits_committed_by_fkey(
             id,
             display_name,
             role
@@ -380,38 +388,47 @@ export function useCommittedBlocks(tripId: string) {
             )
           )
         `)
-        .eq("trip_id", tripId)
-        .order("created_at", { ascending: true });
-      // .order("position", { ascending: true });
-      // .order("blocks.days.date", { ascending: true })
-      // .order("blocks.position", { ascending: true });
+        .eq("trip_id", tripId);
 
       if (error) throw error;
 
-      // Transform the data to match our component expectations
-      // biome-ignore lint/suspicious/noExplicitAny: its ok here
-      return (data || []).map((commit: any) => ({
-        id: commit.block_id,
-        label: commit.blocks?.label || "Unknown",
-        dayDate: commit.blocks?.days?.date || "",
-        dayLabel: commit.blocks?.days?.date
-          ? new Date(commit.blocks.days.date).toLocaleDateString(undefined, {
-              weekday: "short",
-              month: "short",
-              day: "numeric",
-            })
-          : "Unknown",
-        activity: {
-          id: commit.activity?.id || "",
-          title: commit.activity?.title || "Unknown",
-          category: commit.activity?.category,
-          cost_amount: commit.activity?.cost_amount,
-          cost_currency: commit.activity?.cost_currency,
-          duration_min: commit.activity?.duration_min,
-          location: commit.activity?.location,
-          notes: commit.activity?.notes,
-        },
-      }));
+      // Transform the data to match our component expectations, ordered by
+      // day then block position (commit order is meaningless for display).
+      // Date-only strings get a T00:00:00 suffix so they parse as local time
+      // instead of UTC (which renders the previous day west of UTC).
+      return (
+        (data || [])
+          // biome-ignore lint/suspicious/noExplicitAny: embedded join shape
+          .map((commit: any) => ({
+            id: commit.block_id,
+            label: commit.blocks?.label || "Unknown",
+            position: commit.blocks?.position ?? 0,
+            dayDate: commit.blocks?.days?.date || "",
+            dayLabel: commit.blocks?.days?.date
+              ? new Date(
+                  `${commit.blocks.days.date}T00:00:00`,
+                ).toLocaleDateString(undefined, {
+                  weekday: "short",
+                  month: "short",
+                  day: "numeric",
+                })
+              : "Unknown",
+            activity: {
+              id: commit.activity?.id || "",
+              title: commit.activity?.title || "Unknown",
+              category: commit.activity?.category,
+              cost_amount: commit.activity?.cost_amount,
+              cost_currency: commit.activity?.cost_currency,
+              duration_min: commit.activity?.duration_min,
+              location: commit.activity?.location,
+              notes: commit.activity?.notes,
+            },
+          }))
+          .sort(
+            (a, b) =>
+              a.dayDate.localeCompare(b.dayDate) || a.position - b.position,
+          )
+      );
     },
     enabled: !!tripId,
   });
@@ -439,7 +456,7 @@ export function useBlockCommitQuery(blockId: string) {
             notes,
             location
           ),
-          committed_by_member:trip_members!commits_commited_by_fkey(
+          committed_by_member:trip_members!commits_committed_by_fkey(
             id,
             display_name,
             role
@@ -521,11 +538,15 @@ export function useBlockUncommit() {
       });
 
       queryClient.invalidateQueries({
+        queryKey: ["committed-blocks", variables.tripId],
+      });
+
+      queryClient.invalidateQueries({
         queryKey: ["days", variables.tripId],
       });
 
       queryClient.invalidateQueries({
-        queryKey: ["proposals", variables.blockId],
+        queryKey: ["block-proposals", variables.blockId],
       });
     },
   });
@@ -587,52 +608,16 @@ export function useBlockSwap() {
         throw new Error("Both blocks must have committed activities to swap");
       }
 
-      // Step 3: Perform the swap using a transaction-like approach
-      // First, temporarily update one to avoid constraint conflicts
-      const tempId = `temp_${Date.now()}`;
+      // Step 3: Swap atomically in the database (single transaction with a
+      // deferred unique constraint — a client-side multi-step swap can
+      // corrupt the itinerary if it fails midway).
+      const { error: swapError } = await supabase.rpc("swap_block_commits", {
+        p_block_a: blockId1,
+        p_block_b: blockId2,
+      });
 
-      // Update first commit to temp block
-      const { error: tempUpdateError } = await supabase
-        .from("commits")
-        .update({ block_id: tempId })
-        .eq("id", commit1.id);
-
-      if (tempUpdateError) throw tempUpdateError;
-
-      // Update second commit to first block
-      const { error: update2Error } = await supabase
-        .from("commits")
-        .update({ block_id: blockId1 })
-        .eq("id", commit2.id);
-
-      if (update2Error) {
-        // Rollback temp update
-        await supabase
-          .from("commits")
-          .update({ block_id: blockId1 })
-          .eq("id", commit1.id);
-        throw update2Error;
-      }
-
-      // Update first commit (temp) to second block
-      const { error: update1Error } = await supabase
-        .from("commits")
-        .update({ block_id: blockId2 })
-        .eq("id", commit1.id);
-
-      if (update1Error) {
-        // Rollback both updates
-        await Promise.all([
-          supabase
-            .from("commits")
-            .update({ block_id: blockId1 })
-            .eq("id", commit1.id),
-          supabase
-            .from("commits")
-            .update({ block_id: blockId2 })
-            .eq("id", commit2.id),
-        ]);
-        throw update1Error;
+      if (swapError) {
+        throw new Error(`Failed to swap activities: ${swapError.message}`);
       }
 
       return {
@@ -652,6 +637,10 @@ export function useBlockSwap() {
 
       queryClient.invalidateQueries({
         queryKey: ["commits", variables.tripId],
+      });
+
+      queryClient.invalidateQueries({
+        queryKey: ["committed-blocks", variables.tripId],
       });
 
       queryClient.invalidateQueries({

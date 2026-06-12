@@ -72,20 +72,27 @@ export default function RestaurantsPage() {
   } = useRestaurants(tripId, filters);
 
   const handleSearchChange = (search: string) => {
-    setFilters((prev) => ({ ...prev, search: search || "" }));
+    setFilters((prev) => ({ ...prev, search: search || undefined }));
   };
 
   const handleCuisineTypeChange = (cuisine_type: string) => {
     setFilters((prev) => ({
       ...prev,
-      cuisine_type: cuisine_type || "",
+      cuisine_type:
+        cuisine_type && cuisine_type !== "Any cuisine"
+          ? cuisine_type
+          : undefined,
     }));
   };
 
   const handlePriceRangeChange = (price_range: string) => {
     setFilters((prev) => ({
       ...prev,
-      price_range: (price_range as any) || "",
+      // Select options are constrained to the price range enum values
+      price_range:
+        price_range && price_range !== "Any price range"
+          ? (price_range as RestaurantSearch["price_range"])
+          : undefined,
     }));
   };
 
@@ -93,7 +100,9 @@ export default function RestaurantsPage() {
     setFilters({ trip_id: tripId });
   };
 
-  const hasActiveFilters = Object.values(filters).some(Boolean);
+  const hasActiveFilters = Boolean(
+    filters.search || filters.cuisine_type || filters.price_range,
+  );
 
   if (error) {
     return (

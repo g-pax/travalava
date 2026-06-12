@@ -45,14 +45,15 @@ export function ItineraryView({
   // Refs for scroll-to functionality
   const dayRefs = useRef<Map<string, HTMLDivElement>>(new Map());
 
-  // Initialize: set first day as active and expanded by default
-  // biome-ignore lint/correctness/useExhaustiveDependencies: This should run only once
+  // Initialize: set first day as active and expanded once days load.
+  // Must depend on `days` — with an empty dep array this ran while the query
+  // was still loading and never initialized anything.
   useEffect(() => {
     if (days && days.length > 0 && !activeDayId) {
       setActiveDayId(days[0].id);
       setExpandedDays(new Set([days[0].id]));
     }
-  }, []);
+  }, [days, activeDayId]);
 
   const handleCreateDays = async () => {
     try {

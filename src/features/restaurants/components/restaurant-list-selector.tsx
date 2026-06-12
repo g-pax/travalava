@@ -45,7 +45,16 @@ export function RestaurantListSelector({
     );
   }
 
-  const filteredRestaurants = restaurants || [];
+  // Case-insensitive client-side filter on name and cuisine type
+  const normalizedQuery = searchQuery.trim().toLowerCase();
+  const filteredRestaurants = (restaurants ?? []).filter((restaurant) => {
+    if (!normalizedQuery) return true;
+    return (
+      restaurant.name.toLowerCase().includes(normalizedQuery) ||
+      (restaurant.cuisine_type?.toLowerCase().includes(normalizedQuery) ??
+        false)
+    );
+  });
 
   return (
     <div className="space-y-4">
@@ -53,7 +62,7 @@ export function RestaurantListSelector({
       <div className="relative">
         <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
         <Input
-          placeholder="Search restaurants by name, cuisine, or description..."
+          placeholder="Search restaurants by name or cuisine..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           className="pl-10"

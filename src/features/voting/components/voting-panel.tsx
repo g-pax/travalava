@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type { BlockProposal } from "@/features/activities/hooks/use-proposals";
 import { formatCurrency, formatDuration } from "@/lib/utils";
+import { useBlockCommitQuery } from "../hooks/use-block-commit";
 import { useVoteCast, useVoteRemove } from "../hooks/use-vote-mutation";
 import { useVoteTally } from "../hooks/use-votes";
 
@@ -40,6 +41,7 @@ export function VotingPanel({
   } = useVoteTally(block.id);
   const voteCast = useVoteCast();
   const voteRemove = useVoteRemove();
+  const { data: existingCommit } = useBlockCommitQuery(block.id);
 
   const [selectedActivities, setSelectedActivities] = useState<Set<string>>(
     new Set(),
@@ -54,7 +56,8 @@ export function VotingPanel({
 
   const votingNotStarted = voteOpenTs && now < voteOpenTs;
   const votingEnded = voteCloseTs && now > voteCloseTs;
-  const votingActive = !votingNotStarted && !votingEnded;
+  // A committed block is locked for voting (FR-307)
+  const votingActive = !votingNotStarted && !votingEnded && !existingCommit;
 
   // Get current user's votes
   const userVotes = votes.filter((vote) => vote.member_id === currentMemberId);
@@ -111,22 +114,28 @@ export function VotingPanel({
     }
 
     try {
-      // Cast votes for all selected activities
-      const promises = Array.from(selectedActivities).map((activityId) =>
-        voteCast.mutateAsync({
-          tripId,
-          blockId: block.id,
-          activityId,
-          memberId: currentMemberId,
-        }),
+      // Cast votes for selected activities the member hasn't voted on yet
+      const toVote = Array.from(selectedActivities).filter(
+        (activityId) => !userVotedActivityIds.has(activityId),
       );
-
-      await Promise.all(promises);
+      await Promise.all(
+        toVote.map((activityId) =>
+          voteCast.mutateAsync({
+            tripId,
+            blockId: block.id,
+            activityId,
+            memberId: currentMemberId,
+          }),
+        ),
+      );
       setSelectedActivities(new Set());
-      toast.success(`Voted for ${selectedActivities.size} activities!`);
-    } catch (error) {
+      toast.success(
+        toVote.length > 0
+          ? `Voted for ${toVote.length} ${toVote.length === 1 ? "activity" : "activities"}!`
+          : "You had already voted for the selected activities",
+      );
+    } catch {
       toast.error("Failed to cast votes");
-      console.error("Bulk vote error:", error);
     }
   };
 
@@ -161,7 +170,12 @@ export function VotingPanel({
         <div className="flex items-center gap-2 p-3 rounded-lg bg-gray-50">
           <Clock className="h-4 w-4" />
           <div className="text-sm">
-            {votingNotStarted && voteOpenTs && (
+            {existingCommit && (
+              <span className="text-blue-600">
+                This block is committed — voting is locked
+              </span>
+            )}
+            {!existingCommit && votingNotStarted && voteOpenTs && (
               <span className="text-amber-600">
                 Voting starts {voteOpenTs.toLocaleDateString()} at{" "}
                 {voteOpenTs.toLocaleTimeString()}
@@ -174,7 +188,7 @@ export function VotingPanel({
                   ` until ${voteCloseTs.toLocaleDateString()} at ${voteCloseTs.toLocaleTimeString()}`}
               </span>
             )}
-            {votingEnded && (
+            {!existingCommit && votingEnded && (
               <span className="text-red-600">
                 Voting ended on {voteCloseTs?.toLocaleDateString()}
               </span>
@@ -242,7 +256,7 @@ export function VotingPanel({
                             </Badge>
                           )}
 
-                          {proposal.activity?.cost_amount && (
+                          {proposal.activity?.cost_amount != null && (
                             <span className="flex items-center gap-1">
                               {formatCurrency(
                                 proposal.activity.cost_amount,
@@ -251,7 +265,7 @@ export function VotingPanel({
                             </span>
                           )}
 
-                          {proposal.activity?.duration_min && (
+                          {proposal.activity?.duration_min != null && (
                             <span className="flex items-center gap-1">
                               <Clock className="h-3 w-3" />
                               {formatDuration(proposal.activity.duration_min)}

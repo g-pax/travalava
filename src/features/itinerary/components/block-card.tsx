@@ -364,8 +364,9 @@ export function BlockCard({
           )}
         </div>
 
-        {/* Voting Section */}
-        {(votingStatus || isOrganizer) && (
+        {/* Voting Section — visible to every member; the panel itself
+            communicates window state (not started / active / ended) */}
+        {(votingStatus || isOrganizer || proposals.length > 0) && (
           <div className="space-y-4 mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
             <button
               type="button"

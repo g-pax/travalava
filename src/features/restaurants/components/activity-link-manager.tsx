@@ -40,7 +40,7 @@ interface ActivityLinkManagerProps {
 interface Activity {
   id: string;
   title: string;
-  category?: string;
+  category: string | null;
 }
 
 export function ActivityLinkManager({
@@ -53,9 +53,11 @@ export function ActivityLinkManager({
   const linkRestaurant = useLinkRestaurantToActivity();
   const unlinkRestaurant = useUnlinkRestaurantFromActivity();
 
-  // Fetch all activities for this trip
+  // Fetch all activities for this trip. Distinct query key: this returns a
+  // slim shape and must not collide with useActivities' ["activities", id]
+  // cache entry (same key + different shape poisons whichever loads last).
   const { data: activities = [], isLoading: activitiesLoading } = useQuery({
-    queryKey: ["activities", tripId],
+    queryKey: ["activities-lite", tripId],
     enabled: !!tripId,
     queryFn: async (): Promise<Activity[]> => {
       const { data, error } = await supabase

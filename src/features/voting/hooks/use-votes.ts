@@ -49,7 +49,8 @@ export function useVotes(blockId: string) {
         .order("created_at", { ascending: false });
 
       if (error) throw error;
-      return data || [];
+      // App-level Vote type uses optional fields for the embedded relations
+      return (data || []) as unknown as Vote[];
     },
     enabled: !!blockId && blockId !== "undefined" && blockId !== "null",
   });

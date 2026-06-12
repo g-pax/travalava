@@ -46,7 +46,8 @@ const TripLayout = ({ children, tripId }: TripLayoutProps) => {
   const navigate = useRouter();
   const pathname = usePathname();
   const [mounted, setMounted] = useState(false);
-  const { data: _currentMember } = useCurrentMember(tripId || "");
+  const { data: currentMember } = useCurrentMember(tripId || "");
+  const isOrganizer = currentMember?.role === "organizer";
 
   const {
     data: trip,
@@ -116,8 +117,10 @@ const TripLayout = ({ children, tripId }: TripLayoutProps) => {
 
   const breadcrumbs = generateBreadcrumbs();
 
-  // Show loading state during SSR, initial mount, or when data is being fetched
-  const isLoadingData = !mounted || isLoading || !trip || isPending;
+  // Show loading state during SSR, initial mount, or while fetching.
+  // Don't include !trip here: a null trip means "not found" and must fall
+  // through to the error card instead of an infinite skeleton.
+  const isLoadingData = !mounted || isLoading || isPending;
 
   if (isLoadingData) {
     return (
@@ -260,15 +263,17 @@ const TripLayout = ({ children, tripId }: TripLayoutProps) => {
                     </nav>
                   </div>
 
-                  <Button
-                    onClick={generateInviteLink}
-                    variant="ghost"
-                    size="sm"
-                    className="gap-2 bg-black/40 hover:bg-black/60 hover:text-white text-white border border-white/20 backdrop-blur-sm"
-                  >
-                    <Share2 className="h-4 w-4" />
-                    <span className="hidden sm:inline">Share</span>
-                  </Button>
+                  {isOrganizer && (
+                    <Button
+                      onClick={generateInviteLink}
+                      variant="ghost"
+                      size="sm"
+                      className="gap-2 bg-black/40 hover:bg-black/60 hover:text-white text-white border border-white/20 backdrop-blur-sm"
+                    >
+                      <Share2 className="h-4 w-4" />
+                      <span className="hidden sm:inline">Share</span>
+                    </Button>
+                  )}
                 </div>
               </div>
             </div>

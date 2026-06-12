@@ -13,42 +13,17 @@ export function ReactQueryProvider({
     const client = new QueryClient({
       defaultOptions: {
         queries: {
-          staleTime: 0, // Always consider data stale
-          gcTime: 0, // Don't cache data after component unmount
-          // retry: (failureCount, error) => {
-          //   // Don't retry on 4xx errors except 429 (rate limiting)
-          //   if (error && typeof error === "object" && "status" in error) {
-          //     const status = (error as Record<string, unknown>).status;
-          //     if (
-          //       typeof status === "number" &&
-          //       status >= 400 &&
-          //       status < 500 &&
-          //       status !== 429
-          //     ) {
-          //       return false;
-          //     }
-          //   }
-          //   return failureCount < 2;
-          // },
-          // retryDelay: (attemptIndex) =>
-          //   Math.min(1000 * 2 ** attemptIndex, 30000),
-          refetchOnWindowFocus: true, // Always refetch when window gains focus
+          // Mutations invalidate the exact keys they touch, so cached data
+          // can be trusted between refetches. gcTime/staleTime of 0 (the old
+          // config) refetched everything on every mount and caused a loading
+          // flash on each navigation.
+          staleTime: 30 * 1000,
+          gcTime: 5 * 60 * 1000,
+          retry: 1,
+          refetchOnWindowFocus: true,
           refetchOnReconnect: true,
           refetchOnMount: true,
         },
-        // mutations: {
-        //   retry: (failureCount, error) => {
-        //     // Don't retry mutations on client errors (4xx)
-        //     if (error && typeof error === "object" && "status" in error) {
-        //       const status = (error as Record<string, unknown>).status;
-        //       if (typeof status === "number" && status >= 400 && status < 500) {
-        //         return false;
-        //       }
-        //     }
-        //     return failureCount < 1;
-        //   },
-        //   retryDelay: 1000,
-        // },
       },
     });
 
