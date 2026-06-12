@@ -48,9 +48,9 @@ function ActivityCard({
 
   return (
     <Link href={`/trips/${tripId}/activities/${activity.id}`}>
-      <Card className="relative flex h-full flex-col overflow-hidden cursor-pointer hover:shadow-lg hover:border-gray-300 dark:hover:border-gray-600 transition-all group">
+      <Card className="relative flex h-full flex-col overflow-hidden cursor-pointer hover:shadow-lg hover:border-primary/40 transition-all group">
         {coverImage && (
-          <div className="relative w-full aspect-video bg-gray-100 dark:bg-gray-800 overflow-hidden">
+          <div className="relative w-full aspect-video bg-muted overflow-hidden">
             <Image
               src={coverImage}
               alt={`${activity.title} cover image`}
@@ -64,7 +64,7 @@ function ActivityCard({
 
         <CardHeader className="p-4 sm:p-6 pb-3">
           <div className="flex items-start justify-between gap-3">
-            <CardTitle className="text-lg font-bold text-gray-900 dark:text-white line-clamp-2 flex-1">
+            <CardTitle className="text-lg font-bold text-foreground line-clamp-2 flex-1">
               {activity.title}
             </CardTitle>
             {activity.category && (
@@ -86,8 +86,8 @@ function ActivityCard({
             <div className="flex flex-wrap gap-3 text-sm">
               {activity.cost_amount !== null &&
                 activity.cost_amount !== undefined && (
-                  <div className="flex items-center gap-1.5 text-gray-600 dark:text-gray-400">
-                    <div className="p-1.5 rounded-md bg-gray-100 dark:bg-gray-800">
+                  <div className="flex items-center gap-1.5 text-foreground/70">
+                    <div className="p-1.5 rounded-md bg-muted">
                       <DollarSign className="h-3.5 w-3.5" />
                     </div>
                     <span className="font-medium">
@@ -100,8 +100,8 @@ function ActivityCard({
                 )}
 
               {activity.duration_min && (
-                <div className="flex items-center gap-1.5 text-gray-600 dark:text-gray-400">
-                  <div className="p-1.5 rounded-md bg-gray-100 dark:bg-gray-800">
+                <div className="flex items-center gap-1.5 text-foreground/70">
+                  <div className="p-1.5 rounded-md bg-muted">
                     <Clock className="h-3.5 w-3.5" />
                   </div>
                   <span className="font-medium">
@@ -111,8 +111,8 @@ function ActivityCard({
               )}
 
               {proposals.length > 0 && (
-                <div className="flex items-center gap-1.5 text-gray-600 dark:text-gray-400">
-                  <div className="p-1.5 rounded-md bg-gray-100 dark:bg-gray-800">
+                <div className="flex items-center gap-1.5 text-foreground/70">
+                  <div className="p-1.5 rounded-md bg-muted">
                     <Calendar className="h-3.5 w-3.5" />
                   </div>
                   <Badge variant="secondary" className="text-xs">
@@ -132,14 +132,14 @@ function ActivityCard({
 
           {/* Notes */}
           {activity.notes && (
-            <div className="text-sm text-gray-600 dark:text-gray-400">
+            <div className="text-sm text-foreground/70">
               <p className="line-clamp-2">{activity.notes}</p>
             </div>
           )}
 
           {/* Proposals Detail */}
           {proposals.length > 0 && (
-            <div className="pt-3 border-t border-gray-200 dark:border-gray-700">
+            <div className="pt-3 border-t border-border">
               <div className="flex flex-wrap gap-1.5">
                 {proposals.slice(0, 3).map((proposal) => (
                   <Badge
@@ -174,10 +174,10 @@ export function ActivityList({ tripId, onCreateActivity }: ActivityListProps) {
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div className="space-y-2">
-            <div className="h-8 w-32 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
-            <div className="h-5 w-48 bg-gray-100 dark:bg-gray-800 rounded animate-pulse" />
+            <div className="h-8 w-32 bg-muted rounded animate-pulse" />
+            <div className="h-5 w-48 bg-muted rounded animate-pulse" />
           </div>
-          <div className="h-10 w-32 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
+          <div className="h-10 w-32 bg-muted rounded animate-pulse" />
         </div>
         <ActivityListLoader />
       </div>
@@ -200,10 +200,8 @@ export function ActivityList({ tripId, onCreateActivity }: ActivityListProps) {
       {/* Header */}
       <div className="flex items-center justify-between flex-wrap gap-4">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-            Activities
-          </h2>
-          <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+          <h2 className="text-2xl font-bold text-foreground">Activities</h2>
+          <p className="text-sm text-foreground/70 mt-1">
             {activities.length === 0
               ? "No activities yet"
               : `${activities.length} ${activities.length === 1 ? "activity" : "activities"}`}
@@ -219,17 +217,17 @@ export function ActivityList({ tripId, onCreateActivity }: ActivityListProps) {
 
       {/* Activities Grid */}
       {activities.length === 0 ? (
-        <Card className="border-2 border-dashed border-gray-200 dark:border-gray-700">
+        <Card className="border-2 border-dashed border-border">
           <CardContent className="flex flex-col items-center justify-center py-16">
             <div className="text-center space-y-4 max-w-md">
-              <div className="h-16 w-16 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center mx-auto">
-                <Calendar className="h-8 w-8 text-gray-400 dark:text-gray-500" />
+              <div className="h-16 w-16 rounded-full bg-muted flex items-center justify-center mx-auto">
+                <Calendar className="h-8 w-8 text-muted-foreground/70" />
               </div>
               <div>
-                <CardTitle className="mb-2 text-gray-900 dark:text-white">
+                <CardTitle className="mb-2 text-foreground">
                   No activities yet
                 </CardTitle>
-                <CardDescription className="text-gray-600 dark:text-gray-400">
+                <CardDescription className="text-foreground/70">
                   Start planning your trip by adding some activities you'd like
                   to do.
                 </CardDescription>

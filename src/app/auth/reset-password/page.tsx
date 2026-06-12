@@ -111,11 +111,11 @@ export default function ResetPasswordPage() {
 
   if (recoveryMode) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-950 px-4 py-12">
-        <Card className="w-full max-w-md border-2 shadow-lg">
+      <div className="min-h-screen flex items-center justify-center bg-muted px-4 py-12">
+        <Card className="w-full max-w-md">
           <CardHeader className="space-y-4 text-center pb-6">
-            <div className="mx-auto h-16 w-16 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 dark:from-blue-600 dark:to-blue-700 flex items-center justify-center shadow-lg">
-              <KeyRound className="h-8 w-8 text-white" />
+            <div className="mx-auto h-16 w-16 rounded-full bg-primary flex items-center justify-center">
+              <KeyRound className="h-8 w-8 text-primary-foreground" />
             </div>
             <div>
               <CardTitle className="text-2xl">Set a new password</CardTitle>
@@ -139,7 +139,7 @@ export default function ResetPasswordPage() {
                   disabled={isLoading}
                 />
                 {updateForm.formState.errors.password && (
-                  <p className="text-sm text-red-600 dark:text-red-400">
+                  <p className="text-sm text-destructive">
                     {updateForm.formState.errors.password.message}
                   </p>
                 )}
@@ -154,7 +154,7 @@ export default function ResetPasswordPage() {
                   disabled={isLoading}
                 />
                 {updateForm.formState.errors.confirmPassword && (
-                  <p className="text-sm text-red-600 dark:text-red-400">
+                  <p className="text-sm text-destructive">
                     {updateForm.formState.errors.confirmPassword.message}
                   </p>
                 )}
@@ -183,18 +183,18 @@ export default function ResetPasswordPage() {
 
   if (emailSent) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-950 px-4 py-12">
-        <Card className="w-full max-w-md border-2 shadow-lg">
+      <div className="min-h-screen flex items-center justify-center bg-muted px-4 py-12">
+        <Card className="w-full max-w-md">
           <CardHeader className="space-y-4 text-center pb-6">
-            <div className="mx-auto h-16 w-16 rounded-full bg-gradient-to-br from-green-500 to-green-600 dark:from-green-600 dark:to-green-700 flex items-center justify-center shadow-lg">
-              <Mail className="h-8 w-8 text-white" />
+            <div className="mx-auto h-16 w-16 rounded-full bg-success-muted flex items-center justify-center">
+              <Mail className="h-8 w-8 text-success-foreground" />
             </div>
             <div>
               <CardTitle className="text-2xl">Check your email</CardTitle>
               <CardDescription className="text-base mt-2">
                 We've sent a password reset link to
                 <br />
-                <span className="font-medium text-gray-900 dark:text-white">
+                <span className="font-medium text-foreground">
                   {requestForm.getValues("email")}
                 </span>
               </CardDescription>
@@ -203,10 +203,10 @@ export default function ResetPasswordPage() {
           <CardContent>
             <div className="space-y-4">
               <div className="space-y-2 text-center">
-                <p className="text-sm text-gray-600 dark:text-gray-400">
+                <p className="text-sm text-foreground/70">
                   Click the link in the email to reset your password.
                 </p>
-                <p className="text-xs text-gray-500 dark:text-gray-500">
+                <p className="text-xs text-muted-foreground">
                   Didn't receive the email? Check your spam folder.
                 </p>
               </div>
@@ -233,11 +233,11 @@ export default function ResetPasswordPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-950 px-4 py-12">
-      <Card className="w-full max-w-md border-2 shadow-lg">
+    <div className="min-h-screen flex items-center justify-center bg-muted px-4 py-12">
+      <Card className="w-full max-w-md">
         <CardHeader className="space-y-4 text-center pb-6">
-          <div className="mx-auto h-16 w-16 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 dark:from-blue-600 dark:to-blue-700 flex items-center justify-center shadow-lg">
-            <Mail className="h-8 w-8 text-white" />
+          <div className="mx-auto h-16 w-16 rounded-full bg-primary flex items-center justify-center">
+            <Mail className="h-8 w-8 text-primary-foreground" />
           </div>
           <div>
             <CardTitle className="text-2xl">Reset password</CardTitle>
@@ -261,7 +261,7 @@ export default function ResetPasswordPage() {
                 disabled={isLoading}
               />
               {requestForm.formState.errors.email && (
-                <p className="text-sm text-red-600 dark:text-red-400">
+                <p className="text-sm text-destructive">
                   {requestForm.formState.errors.email.message}
                 </p>
               )}
@@ -282,7 +282,7 @@ export default function ResetPasswordPage() {
           <div className="mt-6 text-center">
             <Link
               href="/auth/login"
-              className="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 inline-flex items-center gap-1"
+              className="text-sm text-primary-deep hover:text-primary-deep/80 inline-flex items-center gap-1"
             >
               <ArrowLeft className="h-4 w-4" />
               Back to login

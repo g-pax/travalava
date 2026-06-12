@@ -94,7 +94,7 @@ export function RestaurantForm({
                 {...form.register("name")}
               />
               {form.formState.errors.name && (
-                <p className="text-sm text-red-600">
+                <p className="text-sm text-destructive">
                   {form.formState.errors.name.message}
                 </p>
               )}
@@ -165,7 +165,7 @@ export function RestaurantForm({
           <div className="space-y-2">
             <Label htmlFor="address">Address</Label>
             <div className="flex items-center gap-2">
-              <MapPin className="h-4 w-4 text-gray-500" />
+              <MapPin className="h-4 w-4 text-muted-foreground" />
               <Input
                 id="address"
                 placeholder="Restaurant address"
@@ -194,7 +194,7 @@ export function RestaurantForm({
                 {...form.register("website")}
               />
               {form.formState.errors.website && (
-                <p className="text-sm text-red-600">
+                <p className="text-sm text-destructive">
                   {form.formState.errors.website.message}
                 </p>
               )}
@@ -210,7 +210,7 @@ export function RestaurantForm({
               {...form.register("image_url")}
             />
             {form.formState.errors.image_url && (
-              <p className="text-sm text-red-600">
+              <p className="text-sm text-destructive">
                 {form.formState.errors.image_url.message}
               </p>
             )}

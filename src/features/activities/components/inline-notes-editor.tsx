@@ -95,19 +95,19 @@ export function InlineNotesEditor({
               rows={6}
               className="resize-none"
             />
-            <div className="text-xs text-gray-500">
+            <div className="text-xs text-muted-foreground">
               {tempNotes.length} characters
             </div>
           </div>
         ) : hasNotes ? (
           <div className="prose prose-sm max-w-none">
-            <p className="text-gray-700 whitespace-pre-wrap">{notes}</p>
+            <p className="text-foreground/80 whitespace-pre-wrap">{notes}</p>
           </div>
         ) : (
-          <div className="text-center py-8 text-gray-500">
+          <div className="text-center py-8 text-muted-foreground">
             <FileText className="h-8 w-8 mx-auto mb-2 opacity-50" />
             <p className="text-sm">No notes added yet</p>
-            <p className="text-xs text-gray-400 mt-1">
+            <p className="text-xs text-muted-foreground/70 mt-1">
               Click "Add Notes" to include tips or important information
             </p>
           </div>

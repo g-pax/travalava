@@ -90,7 +90,7 @@ export function RestaurantCard({
               <CardTitle className="text-lg font-semibold truncate">
                 <Link
                   href={`/trips/${tripId}/restaurants/${restaurant.id}`}
-                  className="hover:text-blue-600 transition-colors"
+                  className="hover:text-primary-deep transition-colors"
                 >
                   {restaurant.name}
                 </Link>
@@ -116,7 +116,7 @@ export function RestaurantCard({
                     <Button
                       variant="ghost"
                       size="sm"
-                      className="h-8 w-8 p-0 text-red-600 hover:text-red-700"
+                      className="h-8 w-8 p-0 text-destructive hover:text-destructive"
                     >
                       <Trash2 className="h-4 w-4" />
                     </Button>
@@ -159,7 +159,7 @@ export function RestaurantCard({
                   {restaurant.rating.toFixed(1)}
                 </span>
                 {restaurant.review_count && (
-                  <span className="text-xs text-gray-600">
+                  <span className="text-xs text-foreground/70">
                     ({restaurant.review_count})
                   </span>
                 )}
@@ -182,14 +182,14 @@ export function RestaurantCard({
           )}
 
           {restaurant.description && (
-            <p className="text-sm text-gray-700 mb-4 line-clamp-2">
+            <p className="text-sm text-foreground/80 mb-4 line-clamp-2">
               {restaurant.description}
             </p>
           )}
 
           <div className="space-y-2">
             {restaurant.address && (
-              <div className="flex items-center gap-2 text-sm text-gray-600">
+              <div className="flex items-center gap-2 text-sm text-foreground/70">
                 <MapPin className="h-3 w-3" />
                 <span className="truncate">{restaurant.address}</span>
               </div>
@@ -197,10 +197,10 @@ export function RestaurantCard({
 
             {restaurant.phone && (
               <div className="flex items-center gap-2 text-sm">
-                <Phone className="h-3 w-3 text-gray-600" />
+                <Phone className="h-3 w-3 text-foreground/70" />
                 <a
                   href={`tel:${restaurant.phone}`}
-                  className="text-blue-600 hover:underline"
+                  className="text-primary-deep hover:underline"
                 >
                   {restaurant.phone}
                 </a>
@@ -209,12 +209,12 @@ export function RestaurantCard({
 
             {restaurant.website && (
               <div className="flex items-center gap-2 text-sm">
-                <Globe className="h-3 w-3 text-gray-600" />
+                <Globe className="h-3 w-3 text-foreground/70" />
                 <a
                   href={restaurant.website}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-blue-600 hover:underline flex items-center gap-1"
+                  className="text-primary-deep hover:underline flex items-center gap-1"
                 >
                   Website
                   <ExternalLink className="h-2 w-2" />
@@ -224,7 +224,7 @@ export function RestaurantCard({
 
             {showActivityLinks &&
               restaurant.linked_activities_count !== undefined && (
-                <div className="flex items-center gap-2 text-sm text-gray-600 pt-2 border-t">
+                <div className="flex items-center gap-2 text-sm text-foreground/70 pt-2 border-t">
                   <LinkIcon className="h-3 w-3" />
                   <span>
                     Linked to {restaurant.linked_activities_count} activit

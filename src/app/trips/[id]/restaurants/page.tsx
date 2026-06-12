@@ -109,7 +109,7 @@ export default function RestaurantsPage() {
       <div className="container mx-auto py-8">
         <Card>
           <CardContent className="pt-6">
-            <div className="text-center text-red-600">
+            <div className="text-center text-destructive">
               <p>Failed to load restaurants: {error.message}</p>
             </div>
           </CardContent>
@@ -127,7 +127,7 @@ export default function RestaurantsPage() {
             <Utensils className="h-8 w-8" />
             Restaurants
           </h1>
-          <p className="text-gray-600 mt-2">
+          <p className="text-foreground/70 mt-2">
             Manage dining recommendations for your trip
           </p>
         </div>
@@ -204,7 +204,7 @@ export default function RestaurantsPage() {
                 <Filter className="h-4 w-4" />
                 Clear Filters
               </Button>
-              <span className="text-sm text-gray-600">
+              <span className="text-sm text-foreground/70">
                 {restaurants.length} restaurant
                 {restaurants.length !== 1 ? "s" : ""} found
               </span>
@@ -220,9 +220,9 @@ export default function RestaurantsPage() {
             <Card key={i} className="animate-pulse">
               <CardContent className="pt-6">
                 <div className="space-y-3">
-                  <div className="h-4 bg-gray-200 rounded w-3/4"></div>
-                  <div className="h-3 bg-gray-200 rounded w-1/2"></div>
-                  <div className="h-20 bg-gray-200 rounded"></div>
+                  <div className="h-4 bg-muted rounded w-3/4"></div>
+                  <div className="h-3 bg-muted rounded w-1/2"></div>
+                  <div className="h-20 bg-muted rounded"></div>
                 </div>
               </CardContent>
             </Card>
@@ -243,13 +243,13 @@ export default function RestaurantsPage() {
         <Card>
           <CardContent className="pt-6">
             <div className="text-center py-12">
-              <Utensils className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">
+              <Utensils className="h-16 w-16 text-muted-foreground/70 mx-auto mb-4" />
+              <h3 className="text-xl font-semibold text-foreground mb-2">
                 {hasActiveFilters
                   ? "No restaurants match your filters"
                   : "No restaurants added yet"}
               </h3>
-              <p className="text-gray-600 mb-6 max-w-md mx-auto">
+              <p className="text-foreground/70 mb-6 max-w-md mx-auto">
                 {hasActiveFilters
                   ? "Try adjusting your search criteria or clearing filters to see more results."
                   : "Start building your dining guide by adding restaurant recommendations for your trip."}

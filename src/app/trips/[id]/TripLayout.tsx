@@ -125,7 +125,7 @@ const TripLayout = ({ children, tripId }: TripLayoutProps) => {
   if (isLoadingData) {
     return (
       <RequireAuth>
-        <div className="min-h-screen bg-gray-50 dark:bg-gray-950 py-12">
+        <div className="min-h-screen bg-background py-12">
           <div className="container mx-auto px-4">
             <div className="max-w-6xl mx-auto">
               {/* Banner Skeleton */}
@@ -178,7 +178,7 @@ const TripLayout = ({ children, tripId }: TripLayoutProps) => {
   if (error || !trip) {
     return (
       <RequireAuth>
-        <div className="min-h-screen bg-gray-50 py-12">
+        <div className="min-h-screen bg-background py-12">
           <div className="container mx-auto px-4">
             <div className="max-w-2xl mx-auto">
               <Card>
@@ -204,12 +204,12 @@ const TripLayout = ({ children, tripId }: TripLayoutProps) => {
 
   return (
     <RequireAuth>
-      <div className="min-h-screen bg-gray-50">
-        {/* Trip Navigation overlaid on banner */}
+      <div className="min-h-screen bg-background">
+        {/* Trip Navigation */}
         <TripNav tripId={tripId} />
 
         {/* Full-width Trip Banner */}
-        <div className="relative h-52 overflow-hidden bg-gray-900 sm:h-64 md:h-[600px] -translate-y-14">
+        <div className="relative h-52 overflow-hidden bg-foreground sm:h-64 md:h-80">
           <Image
             src="https://images.unsplash.com/photo-1706722533137-dd3c3f06c624?q=80&w=2340&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
             alt={`${trip.name} banner`}
@@ -218,10 +218,11 @@ const TripLayout = ({ children, tripId }: TripLayoutProps) => {
             sizes="100vw"
             className="object-cover opacity-80"
           />
+          {/* Photo scrim for text legibility (image treatment, not UI color) */}
           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
 
           {/* Navigation buttons on the image */}
-          <div className="absolute top-14 left-0 right-0 z-20">
+          <div className="absolute top-0 left-0 right-0 z-20">
             <div className="container mx-auto px-4 sm:px-6">
               <div className="max-w-6xl mx-auto">
                 <div className="flex items-center justify-between pt-4 sm:pt-6">
@@ -297,7 +298,7 @@ const TripLayout = ({ children, tripId }: TripLayoutProps) => {
           </div>
         </div>
         {/* Compact Trip Metadata Header */}
-        <div className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 -translate-y-14">
+        <div className="bg-card border-b border-border">
           <div className="container mx-auto px-4 sm:px-6">
             <div className="max-w-6xl mx-auto">
               <div className="py-4">
@@ -305,14 +306,14 @@ const TripLayout = ({ children, tripId }: TripLayoutProps) => {
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                   {/* Dates */}
                   <div className="flex items-center gap-3">
-                    <div className="flex-shrink-0 p-2 rounded-lg bg-gray-100 dark:bg-gray-800">
-                      <Calendar className="h-5 w-5 text-gray-600 dark:text-gray-400" />
+                    <div className="flex-shrink-0 p-2 rounded-lg bg-muted">
+                      <Calendar className="h-5 w-5 text-teal-brand" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-xs text-gray-500 dark:text-gray-400 mb-0.5">
+                      <p className="text-xs text-muted-foreground mb-0.5">
                         Dates
                       </p>
-                      <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
+                      <p className="text-sm font-medium text-foreground truncate">
                         {formatDate(trip.start_date)} -{" "}
                         {formatDate(trip.end_date)}
                       </p>
@@ -321,15 +322,15 @@ const TripLayout = ({ children, tripId }: TripLayoutProps) => {
 
                   {/* Members */}
                   <div className="flex items-center gap-3">
-                    <div className="flex-shrink-0 p-2 rounded-lg bg-gray-100 dark:bg-gray-800">
-                      <Users className="h-5 w-5 text-gray-600 dark:text-gray-400" />
+                    <div className="flex-shrink-0 p-2 rounded-lg bg-muted">
+                      <Users className="h-5 w-5 text-teal-brand" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-xs text-gray-500 dark:text-gray-400 mb-0.5">
+                      <p className="text-xs text-muted-foreground mb-0.5">
                         Members
                       </p>
                       <div className="flex items-center gap-2">
-                        <p className="text-sm font-medium text-gray-900 dark:text-white">
+                        <p className="text-sm font-medium text-foreground">
                           {Array.isArray(trip.trip_members)
                             ? trip.trip_members.length
                             : 0}{" "}
@@ -349,8 +350,8 @@ const TripLayout = ({ children, tripId }: TripLayoutProps) => {
                                       delayDuration={300}
                                     >
                                       <TooltipTrigger asChild>
-                                        <Avatar className="h-7 w-7 border-2 border-white dark:border-gray-900 cursor-pointer transition-transform hover:scale-110 hover:z-10">
-                                          <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-600 text-xs font-semibold text-white">
+                                        <Avatar className="h-7 w-7 border-2 border-card cursor-pointer transition-transform hover:scale-110 hover:z-10">
+                                          <AvatarFallback className="bg-primary text-xs font-semibold text-primary-foreground">
                                             {member.display_name
                                               ?.charAt(0)
                                               ?.toUpperCase() || "?"}
@@ -372,8 +373,8 @@ const TripLayout = ({ children, tripId }: TripLayoutProps) => {
                                 {trip.trip_members.length > 5 && (
                                   <Tooltip delayDuration={300}>
                                     <TooltipTrigger asChild>
-                                      <Avatar className="h-7 w-7 border-2 border-white dark:border-gray-900 cursor-pointer">
-                                        <AvatarFallback className="bg-gray-400 text-xs font-medium text-white">
+                                      <Avatar className="h-7 w-7 border-2 border-white cursor-pointer">
+                                        <AvatarFallback className="bg-muted-foreground text-xs font-medium text-background">
                                           +{trip.trip_members.length - 5}
                                         </AvatarFallback>
                                       </Avatar>
@@ -397,16 +398,16 @@ const TripLayout = ({ children, tripId }: TripLayoutProps) => {
 
                   {/* Currency */}
                   <div className="flex items-center gap-3">
-                    <div className="flex-shrink-0 p-2 rounded-lg bg-gray-100 dark:bg-gray-800">
-                      <div className="h-5 w-5 flex items-center justify-center text-xs font-bold text-gray-600 dark:text-gray-400">
+                    <div className="flex-shrink-0 p-2 rounded-lg bg-muted">
+                      <div className="h-5 w-5 flex items-center justify-center text-xs font-bold text-teal-brand">
                         {trip.currency?.charAt(0) || "$"}
                       </div>
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-xs text-gray-500 dark:text-gray-400 mb-0.5">
+                      <p className="text-xs text-muted-foreground mb-0.5">
                         Currency
                       </p>
-                      <p className="text-sm font-medium text-gray-900 dark:text-white">
+                      <p className="text-sm font-medium text-foreground">
                         {trip.currency}
                       </p>
                     </div>

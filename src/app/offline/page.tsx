@@ -2,11 +2,11 @@
 
 export default function OfflinePage() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
+    <div className="min-h-screen flex items-center justify-center bg-muted">
       <div className="text-center">
         <div className="mb-4">
           <svg
-            className="mx-auto h-12 w-12 text-gray-400"
+            className="mx-auto h-12 w-12 text-muted-foreground/70"
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
@@ -20,16 +20,16 @@ export default function OfflinePage() {
             />
           </svg>
         </div>
-        <h1 className="text-xl font-semibold text-gray-900 mb-2">
+        <h1 className="text-xl font-semibold text-foreground mb-2">
           You're offline
         </h1>
-        <p className="text-gray-600 mb-4">
+        <p className="text-foreground/70 mb-4">
           Please check your internet connection and try again.
         </p>
         <button
           type="button"
           onClick={() => window.location.reload()}
-          className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition-colors"
+          className="bg-primary hover:bg-primary-hover text-white font-medium py-2 px-4 rounded-lg transition-colors"
         >
           Try Again
         </button>

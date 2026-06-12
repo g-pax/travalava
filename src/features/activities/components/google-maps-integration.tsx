@@ -172,7 +172,7 @@ export function GoogleMapsIntegration({
               </DialogHeader>
               <div className="space-y-4">
                 {location?.name && (
-                  <p className="text-sm text-gray-600 flex items-center gap-2">
+                  <p className="text-sm text-foreground/70 flex items-center gap-2">
                     <MapPin className="h-4 w-4" />
                     {location.name}
                   </p>
@@ -213,7 +213,7 @@ export function GoogleMapsIntegration({
 
       {/* Location Info */}
       {location?.name && (
-        <div className="text-sm text-gray-600 flex items-start gap-2">
+        <div className="text-sm text-foreground/70 flex items-start gap-2">
           <MapPin className="h-4 w-4 mt-0.5 flex-shrink-0" />
           <span className="break-words">{location.name}</span>
         </div>
@@ -242,14 +242,14 @@ export function CompactGoogleMapsIntegration({
           href={directionsUrl}
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex items-center gap-1 text-blue-600 hover:text-blue-800 transition-colors"
+          className="inline-flex items-center gap-1 text-primary-deep hover:text-primary-deep/80 transition-colors"
         >
           <MapPin className="h-4 w-4" />
           <span className="truncate">{location?.name || "View Location"}</span>
           <ExternalLink className="h-3 w-3 flex-shrink-0" />
         </a>
       ) : (
-        <div className="inline-flex items-center gap-1 text-gray-600">
+        <div className="inline-flex items-center gap-1 text-foreground/70">
           <MapPin className="h-4 w-4" />
           <span className="truncate">{location?.name || "Location"}</span>
         </div>

@@ -55,7 +55,7 @@ export function ActivityEntryModeToggle({
 
           <TabsContent value="google" className="mt-6">
             <div className="space-y-4">
-              <div className="text-sm text-muted-foreground bg-blue-50 p-3 rounded-md">
+              <div className="text-sm text-muted-foreground bg-accent p-3 rounded-md">
                 🔍 Search for activities, attractions, and restaurants using
                 Google Places data. Get verified information including ratings,
                 photos, and contact details.
@@ -66,7 +66,7 @@ export function ActivityEntryModeToggle({
 
           <TabsContent value="manual" className="mt-6">
             <div className="space-y-4">
-              <div className="text-sm text-muted-foreground bg-gray-50 p-3 rounded-md">
+              <div className="text-sm text-muted-foreground bg-muted p-3 rounded-md">
                 ✏️ Enter activity details manually. You can still add Google Maps
                 location links for coordinates extraction.
               </div>
@@ -119,7 +119,7 @@ export function RestaurantEntryModeToggle({
 
           <TabsContent value="google" className="mt-6">
             <div className="space-y-4">
-              <div className="text-sm text-muted-foreground bg-blue-50 p-3 rounded-md">
+              <div className="text-sm text-muted-foreground bg-accent p-3 rounded-md">
                 🍽️ Search for restaurants using Google Places data. Get verified
                 information including ratings, reviews, photos, and contact
                 details.
@@ -131,7 +131,7 @@ export function RestaurantEntryModeToggle({
           {manualEntryComponent && (
             <TabsContent value="manual" className="mt-6">
               <div className="space-y-4">
-                <div className="text-sm text-muted-foreground bg-gray-50 p-3 rounded-md">
+                <div className="text-sm text-muted-foreground bg-muted p-3 rounded-md">
                   📋 Browse and select from restaurants you've already added to
                   this trip.
                 </div>

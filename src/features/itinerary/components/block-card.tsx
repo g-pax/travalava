@@ -136,7 +136,7 @@ export function BlockCard({
   const votingStatus = getVotingStatus();
 
   return (
-    <Card className="overflow-hidden border-l-4 border-l-blue-500 dark:border-l-blue-600">
+    <Card className="overflow-hidden ">
       <CardContent className="p-4 sm:p-6">
         {/* Block Header with inline edit */}
         <div className="flex items-start justify-between gap-4 mb-6">
@@ -171,7 +171,7 @@ export function BlockCard({
               </div>
             ) : (
               <div className="flex items-center gap-2">
-                <h4 className="text-lg font-bold text-gray-900 dark:text-white">
+                <h4 className="text-lg font-bold text-foreground">
                   {block.label}
                 </h4>
                 <Button
@@ -230,7 +230,7 @@ export function BlockCard({
               {existingCommit && (
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <Badge className="gap-1 bg-green-600 hover:bg-green-700">
+                    <Badge className="gap-1 bg-success-muted text-success-foreground moment-pop">
                       <Gavel className="h-3 w-3" />
                       Committed
                     </Badge>
@@ -248,7 +248,7 @@ export function BlockCard({
             <button
               type="button"
               onClick={() => setShowProposals(!showProposals)}
-              className="flex items-center gap-2 text-sm font-semibold text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors"
+              className="flex items-center gap-2 text-sm font-semibold text-foreground/80 hover:text-foreground transition-colors"
             >
               {showProposals ? (
                 <ChevronDown className="h-4 w-4" />
@@ -271,13 +271,13 @@ export function BlockCard({
           </div>
 
           {showProposals && (
-            <div className="space-y-3 pl-6 border-l-2 border-gray-200 dark:border-gray-700">
+            <div className="space-y-3 pl-6 border-l-2 border-border">
               {proposalsLoading ? (
                 <InlineLoader message="Loading proposals..." />
               ) : proposals.length === 0 ? (
-                <div className="border-2 border-dashed border-gray-200 dark:border-gray-700 rounded-lg p-6 text-center">
+                <div className="border-2 border-dashed border-border rounded-lg p-6 text-center">
                   <Clock className="h-8 w-8 mx-auto mb-2 opacity-40" />
-                  <p className="text-sm text-gray-500 dark:text-gray-400">
+                  <p className="text-sm text-muted-foreground">
                     No activities yet
                   </p>
                   <Button
@@ -293,7 +293,7 @@ export function BlockCard({
                 proposals.map((proposal) => (
                   <div
                     key={proposal.id}
-                    className="flex items-start gap-3 p-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/50 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors group"
+                    className="flex items-start gap-3 p-3 rounded-lg border border-border bg-muted/50 dark:bg-foreground/90/50 hover:bg-muted dark:hover:bg-foreground/90 transition-colors group"
                   >
                     {(proposal.activity as any)?.src && (
                       <div className="relative h-16 w-16 flex-shrink-0 overflow-hidden rounded-md">
@@ -308,7 +308,7 @@ export function BlockCard({
                     )}
 
                     <div className="flex-1 min-w-0">
-                      <h5 className="font-semibold text-sm text-gray-900 dark:text-white line-clamp-1 mb-1">
+                      <h5 className="font-semibold text-sm text-foreground line-clamp-1 mb-1">
                         {proposal.activity?.title}
                       </h5>
 
@@ -321,7 +321,7 @@ export function BlockCard({
 
                         {proposal.activity?.cost_amount !== null &&
                           proposal.activity?.cost_amount !== undefined && (
-                            <span className="flex items-center gap-1 text-xs text-gray-600 dark:text-gray-400">
+                            <span className="flex items-center gap-1 text-xs text-foreground/70">
                               <DollarSign className="h-3 w-3" />
                               {formatCurrency(
                                 proposal.activity.cost_amount,
@@ -331,7 +331,7 @@ export function BlockCard({
                           )}
 
                         {proposal.activity?.duration_min && (
-                          <span className="flex items-center gap-1 text-xs text-gray-600 dark:text-gray-400">
+                          <span className="flex items-center gap-1 text-xs text-foreground/70">
                             <Clock className="h-3 w-3" />
                             {formatDuration(proposal.activity.duration_min)}
                           </span>
@@ -339,7 +339,7 @@ export function BlockCard({
                       </div>
 
                       {proposal.activity?.location && (
-                        <div className="flex items-center gap-1 text-xs text-gray-600 dark:text-gray-400">
+                        <div className="flex items-center gap-1 text-xs text-foreground/70">
                           <MapPin className="h-3 w-3 flex-shrink-0" />
                           <span className="truncate">
                             {proposal.activity.location.name}
@@ -353,7 +353,7 @@ export function BlockCard({
                       variant="ghost"
                       onClick={() => handleRemoveProposal(proposal.id)}
                       disabled={removeProposal.isPending}
-                      className="h-8 w-8 p-0 opacity-0 group-hover:opacity-100 transition-opacity text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950"
+                      className="h-8 w-8 p-0 opacity-0 group-hover:opacity-100 transition-opacity text-destructive hover:text-destructive hover:bg-destructive/10"
                     >
                       <Trash2 className="h-4 w-4" />
                     </Button>
@@ -367,11 +367,11 @@ export function BlockCard({
         {/* Voting Section — visible to every member; the panel itself
             communicates window state (not started / active / ended) */}
         {(votingStatus || isOrganizer || proposals.length > 0) && (
-          <div className="space-y-4 mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
+          <div className="space-y-4 mt-6 pt-6 border-t border-border">
             <button
               type="button"
               onClick={() => setShowVoting(!showVoting)}
-              className="flex items-center gap-2 text-sm font-semibold text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors w-full"
+              className="flex items-center gap-2 text-sm font-semibold text-foreground/80 hover:text-foreground transition-colors w-full"
             >
               {showVoting ? (
                 <ChevronDown className="h-4 w-4" />
@@ -412,11 +412,11 @@ export function BlockCard({
         )}
 
         {/* Commit Section */}
-        <div className="space-y-4 mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
+        <div className="space-y-4 mt-6 pt-6 border-t border-border">
           <button
             type="button"
             onClick={() => setShowCommit(!showCommit)}
-            className="flex items-center gap-2 text-sm font-semibold text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors w-full"
+            className="flex items-center gap-2 text-sm font-semibold text-foreground/80 hover:text-foreground transition-colors w-full"
           >
             {showCommit ? (
               <ChevronDown className="h-4 w-4" />
@@ -426,7 +426,9 @@ export function BlockCard({
             <Gavel className="h-4 w-4" />
             Commit
             {existingCommit && (
-              <Badge className="ml-2 bg-green-600">Committed</Badge>
+              <Badge className="ml-2 bg-success-muted text-success-foreground">
+                Committed
+              </Badge>
             )}
           </button>
 

@@ -123,16 +123,16 @@ export function ConfirmedItineraryMap({
     return (
       <div
         className={cn(
-          "rounded-lg bg-gray-100 flex items-center justify-center",
+          "rounded-lg bg-muted flex items-center justify-center",
           className,
         )}
       >
         <div className="text-center p-6">
-          <MapPin className="h-12 w-12 text-gray-400 mx-auto mb-2" />
-          <p className="text-gray-600 text-sm">
+          <MapPin className="h-12 w-12 text-muted-foreground/70 mx-auto mb-2" />
+          <p className="text-foreground/70 text-sm">
             Google Maps API key not configured
           </p>
-          <p className="text-gray-500 text-xs mt-1">
+          <p className="text-muted-foreground text-xs mt-1">
             Add NEXT_PUBLIC_GOOGLE_MAPS_API_KEY to environment variables
           </p>
         </div>
@@ -144,13 +144,13 @@ export function ConfirmedItineraryMap({
     return (
       <div
         className={cn(
-          "rounded-lg bg-gray-100 flex items-center justify-center",
+          "rounded-lg bg-muted flex items-center justify-center",
           className,
         )}
       >
         <div className="text-center p-6">
-          <MapPin className="h-12 w-12 text-gray-400 mx-auto mb-2" />
-          <p className="text-gray-600 text-sm">
+          <MapPin className="h-12 w-12 text-muted-foreground/70 mx-auto mb-2" />
+          <p className="text-foreground/70 text-sm">
             No activities with locations to display
           </p>
         </div>
@@ -231,11 +231,11 @@ export function ConfirmedItineraryMap({
                     <h4 className="font-semibold text-sm mb-1">
                       {activity.title}
                     </h4>
-                    <p className="text-xs text-gray-600 mb-1">
+                    <p className="text-xs text-foreground/70 mb-1">
                       {activity.location.name}
                     </p>
                     <div className="flex items-center justify-between text-xs">
-                      <span className="text-gray-500">
+                      <span className="text-muted-foreground">
                         {new Date(
                           `${activity.dayDate}T00:00:00`,
                         ).toLocaleDateString(undefined, {
@@ -280,7 +280,7 @@ export function ConfirmedItineraryMap({
                 className="w-3 h-3 rounded-full border-2 border-white shadow-sm"
                 style={{ backgroundColor: color }}
               />
-              <span className="text-gray-600">
+              <span className="text-foreground/70">
                 {dayLabel} ({activitiesCount})
               </span>
             </div>

@@ -200,7 +200,7 @@ export function InlineRestaurantManager({
       <CardContent>
         {isLoading ? (
           <div className="text-center py-8">
-            <p className="text-gray-600">Loading restaurants...</p>
+            <p className="text-foreground/70">Loading restaurants...</p>
           </div>
         ) : restaurants.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -217,11 +217,11 @@ export function InlineRestaurantManager({
           </div>
         ) : (
           <div className="text-center py-8">
-            <Utensils className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 mb-2">
+            <Utensils className="h-12 w-12 text-muted-foreground/70 mx-auto mb-4" />
+            <h3 className="text-lg font-medium text-foreground mb-2">
               No restaurants added yet
             </h3>
-            <p className="text-gray-600 mb-4">
+            <p className="text-foreground/70 mb-4">
               Add restaurant recommendations to help travelers find great places
               to eat near this activity.
             </p>

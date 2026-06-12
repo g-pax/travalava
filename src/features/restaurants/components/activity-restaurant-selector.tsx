@@ -112,7 +112,7 @@ export function ActivityRestaurantSelector({
               </DialogHeader>
               <div className="space-y-4">
                 <div className="flex items-center gap-2">
-                  <Search className="h-4 w-4 text-gray-500" />
+                  <Search className="h-4 w-4 text-muted-foreground" />
                   <Input
                     placeholder="Search restaurants..."
                     value={searchQuery}
@@ -123,7 +123,7 @@ export function ActivityRestaurantSelector({
 
                 <div className="max-h-96 overflow-y-auto space-y-3">
                   {availableRestaurants.length === 0 ? (
-                    <div className="text-center py-8 text-gray-600">
+                    <div className="text-center py-8 text-foreground/70">
                       <Utensils className="h-12 w-12 mx-auto mb-4 opacity-40" />
                       <p className="font-medium">No restaurants available</p>
                       <p className="text-sm mt-1">
@@ -136,7 +136,7 @@ export function ActivityRestaurantSelector({
                     availableRestaurants.map((restaurant) => (
                       <div
                         key={restaurant.id}
-                        className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50"
+                        className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted"
                       >
                         <div className="flex-1">
                           <h4 className="font-medium">{restaurant.name}</h4>
@@ -153,7 +153,7 @@ export function ActivityRestaurantSelector({
                             )}
                           </div>
                           {restaurant.address && (
-                            <p className="text-sm text-gray-600 mt-1 truncate">
+                            <p className="text-sm text-foreground/70 mt-1 truncate">
                               {restaurant.address}
                             </p>
                           )}
@@ -192,7 +192,7 @@ export function ActivityRestaurantSelector({
                   size="sm"
                   onClick={() => handleUnlinkRestaurant(restaurant.id)}
                   disabled={unlinkRestaurant.isPending}
-                  className="absolute top-2 right-2 h-8 w-8 p-0 text-red-600 hover:text-red-700 bg-white/90 hover:bg-white"
+                  className="absolute top-2 right-2 h-8 w-8 p-0 text-destructive hover:text-destructive bg-white/90 hover:bg-white"
                 >
                   ×
                 </Button>
@@ -201,11 +201,11 @@ export function ActivityRestaurantSelector({
           </div>
         ) : (
           <div className="text-center py-8">
-            <Utensils className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 mb-2">
+            <Utensils className="h-12 w-12 text-muted-foreground/70 mx-auto mb-4" />
+            <h3 className="text-lg font-medium text-foreground mb-2">
               No restaurants added yet
             </h3>
-            <p className="text-gray-600 mb-4">
+            <p className="text-foreground/70 mb-4">
               Link existing restaurants or create new ones to provide dining
               recommendations for this activity.
             </p>

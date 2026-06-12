@@ -79,7 +79,7 @@ export function TripJoinForm({ tripId, onSuccess }: TripJoinFormProps) {
 
   if (authLoading || infoPending) {
     return (
-      <p className="text-sm text-gray-600 text-center py-8">
+      <p className="text-sm text-foreground/70 text-center py-8">
         Loading trip details…
       </p>
     );
@@ -87,7 +87,7 @@ export function TripJoinForm({ tripId, onSuccess }: TripJoinFormProps) {
 
   if (joinInfo === null) {
     return (
-      <p className="text-sm text-red-600 text-center py-8">
+      <p className="text-sm text-destructive text-center py-8">
         This invite link doesn't match any trip. Ask the organizer for a new
         link.
       </p>
@@ -97,9 +97,9 @@ export function TripJoinForm({ tripId, onSuccess }: TripJoinFormProps) {
   return (
     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
       {joinInfo && (
-        <div className="rounded-md bg-blue-50 dark:bg-blue-950 p-3 text-sm">
+        <div className="rounded-md bg-teal-muted p-3 text-sm">
           <p className="font-medium">{joinInfo.name}</p>
-          <p className="text-gray-600 dark:text-gray-400">
+          <p className="text-foreground/70">
             {joinInfo.destination_text} · {joinInfo.start_date} →{" "}
             {joinInfo.end_date}
           </p>
@@ -114,7 +114,7 @@ export function TripJoinForm({ tripId, onSuccess }: TripJoinFormProps) {
           {...form.register("displayName")}
         />
         {form.formState.errors.displayName && (
-          <p className="text-sm text-red-600">
+          <p className="text-sm text-destructive">
             {form.formState.errors.displayName.message}
           </p>
         )}
@@ -131,7 +131,7 @@ export function TripJoinForm({ tripId, onSuccess }: TripJoinFormProps) {
               {...form.register("email")}
             />
             {form.formState.errors.email && (
-              <p className="text-sm text-red-600">
+              <p className="text-sm text-destructive">
                 {form.formState.errors.email.message}
               </p>
             )}
@@ -164,7 +164,7 @@ export function TripJoinForm({ tripId, onSuccess }: TripJoinFormProps) {
             {...form.register("pin")}
           />
           {form.formState.errors.pin && (
-            <p className="text-sm text-red-600">
+            <p className="text-sm text-destructive">
               {form.formState.errors.pin.message}
             </p>
           )}
@@ -199,7 +199,7 @@ function PasswordField({
       <Label htmlFor={name}>{label}</Label>
       <PasswordInput form={form} name={name} placeholder={placeholder} />
       {form.formState.errors[name] && (
-        <p className="text-sm text-red-600">
+        <p className="text-sm text-destructive">
           {form.formState.errors[name]?.message}
         </p>
       )}
@@ -228,7 +228,7 @@ function PasswordInput({
       <button
         type="button"
         onClick={() => setShow(!show)}
-        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+        className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
       >
         {show ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
       </button>

@@ -40,7 +40,7 @@ export function ConfirmedBlocksView({ tripId }: ConfirmedBlocksViewProps) {
         <CardContent>
           <div className="animate-pulse space-y-4">
             {[...Array(3)].map((_, i) => (
-              <div key={i} className="h-20 bg-gray-200 rounded-lg" />
+              <div key={i} className="h-20 bg-muted rounded-lg" />
             ))}
           </div>
         </CardContent>
@@ -58,8 +58,10 @@ export function ConfirmedBlocksView({ tripId }: ConfirmedBlocksViewProps) {
         <CardContent>
           <div className="text-center py-8">
             <Calendar className="h-12 w-12 mx-auto mb-4 opacity-50" />
-            <p className="text-gray-500 mb-2">No activities confirmed yet</p>
-            <p className="text-sm text-gray-400">
+            <p className="text-muted-foreground mb-2">
+              No activities confirmed yet
+            </p>
+            <p className="text-sm text-muted-foreground/70">
               Activities will appear here once organizers commit them to time
               blocks
             </p>
@@ -223,7 +225,7 @@ export function ConfirmedBlocksView({ tripId }: ConfirmedBlocksViewProps) {
                   {dayBlocks.map((block) => (
                     <div
                       key={block.id}
-                      className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-800 transition-colors"
+                      className="border border-border rounded-lg p-4 hover:bg-muted dark:hover:bg-foreground/90 transition-colors"
                     >
                       {/* Block Header */}
                       <div className="flex items-start justify-between mb-3">
@@ -231,7 +233,7 @@ export function ConfirmedBlocksView({ tripId }: ConfirmedBlocksViewProps) {
                           <Badge variant="outline" className="mb-2">
                             {block.label}
                           </Badge>
-                          <h4 className="text-lg font-semibold text-gray-900 dark:text-white">
+                          <h4 className="text-lg font-semibold text-foreground">
                             {block.activity.title}
                           </h4>
                         </div>
@@ -257,7 +259,7 @@ export function ConfirmedBlocksView({ tripId }: ConfirmedBlocksViewProps) {
 
                         {block.activity.cost_amount !== null &&
                           block.activity.cost_amount !== undefined && (
-                            <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+                            <div className="flex items-center gap-2 text-sm text-foreground/70">
                               <DollarSign className="h-4 w-4" />
                               {formatCurrency(
                                 block.activity.cost_amount,
@@ -267,14 +269,14 @@ export function ConfirmedBlocksView({ tripId }: ConfirmedBlocksViewProps) {
                           )}
 
                         {block.activity.duration_min && (
-                          <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+                          <div className="flex items-center gap-2 text-sm text-foreground/70">
                             <Clock className="h-4 w-4" />
                             {formatDuration(block.activity.duration_min)}
                           </div>
                         )}
 
                         {(block.activity as any)?.location && (
-                          <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 sm:col-span-3">
+                          <div className="flex items-center gap-2 text-sm text-foreground/70 sm:col-span-3">
                             <MapPin className="h-4 w-4" />
                             <span className="truncate">
                               {(block.activity as any).location.name}

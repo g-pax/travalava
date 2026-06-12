@@ -132,7 +132,7 @@ export function DaySwapDialog({
                     disabled={block.id === selectedBlock2}
                   >
                     <div className="flex items-center gap-2">
-                      <Calendar className="h-4 w-4 text-gray-500" />
+                      <Calendar className="h-4 w-4 text-muted-foreground" />
                       <span>
                         {block.dayLabel} • {block.label} •{" "}
                         {block.activity.title}
@@ -143,9 +143,9 @@ export function DaySwapDialog({
               </SelectContent>
             </Select>
             {block1Info && (
-              <div className="p-3 rounded-lg bg-blue-50 border border-blue-200">
+              <div className="p-3 rounded-lg bg-accent border border-primary/30">
                 <div className="font-medium">{block1Info.activity.title}</div>
-                <div className="flex flex-wrap gap-2 text-sm text-gray-600 mt-1">
+                <div className="flex flex-wrap gap-2 text-sm text-foreground/70 mt-1">
                   <span>{block1Info.dayLabel}</span>
                   <span>•</span>
                   <span>{block1Info.label}</span>
@@ -184,7 +184,7 @@ export function DaySwapDialog({
           {/* Swap Arrow */}
           {selectedBlock1 && selectedBlock2 && (
             <div className="flex justify-center">
-              <ArrowLeftRight className="h-6 w-6 text-gray-400" />
+              <ArrowLeftRight className="h-6 w-6 text-muted-foreground/70" />
             </div>
           )}
 
@@ -205,7 +205,7 @@ export function DaySwapDialog({
                     disabled={block.id === selectedBlock1}
                   >
                     <div className="flex items-center gap-2">
-                      <Calendar className="h-4 w-4 text-gray-500" />
+                      <Calendar className="h-4 w-4 text-muted-foreground" />
                       <span>
                         {block.dayLabel} • {block.label} •{" "}
                         {block.activity.title}
@@ -216,9 +216,9 @@ export function DaySwapDialog({
               </SelectContent>
             </Select>
             {block2Info && (
-              <div className="p-3 rounded-lg bg-green-50 border border-green-200">
+              <div className="p-3 rounded-lg bg-success-muted border border-success/30">
                 <div className="font-medium">{block2Info.activity.title}</div>
-                <div className="flex flex-wrap gap-2 text-sm text-gray-600 mt-1">
+                <div className="flex flex-wrap gap-2 text-sm text-foreground/70 mt-1">
                   <span>{block2Info.dayLabel}</span>
                   <span>•</span>
                   <span>{block2Info.label}</span>

@@ -54,13 +54,13 @@ function getDayStatus(day: Day): DayStatus {
 function StatusIcon({ status }: { status: DayStatus }) {
   switch (status) {
     case "complete":
-      return <CheckCircle2 className="h-4 w-4 text-green-600" />;
+      return <CheckCircle2 className="h-4 w-4 text-success-foreground" />;
     case "active":
-      return <Clock className="h-4 w-4 text-blue-600 animate-pulse" />;
+      return <Clock className="h-4 w-4 text-primary-deep animate-pulse" />;
     case "partial":
-      return <Clock className="h-4 w-4 text-amber-600" />;
+      return <Clock className="h-4 w-4 text-warning-foreground" />;
     default:
-      return <Circle className="h-4 w-4 text-gray-300" />;
+      return <Circle className="h-4 w-4 text-muted-foreground/50" />;
   }
 }
 
@@ -85,7 +85,7 @@ export function ItinerarySidebar({
       <aside className="hidden lg:block lg:w-64 flex-shrink-0">
         <div className="sticky top-24 space-y-2">
           <div className="flex items-center gap-2 mb-4 px-3">
-            <Calendar className="h-5 w-5 text-gray-600" />
+            <Calendar className="h-5 w-5 text-foreground/70" />
             <h3 className="font-semibold text-lg">Days</h3>
           </div>
 
@@ -107,8 +107,8 @@ export function ItinerarySidebar({
                   className={cn(
                     "w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-left transition-colors",
                     isActive
-                      ? "bg-blue-50 text-blue-900 font-medium"
-                      : "hover:bg-gray-100 text-gray-700",
+                      ? "bg-accent text-accent-foreground font-medium"
+                      : "hover:bg-muted text-foreground/80",
                   )}
                 >
                   <StatusIcon status={status} />
@@ -126,7 +126,7 @@ export function ItinerarySidebar({
       </aside>
 
       {/* Mobile Tabs - Horizontal Scroll */}
-      <div className="lg:hidden sticky top-0 z-10 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 -mx-4 px-4 mb-6">
+      <div className="lg:hidden sticky top-0 z-10 bg-card border-b border-border -mx-4 px-4 mb-6">
         <div className="flex gap-2 overflow-x-auto py-3 scrollbar-hide">
           {days.map((day, index) => {
             const { day: dayLabel } = formatDayLabel(day.date, index);
@@ -140,8 +140,8 @@ export function ItinerarySidebar({
                 className={cn(
                   "flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-colors flex-shrink-0",
                   isActive
-                    ? "bg-blue-600 text-white"
-                    : "bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700",
+                    ? "bg-primary text-white"
+                    : "bg-muted text-foreground/80 hover:bg-muted dark:bg-foreground/90 dark:text-muted-foreground/50",
                 )}
               >
                 {dayLabel}

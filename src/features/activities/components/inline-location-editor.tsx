@@ -119,15 +119,19 @@ function MapMarker({
           <div className="p-2">
             <h3 className="font-semibold text-sm mb-1">{marker.title}</h3>
             {marker.description && (
-              <p className="text-xs text-gray-600 mb-1">{marker.description}</p>
+              <p className="text-xs text-foreground/70 mb-1">
+                {marker.description}
+              </p>
             )}
             {marker.address && (
-              <p className="text-xs text-gray-500 mb-2">{marker.address}</p>
+              <p className="text-xs text-muted-foreground mb-2">
+                {marker.address}
+              </p>
             )}
             <button
               type="button"
               onClick={handleViewInMaps}
-              className="text-xs text-blue-600 hover:text-blue-800 flex items-center gap-1"
+              className="text-xs text-primary-deep hover:text-primary-deep/80 flex items-center gap-1"
             >
               <ExternalLink className="h-3 w-3" />
               View in Google Maps
@@ -350,8 +354,8 @@ export function InlineLocationEditor({
         </CardHeader>
         <CardContent>
           <div className="text-center p-6">
-            <MapPin className="h-12 w-12 text-gray-400 mx-auto mb-2" />
-            <p className="text-gray-600 text-sm">
+            <MapPin className="h-12 w-12 text-muted-foreground/70 mx-auto mb-2" />
+            <p className="text-foreground/70 text-sm">
               Google Maps API key not configured
             </p>
           </div>
@@ -535,11 +539,11 @@ export function InlineLocationEditor({
             markers.some((m) => m.type === "restaurant") && (
               <div className="absolute bottom-4 left-4 bg-white/95 backdrop-blur-sm rounded-lg shadow-md px-3 py-2 text-xs space-y-1">
                 <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 bg-blue-500 rounded-full" />
+                  <div className="w-3 h-3 bg-accent0 rounded-full" />
                   <span>Activity</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 bg-red-500 rounded-full" />
+                  <div className="w-3 h-3 bg-destructive rounded-full" />
                   <span>Restaurant</span>
                 </div>
               </div>
@@ -548,7 +552,7 @@ export function InlineLocationEditor({
 
         {/* Current Location Display (when not editing and has location) */}
         {!isEditing && hasLocation && (
-          <div className="text-sm text-gray-600 space-y-1">
+          <div className="text-sm text-foreground/70 space-y-1">
             <p>
               <strong>Name:</strong> {activity.location?.name}
             </p>
@@ -561,7 +565,7 @@ export function InlineLocationEditor({
 
         {/* No Location State (when not editing and no location) */}
         {!isEditing && !hasLocation && (
-          <div className="text-center py-8 text-gray-500">
+          <div className="text-center py-8 text-muted-foreground">
             <MapPin className="h-8 w-8 mx-auto mb-2 opacity-50" />
             <p className="text-sm">No location specified for this activity</p>
           </div>

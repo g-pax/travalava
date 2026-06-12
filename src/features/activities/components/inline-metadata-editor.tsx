@@ -256,9 +256,9 @@ export function InlineMetadataEditor({
               {activity.cost_amount !== null &&
                 activity.cost_amount !== undefined && (
                   <div className="flex items-center gap-3">
-                    <DollarSign className="h-5 w-5 text-gray-600" />
+                    <DollarSign className="h-5 w-5 text-foreground/70" />
                     <div>
-                      <p className="text-sm text-gray-600">Cost</p>
+                      <p className="text-sm text-foreground/70">Cost</p>
                       <p className="font-medium">
                         {formatCurrency(
                           activity.cost_amount,
@@ -271,9 +271,9 @@ export function InlineMetadataEditor({
 
               {activity.duration_min && (
                 <div className="flex items-center gap-3">
-                  <Clock className="h-5 w-5 text-gray-600" />
+                  <Clock className="h-5 w-5 text-foreground/70" />
                   <div>
-                    <p className="text-sm text-gray-600">Duration</p>
+                    <p className="text-sm text-foreground/70">Duration</p>
                     <p className="font-medium">
                       {formatDuration(activity.duration_min)}
                     </p>
@@ -283,14 +283,14 @@ export function InlineMetadataEditor({
 
               {activity.link && (
                 <div className="flex items-center gap-3 sm:col-span-2">
-                  <Link2 className="h-5 w-5 text-gray-600 flex-shrink-0" />
+                  <Link2 className="h-5 w-5 text-foreground/70 flex-shrink-0" />
                   <div className="min-w-0">
-                    <p className="text-sm text-gray-600">External Link</p>
+                    <p className="text-sm text-foreground/70">External Link</p>
                     <a
                       href={activity.link}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-blue-600 hover:text-blue-800 truncate block"
+                      className="text-primary-deep hover:text-primary-deep/80 truncate block"
                     >
                       View Details
                     </a>
@@ -300,9 +300,9 @@ export function InlineMetadataEditor({
 
               {activity.created_at && (
                 <div className="flex items-center gap-3 sm:col-span-2">
-                  <Calendar className="h-5 w-5 text-gray-600" />
+                  <Calendar className="h-5 w-5 text-foreground/70" />
                   <div>
-                    <p className="text-sm text-gray-600">Created</p>
+                    <p className="text-sm text-foreground/70">Created</p>
                     <p className="font-medium text-sm">
                       {new Date(activity.created_at).toLocaleDateString(
                         undefined,
@@ -321,19 +321,19 @@ export function InlineMetadataEditor({
             {/* Missing Information Prompts */}
             <div className="space-y-2">
               {!activity.category && (
-                <div className="text-sm text-gray-500 bg-gray-50 p-3 rounded-lg">
+                <div className="text-sm text-muted-foreground bg-muted p-3 rounded-lg">
                   <Tag className="h-4 w-4 inline mr-2" />
                   Consider adding a category to help organize this activity
                 </div>
               )}
               {!activity.cost_amount && activity.cost_amount !== 0 && (
-                <div className="text-sm text-gray-500 bg-gray-50 p-3 rounded-lg">
+                <div className="text-sm text-muted-foreground bg-muted p-3 rounded-lg">
                   <DollarSign className="h-4 w-4 inline mr-2" />
                   Add cost information to help with trip budgeting
                 </div>
               )}
               {!activity.duration_min && (
-                <div className="text-sm text-gray-500 bg-gray-50 p-3 rounded-lg">
+                <div className="text-sm text-muted-foreground bg-muted p-3 rounded-lg">
                   <Clock className="h-4 w-4 inline mr-2" />
                   Specify duration to better plan your itinerary
                 </div>

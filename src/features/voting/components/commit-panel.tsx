@@ -187,9 +187,9 @@ export function CommitPanel({ block, tripId, isOrganizer }: CommitPanelProps) {
   // If already committed, show commit status
   if (existingCommit) {
     return (
-      <Card className="border-green-200 bg-green-50">
+      <Card className="border-success/30 bg-success-muted">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-green-800">
+          <CardTitle className="flex items-center gap-2 text-success-foreground">
             <CheckCircle2 className="h-4 w-4" />
             Block Committed
           </CardTitle>
@@ -198,7 +198,7 @@ export function CommitPanel({ block, tripId, isOrganizer }: CommitPanelProps) {
           <div className="space-y-3">
             <div>
               <h4 className="font-medium">{existingCommit.activity?.title}</h4>
-              <div className="flex flex-wrap gap-2 text-sm text-gray-600 mt-1">
+              <div className="flex flex-wrap gap-2 text-sm text-foreground/70 mt-1">
                 {existingCommit.activity?.category && (
                   <Badge variant="secondary">
                     {existingCommit.activity.category}
@@ -220,7 +220,7 @@ export function CommitPanel({ block, tripId, isOrganizer }: CommitPanelProps) {
                 )}
               </div>
             </div>
-            <div className="text-sm text-gray-600">
+            <div className="text-sm text-foreground/70">
               Committed by {existingCommit.committed_by_member?.display_name} on{" "}
               {new Date(existingCommit.committed_at).toLocaleDateString()}
             </div>
@@ -247,7 +247,7 @@ export function CommitPanel({ block, tripId, isOrganizer }: CommitPanelProps) {
     return (
       <Card>
         <CardContent className="p-6">
-          <div className="text-center text-gray-500">
+          <div className="text-center text-muted-foreground">
             Only trip organizers can commit blocks
           </div>
         </CardContent>
@@ -265,20 +265,20 @@ export function CommitPanel({ block, tripId, isOrganizer }: CommitPanelProps) {
       </CardHeader>
       <CardContent className="space-y-4">
         {/* Voting summary */}
-        <div className="p-3 rounded-lg bg-gray-50">
-          <div className="flex items-center gap-2 text-sm text-gray-600 mb-2">
+        <div className="p-3 rounded-lg bg-muted">
+          <div className="flex items-center gap-2 text-sm text-foreground/70 mb-2">
             <Users className="h-3 w-3" />
             {totalVotes} total votes from {uniqueVoters} voters
           </div>
           {voteCloseTs && (
-            <div className="flex items-center gap-2 text-sm text-gray-600">
+            <div className="flex items-center gap-2 text-sm text-foreground/70">
               <Clock className="h-3 w-3" />
               {votingEnded ? (
-                <span className="text-red-600">
+                <span className="text-destructive">
                   Voting ended on {voteCloseTs.toLocaleDateString()}
                 </span>
               ) : (
-                <span className="text-amber-600">
+                <span className="text-warning-foreground">
                   Voting ends on {voteCloseTs.toLocaleDateString()}
                 </span>
               )}
@@ -288,7 +288,7 @@ export function CommitPanel({ block, tripId, isOrganizer }: CommitPanelProps) {
 
         {/* Vote results */}
         {tally.length === 0 ? (
-          <div className="text-center py-6 text-gray-500">
+          <div className="text-center py-6 text-muted-foreground">
             No votes cast yet for this block
           </div>
         ) : (
@@ -299,19 +299,19 @@ export function CommitPanel({ block, tripId, isOrganizer }: CommitPanelProps) {
                 key={item.activityId}
                 className={`flex items-center justify-between p-3 rounded-lg border ${
                   index === 0 && !hasTie
-                    ? "border-green-300 bg-green-50"
+                    ? "border-teal-brand/50 bg-teal-muted"
                     : tiedActivities.includes(item)
-                      ? "border-amber-300 bg-amber-50"
-                      : "border-gray-200"
+                      ? "border-warning/30 bg-warning-muted"
+                      : "border-border"
                 }`}
               >
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
                     {index === 0 && !hasTie && (
-                      <Trophy className="h-4 w-4 text-green-600" />
+                      <Trophy className="h-4 w-4 text-success-foreground" />
                     )}
                     {tiedActivities.includes(item) && (
-                      <AlertTriangle className="h-4 w-4 text-amber-600" />
+                      <AlertTriangle className="h-4 w-4 text-warning-foreground" />
                     )}
                     <span className="font-medium">{item.activityTitle}</span>
                     {item.activityCategory && (
@@ -331,12 +331,12 @@ export function CommitPanel({ block, tripId, isOrganizer }: CommitPanelProps) {
 
         {/* Tie warning */}
         {hasTie && (
-          <div className="p-3 rounded-lg bg-amber-50 border border-amber-200">
-            <div className="flex items-center gap-2 text-amber-800">
+          <div className="p-3 rounded-lg bg-warning-muted border border-warning/30">
+            <div className="flex items-center gap-2 text-warning-foreground">
               <AlertTriangle className="h-4 w-4" />
               <span className="font-medium">Tie Detected!</span>
             </div>
-            <p className="text-sm text-amber-700 mt-1">
+            <p className="text-sm text-warning-foreground mt-1">
               {tiedActivities.length} activities are tied with {topVoteCount}{" "}
               votes each. You'll need to manually select the winner.
             </p>
@@ -365,7 +365,7 @@ export function CommitPanel({ block, tripId, isOrganizer }: CommitPanelProps) {
                   <DialogTitle>Break the Tie</DialogTitle>
                 </DialogHeader>
                 <div className="space-y-4">
-                  <p className="text-sm text-gray-600">
+                  <p className="text-sm text-foreground/70">
                     Select which activity should win for the "{block.label}"
                     time block:
                   </p>
@@ -373,7 +373,7 @@ export function CommitPanel({ block, tripId, isOrganizer }: CommitPanelProps) {
                     {tiedActivities.map((item) => (
                       <label
                         key={item.activityId}
-                        className="flex items-center gap-2 p-3 rounded-lg border cursor-pointer hover:bg-gray-50"
+                        className="flex items-center gap-2 p-3 rounded-lg border cursor-pointer hover:bg-muted"
                       >
                         <input
                           type="radio"
@@ -383,13 +383,13 @@ export function CommitPanel({ block, tripId, isOrganizer }: CommitPanelProps) {
                           onChange={(e) =>
                             setSelectedTieBreaker(e.target.value)
                           }
-                          className="text-blue-600"
+                          className="text-primary-deep"
                         />
                         <div className="flex-1">
                           <div className="font-medium">
                             {item.activityTitle}
                           </div>
-                          <div className="text-sm text-gray-600">
+                          <div className="text-sm text-foreground/70">
                             {item.voteCount} votes
                             {item.activityCategory &&
                               ` • ${item.activityCategory}`}
@@ -434,7 +434,7 @@ export function CommitPanel({ block, tripId, isOrganizer }: CommitPanelProps) {
           <DialogContent>
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2">
-                <AlertTriangle className="h-5 w-5 text-amber-600" />
+                <AlertTriangle className="h-5 w-5 text-warning-foreground" />
                 Activity Already Scheduled
               </DialogTitle>
               <DialogDescription>
@@ -452,10 +452,10 @@ export function CommitPanel({ block, tripId, isOrganizer }: CommitPanelProps) {
                     {duplicateWarning.existingCommits.map((commit) => (
                       <div
                         key={commit.blockId}
-                        className="p-3 rounded-lg bg-amber-50 border border-amber-200 text-sm"
+                        className="p-3 rounded-lg bg-warning-muted border border-warning/30 text-sm"
                       >
                         <div className="font-medium">{commit.blockLabel}</div>
-                        <div className="text-gray-600">
+                        <div className="text-foreground/70">
                           {new Date(
                             `${commit.dayDate}T00:00:00`,
                           ).toLocaleDateString()}
@@ -464,7 +464,7 @@ export function CommitPanel({ block, tripId, isOrganizer }: CommitPanelProps) {
                     ))}
                   </div>
                 )}
-              <p className="text-sm text-gray-600">
+              <p className="text-sm text-foreground/70">
                 Your trip's duplicate policy is set to "Soft Block". You can
                 proceed with this commitment, but consider if scheduling the
                 same activity multiple times is intentional.
@@ -494,7 +494,7 @@ export function CommitPanel({ block, tripId, isOrganizer }: CommitPanelProps) {
 
         {/* Voting deadline warning for organizers */}
         {!votingEnded && voteCloseTs && (
-          <div className="text-xs text-gray-500 text-center">
+          <div className="text-xs text-muted-foreground text-center">
             Consider waiting until voting ends on{" "}
             {voteCloseTs.toLocaleDateString()} unless urgent
           </div>

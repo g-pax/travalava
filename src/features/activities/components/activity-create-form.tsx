@@ -198,7 +198,7 @@ export function ActivityCreateForm({
               className="w-full"
             />
             {form.formState.errors.title && (
-              <p className="text-sm text-red-600">
+              <p className="text-sm text-destructive">
                 {form.formState.errors.title.message}
               </p>
             )}
@@ -245,7 +245,7 @@ export function ActivityCreateForm({
                 {...form.register("cost_amount", { valueAsNumber: true })}
               />
               {form.formState.errors.cost_amount && (
-                <p className="text-sm text-red-600">
+                <p className="text-sm text-destructive">
                   {form.formState.errors.cost_amount.message}
                 </p>
               )}
@@ -282,7 +282,7 @@ export function ActivityCreateForm({
               {...form.register("duration_min", { valueAsNumber: true })}
             />
             {form.formState.errors.duration_min && (
-              <p className="text-sm text-red-600">
+              <p className="text-sm text-destructive">
                 {form.formState.errors.duration_min.message}
               </p>
             )}
@@ -304,7 +304,7 @@ export function ActivityCreateForm({
               {...form.register("link")}
             />
             {form.formState.errors.link && (
-              <p className="text-sm text-red-600">
+              <p className="text-sm text-destructive">
                 {form.formState.errors.link.message}
               </p>
             )}
@@ -354,7 +354,7 @@ export function ActivityCreateForm({
 
             {/* Error Display */}
             {locationError && (
-              <p className="text-sm text-red-600">{locationError}</p>
+              <p className="text-sm text-destructive">{locationError}</p>
             )}
 
             {/* Coordinates Display */}

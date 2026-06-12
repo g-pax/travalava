@@ -86,9 +86,9 @@ export default function RestaurantDetailPage() {
         <Card>
           <CardContent className="pt-6">
             <div className="animate-pulse space-y-4">
-              <div className="h-8 bg-gray-200 rounded w-1/3"></div>
-              <div className="h-4 bg-gray-200 rounded w-1/2"></div>
-              <div className="h-32 bg-gray-200 rounded"></div>
+              <div className="h-8 bg-muted rounded w-1/3"></div>
+              <div className="h-4 bg-muted rounded w-1/2"></div>
+              <div className="h-32 bg-muted rounded"></div>
             </div>
           </CardContent>
         </Card>
@@ -101,7 +101,7 @@ export default function RestaurantDetailPage() {
       <div className="container mx-auto py-8">
         <Card>
           <CardContent className="pt-6">
-            <div className="text-center text-red-600">
+            <div className="text-center text-destructive">
               <p>
                 {error
                   ? `Failed to load restaurant: ${error.message}`
@@ -212,7 +212,7 @@ export default function RestaurantDetailPage() {
                         {restaurant.rating.toFixed(1)}
                       </span>
                       {restaurant.review_count && (
-                        <span className="text-gray-600 text-sm">
+                        <span className="text-foreground/70 text-sm">
                           ({restaurant.review_count} reviews)
                         </span>
                       )}
@@ -237,7 +237,7 @@ export default function RestaurantDetailPage() {
               {restaurant.description && (
                 <div className="mb-6">
                   <h3 className="font-semibold mb-2">About</h3>
-                  <p className="text-gray-700 leading-relaxed">
+                  <p className="text-foreground/80 leading-relaxed">
                     {restaurant.description}
                   </p>
                 </div>
@@ -246,17 +246,17 @@ export default function RestaurantDetailPage() {
               <div className="space-y-4">
                 {restaurant.address && (
                   <div className="flex items-center gap-3">
-                    <MapPin className="h-5 w-5 text-gray-500" />
+                    <MapPin className="h-5 w-5 text-muted-foreground" />
                     <span>{restaurant.address}</span>
                   </div>
                 )}
 
                 {restaurant.phone && (
                   <div className="flex items-center gap-3">
-                    <Phone className="h-5 w-5 text-gray-500" />
+                    <Phone className="h-5 w-5 text-muted-foreground" />
                     <a
                       href={`tel:${restaurant.phone}`}
-                      className="text-blue-600 hover:underline"
+                      className="text-primary-deep hover:underline"
                     >
                       {restaurant.phone}
                     </a>
@@ -265,12 +265,12 @@ export default function RestaurantDetailPage() {
 
                 {restaurant.website && (
                   <div className="flex items-center gap-3">
-                    <Globe className="h-5 w-5 text-gray-500" />
+                    <Globe className="h-5 w-5 text-muted-foreground" />
                     <a
                       href={restaurant.website}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-blue-600 hover:underline flex items-center gap-1"
+                      className="text-primary-deep hover:underline flex items-center gap-1"
                     >
                       Visit Website
                       <ExternalLink className="h-3 w-3" />
@@ -280,12 +280,12 @@ export default function RestaurantDetailPage() {
 
                 {restaurant.lat && restaurant.lon && (
                   <div className="flex items-center gap-3">
-                    <MapPin className="h-5 w-5 text-gray-500" />
+                    <MapPin className="h-5 w-5 text-muted-foreground" />
                     <a
                       href={`https://maps.google.com/?q=${restaurant.lat},${restaurant.lon}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-blue-600 hover:underline flex items-center gap-1"
+                      className="text-primary-deep hover:underline flex items-center gap-1"
                     >
                       View on Google Maps
                       <ExternalLink className="h-3 w-3" />
@@ -309,18 +309,18 @@ export default function RestaurantDetailPage() {
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <p className="text-sm font-medium text-gray-900">Added</p>
-                <p className="text-sm text-gray-600">
+                <p className="text-sm font-medium text-foreground">Added</p>
+                <p className="text-sm text-foreground/70">
                   {new Date(restaurant.created_at).toLocaleDateString()}
                 </p>
               </div>
 
               {restaurant.place_id && (
                 <div>
-                  <p className="text-sm font-medium text-gray-900">
+                  <p className="text-sm font-medium text-foreground">
                     Google Places
                   </p>
-                  <p className="text-sm text-gray-600">
+                  <p className="text-sm text-foreground/70">
                     Imported from Google Places
                   </p>
                 </div>
@@ -330,16 +330,16 @@ export default function RestaurantDetailPage() {
                 restaurant.lat &&
                 restaurant.lon && (
                   <div>
-                    <p className="text-sm font-medium text-gray-900">
+                    <p className="text-sm font-medium text-foreground">
                       Location Data
                     </p>
-                    <p className="text-sm text-gray-600">
+                    <p className="text-sm text-foreground/70">
                       Updated{" "}
                       {new Date(
                         restaurant.location_updated_at,
                       ).toLocaleDateString()}
                       <br />
-                      <span className="text-xs text-amber-600">
+                      <span className="text-xs text-warning-foreground">
                         Location data expires after 30 days per Google's
                         requirements
                       </span>
@@ -348,8 +348,10 @@ export default function RestaurantDetailPage() {
                 )}
 
               <div>
-                <p className="text-sm font-medium text-gray-900">Activities</p>
-                <p className="text-sm text-gray-600">
+                <p className="text-sm font-medium text-foreground">
+                  Activities
+                </p>
+                <p className="text-sm text-foreground/70">
                   Linked to {restaurant.linked_activities_count || 0} activit
                   {restaurant.linked_activities_count === 1 ? "y" : "ies"}
                 </p>

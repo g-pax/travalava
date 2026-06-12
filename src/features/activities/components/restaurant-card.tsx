@@ -48,11 +48,11 @@ export function RestaurantCard({
             className={`h-3 w-3 ${
               star <= rating
                 ? "text-yellow-500 fill-yellow-500"
-                : "text-gray-300"
+                : "text-muted-foreground/50"
             }`}
           />
         ))}
-        <span className="text-xs text-gray-600 ml-1">
+        <span className="text-xs text-foreground/70 ml-1">
           {rating.toFixed(1)}
           {restaurant.review_count && ` (${restaurant.review_count})`}
         </span>
@@ -66,7 +66,7 @@ export function RestaurantCard({
         <div className="flex items-start justify-between">
           <div className="flex-1 min-w-0">
             <CardTitle className="flex items-center gap-2 text-lg">
-              <Utensils className="h-4 w-4 text-gray-600 flex-shrink-0" />
+              <Utensils className="h-4 w-4 text-foreground/70 flex-shrink-0" />
               <span className="truncate">{restaurant.name}</span>
             </CardTitle>
             {restaurant.cuisine_type && (
@@ -94,7 +94,7 @@ export function RestaurantCard({
                   size="sm"
                   variant="ghost"
                   onClick={onDelete}
-                  className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
+                  className="h-8 w-8 p-0 text-destructive hover:text-destructive hover:bg-destructive/10"
                 >
                   <Trash2 className="h-4 w-4" />
                 </Button>
@@ -121,7 +121,7 @@ export function RestaurantCard({
 
           {/* Description */}
           {restaurant.description && (
-            <p className="text-sm text-gray-600 line-clamp-3">
+            <p className="text-sm text-foreground/70 line-clamp-3">
               {restaurant.description}
             </p>
           )}
@@ -138,7 +138,7 @@ export function RestaurantCard({
 
           {/* Address */}
           {restaurant.address && (
-            <div className="flex items-start gap-2 text-sm text-gray-600">
+            <div className="flex items-start gap-2 text-sm text-foreground/70">
               <MapPin className="h-4 w-4 mt-0.5 flex-shrink-0" />
               <span className="line-clamp-2">{restaurant.address}</span>
             </div>
@@ -148,10 +148,10 @@ export function RestaurantCard({
           <div className="space-y-2">
             {restaurant.phone && (
               <div className="flex items-center gap-2 text-sm">
-                <Phone className="h-3 w-3 text-gray-500" />
+                <Phone className="h-3 w-3 text-muted-foreground" />
                 <a
                   href={`tel:${restaurant.phone}`}
-                  className="text-blue-600 hover:text-blue-800 hover:underline"
+                  className="text-primary-deep hover:text-primary-deep/80 hover:underline"
                 >
                   {restaurant.phone}
                 </a>
@@ -160,12 +160,12 @@ export function RestaurantCard({
 
             {restaurant.website && (
               <div className="flex items-center gap-2 text-sm">
-                <Globe className="h-3 w-3 text-gray-500" />
+                <Globe className="h-3 w-3 text-muted-foreground" />
                 <a
                   href={restaurant.website}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-blue-600 hover:text-blue-800 hover:underline flex items-center gap-1"
+                  className="text-primary-deep hover:text-primary-deep/80 hover:underline flex items-center gap-1"
                 >
                   Visit Website
                   <ExternalLink className="h-3 w-3" />

@@ -113,7 +113,7 @@ export function ItineraryView({
           <CardTitle>Itinerary</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="text-center py-8 text-red-600">
+          <div className="text-center py-8 text-destructive">
             Failed to load itinerary. Please try again.
           </div>
         </CardContent>
@@ -133,7 +133,7 @@ export function ItineraryView({
         <CardContent>
           <div className="text-center py-12">
             <Calendar className="h-12 w-12 mx-auto mb-4 opacity-50" />
-            <p className="text-gray-500 mb-6">
+            <p className="text-muted-foreground mb-6">
               No itinerary created yet. Generate days and time blocks to start
               planning!
             </p>
@@ -185,7 +185,7 @@ export function ItineraryView({
           <TabsTrigger value="confirmed">
             Final Itinerary
             {committedBlocks.length > 0 && (
-              <span className="ml-2 bg-green-600 text-white text-xs px-2 py-0.5 rounded-full">
+              <span className="ml-2 bg-success-muted text-success-foreground text-white text-xs px-2 py-0.5 rounded-full">
                 {committedBlocks.length}
               </span>
             )}

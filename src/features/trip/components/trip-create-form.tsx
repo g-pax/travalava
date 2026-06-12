@@ -77,7 +77,7 @@ export function TripCreateForm({ onSuccess }: TripCreateFormProps) {
           {...form.register("name")}
         />
         {form.formState.errors.name && (
-          <p className="text-sm text-red-600">
+          <p className="text-sm text-destructive">
             {form.formState.errors.name.message}
           </p>
         )}
@@ -91,7 +91,7 @@ export function TripCreateForm({ onSuccess }: TripCreateFormProps) {
           {...form.register("destination_text")}
         />
         {form.formState.errors.destination_text && (
-          <p className="text-sm text-red-600">
+          <p className="text-sm text-destructive">
             {form.formState.errors.destination_text.message}
           </p>
         )}
@@ -102,7 +102,7 @@ export function TripCreateForm({ onSuccess }: TripCreateFormProps) {
           <Label htmlFor="start_date">Start Date</Label>
           <Input id="start_date" type="date" {...form.register("start_date")} />
           {form.formState.errors.start_date && (
-            <p className="text-sm text-red-600">
+            <p className="text-sm text-destructive">
               {form.formState.errors.start_date.message}
             </p>
           )}
@@ -112,7 +112,7 @@ export function TripCreateForm({ onSuccess }: TripCreateFormProps) {
           <Label htmlFor="end_date">End Date</Label>
           <Input id="end_date" type="date" {...form.register("end_date")} />
           {form.formState.errors.end_date && (
-            <p className="text-sm text-red-600">
+            <p className="text-sm text-destructive">
               {form.formState.errors.end_date.message}
             </p>
           )}
@@ -170,11 +170,11 @@ export function TripCreateForm({ onSuccess }: TripCreateFormProps) {
           {...form.register("pin")}
         />
         {form.formState.errors.pin && (
-          <p className="text-sm text-red-600">
+          <p className="text-sm text-destructive">
             {form.formState.errors.pin.message}
           </p>
         )}
-        <p className="text-sm text-gray-600">
+        <p className="text-sm text-foreground/70">
           Set a 4-8 digit PIN to require collaborators to enter it when joining
         </p>
       </div>

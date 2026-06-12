@@ -80,7 +80,7 @@ export default function RegisterPage() {
 
   if (emailSent) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4 py-12">
+      <div className="min-h-screen flex items-center justify-center bg-muted px-4 py-12">
         <Card className="w-full max-w-md">
           <CardHeader className="space-y-1">
             <CardTitle className="text-2xl text-center">
@@ -92,11 +92,11 @@ export default function RegisterPage() {
           </CardHeader>
           <CardContent>
             <div className="space-y-4 text-center">
-              <p className="text-sm text-gray-600">
+              <p className="text-sm text-foreground/70">
                 Click the link in the email to activate your account and start
                 planning trips.
               </p>
-              <p className="text-sm text-gray-600">
+              <p className="text-sm text-foreground/70">
                 Didn't receive the email? Check your spam folder.
               </p>
               <Button
@@ -115,7 +115,7 @@ export default function RegisterPage() {
 
   return (
     <RequireGuest>
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4 py-12">
+      <div className="min-h-screen flex items-center justify-center bg-muted px-4 py-12">
         <Card className="w-full max-w-md">
           <CardHeader className="space-y-1">
             <CardTitle className="text-2xl text-center">
@@ -137,7 +137,7 @@ export default function RegisterPage() {
                   disabled={isLoading}
                 />
                 {form.formState.errors.displayName && (
-                  <p className="text-sm text-red-600">
+                  <p className="text-sm text-destructive">
                     {form.formState.errors.displayName.message}
                   </p>
                 )}
@@ -153,7 +153,7 @@ export default function RegisterPage() {
                   disabled={isLoading}
                 />
                 {form.formState.errors.email && (
-                  <p className="text-sm text-red-600">
+                  <p className="text-sm text-destructive">
                     {form.formState.errors.email.message}
                   </p>
                 )}
@@ -172,7 +172,7 @@ export default function RegisterPage() {
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                     disabled={isLoading}
                   >
                     {showPassword ? (
@@ -183,7 +183,7 @@ export default function RegisterPage() {
                   </button>
                 </div>
                 {form.formState.errors.password && (
-                  <p className="text-sm text-red-600">
+                  <p className="text-sm text-destructive">
                     {form.formState.errors.password.message}
                   </p>
                 )}
@@ -202,7 +202,7 @@ export default function RegisterPage() {
                   <button
                     type="button"
                     onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                     disabled={isLoading}
                   >
                     {showConfirmPassword ? (
@@ -213,13 +213,13 @@ export default function RegisterPage() {
                   </button>
                 </div>
                 {form.formState.errors.confirmPassword && (
-                  <p className="text-sm text-red-600">
+                  <p className="text-sm text-destructive">
                     {form.formState.errors.confirmPassword.message}
                   </p>
                 )}
               </div>
 
-              <div className="text-xs text-gray-600">
+              <div className="text-xs text-foreground/70">
                 By creating an account, you agree to our Terms of Service and
                 Privacy Policy.
               </div>
@@ -237,10 +237,12 @@ export default function RegisterPage() {
             </form>
 
             <div className="mt-6 text-center text-sm">
-              <span className="text-gray-600">Already have an account? </span>
+              <span className="text-foreground/70">
+                Already have an account?{" "}
+              </span>
               <Link
                 href={`/auth/login${redirectTo !== "/" ? `?redirectTo=${encodeURIComponent(redirectTo)}` : ""}`}
-                className="text-blue-600 hover:text-blue-800 font-medium"
+                className="text-primary-deep hover:text-primary-deep/80 font-medium"
               >
                 Sign in
               </Link>

@@ -115,7 +115,7 @@ export function RestaurantManager({
 
         <CardContent>
           {restaurants.length === 0 ? (
-            <div className="text-center py-8 text-gray-500">
+            <div className="text-center py-8 text-muted-foreground">
               <Utensils className="h-12 w-12 mx-auto mb-3 opacity-40" />
               <p className="text-sm font-medium">No restaurants added yet</p>
               <p className="text-xs mt-1">

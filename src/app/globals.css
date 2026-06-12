@@ -33,16 +33,32 @@
   --color-secondary: var(--secondary);
   --color-primary-foreground: var(--primary-foreground);
   --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
+  --color-primary-deep: var(--primary-deep);
   --color-popover-foreground: var(--popover-foreground);
   --color-popover: var(--popover);
   --color-card-foreground: var(--card-foreground);
   --color-card: var(--card);
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-success-muted: var(--success-muted);
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
+  --color-warning-muted: var(--warning-muted);
+  --color-teal-brand: var(--teal-brand);
+  --color-teal-muted: var(--teal-muted);
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
 }
 
+/*
+ * Travalava — "The Sunset-and-Sea Palette" (DESIGN.md is normative).
+ * Sunset Coral is the one warm voice; it always carries Ink-warm text,
+ * never white. Sea Teal is the sparing secondary. Surfaces are flat and
+ * bordered; state colors (success / warning / destructive) are sacred.
+ */
 :root {
   --radius: 0.625rem;
   --background: oklch(1 0 0);
@@ -51,65 +67,91 @@
   --card-foreground: oklch(0.129 0.042 264.695);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.129 0.042 264.695);
-  --primary: oklch(0.208 0.042 265.755);
-  --primary-foreground: oklch(0.984 0.003 247.858);
+  /* Sunset Coral + warm near-black text (white-on-coral fails AA) */
+  --primary: oklch(0.66 0.15 35);
+  --primary-foreground: oklch(0.18 0.05 35);
+  --primary-hover: oklch(0.6 0.15 35);
+  /* Coral Deep: links/accent text on light surfaces (>=4.5:1 on white) */
+  --primary-deep: oklch(0.5 0.13 35);
   --secondary: oklch(0.968 0.007 247.896);
   --secondary-foreground: oklch(0.208 0.042 265.755);
   --muted: oklch(0.968 0.007 247.896);
   --muted-foreground: oklch(0.554 0.046 257.417);
-  --accent: oklch(0.968 0.007 247.896);
-  --accent-foreground: oklch(0.208 0.042 265.755);
+  /* Warm coral tint for hover wells and quiet emphasis surfaces */
+  --accent: oklch(0.96 0.02 35);
+  --accent-foreground: oklch(0.35 0.09 35);
   --destructive: oklch(0.577 0.245 27.325);
   --border: oklch(0.929 0.013 255.508);
   --input: oklch(0.929 0.013 255.508);
-  --ring: oklch(0.704 0.04 256.788);
-  --chart-1: oklch(0.646 0.222 41.116);
-  --chart-2: oklch(0.6 0.118 184.704);
-  --chart-3: oklch(0.398 0.07 227.392);
-  --chart-4: oklch(0.828 0.189 84.429);
-  --chart-5: oklch(0.769 0.188 70.08);
+  --ring: oklch(0.5 0.13 35);
+  /* State colors — committed / pending / error, never decorative */
+  --success: oklch(0.55 0.15 150);
+  --success-foreground: oklch(0.33 0.1 150);
+  --success-muted: oklch(0.96 0.025 150);
+  --warning: oklch(0.62 0.14 75);
+  --warning-foreground: oklch(0.42 0.1 75);
+  --warning-muted: oklch(0.97 0.02 75);
+  /* Sea Teal — sparing, informational (maps, locations) */
+  --teal-brand: oklch(0.55 0.095 180);
+  --teal-muted: oklch(0.96 0.02 180);
+  --chart-1: oklch(0.66 0.15 35);
+  --chart-2: oklch(0.55 0.095 180);
+  --chart-3: oklch(0.55 0.15 150);
+  --chart-4: oklch(0.62 0.14 75);
+  --chart-5: oklch(0.5 0.13 35);
   --sidebar: oklch(0.984 0.003 247.858);
   --sidebar-foreground: oklch(0.129 0.042 264.695);
-  --sidebar-primary: oklch(0.208 0.042 265.755);
-  --sidebar-primary-foreground: oklch(0.984 0.003 247.858);
-  --sidebar-accent: oklch(0.968 0.007 247.896);
-  --sidebar-accent-foreground: oklch(0.208 0.042 265.755);
+  --sidebar-primary: oklch(0.66 0.15 35);
+  --sidebar-primary-foreground: oklch(0.18 0.05 35);
+  --sidebar-accent: oklch(0.96 0.02 35);
+  --sidebar-accent-foreground: oklch(0.35 0.09 35);
   --sidebar-border: oklch(0.929 0.013 255.508);
-  --sidebar-ring: oklch(0.704 0.04 256.788);
+  --sidebar-ring: oklch(0.5 0.13 35);
 }
 
 .dark {
-  --background: oklch(0.129 0.042 264.695);
-  --foreground: oklch(0.984 0.003 247.858);
-  --card: oklch(0.208 0.042 265.755);
-  --card-foreground: oklch(0.984 0.003 247.858);
-  --popover: oklch(0.208 0.042 265.755);
-  --popover-foreground: oklch(0.984 0.003 247.858);
-  --primary: oklch(0.929 0.013 255.508);
-  --primary-foreground: oklch(0.208 0.042 265.755);
-  --secondary: oklch(0.279 0.041 260.031);
-  --secondary-foreground: oklch(0.984 0.003 247.858);
-  --muted: oklch(0.279 0.041 260.031);
-  --muted-foreground: oklch(0.704 0.04 256.788);
-  --accent: oklch(0.279 0.041 260.031);
-  --accent-foreground: oklch(0.984 0.003 247.858);
+  --background: oklch(0.145 0.025 260);
+  --foreground: oklch(0.96 0.005 250);
+  --card: oklch(0.19 0.028 260);
+  --card-foreground: oklch(0.96 0.005 250);
+  --popover: oklch(0.19 0.028 260);
+  --popover-foreground: oklch(0.96 0.005 250);
+  /* Coral brightens slightly in the dark; text stays warm near-black */
+  --primary: oklch(0.7 0.14 35);
+  --primary-foreground: oklch(0.18 0.05 35);
+  --primary-hover: oklch(0.75 0.13 35);
+  --primary-deep: oklch(0.78 0.12 35);
+  --secondary: oklch(0.26 0.03 260);
+  --secondary-foreground: oklch(0.96 0.005 250);
+  --muted: oklch(0.26 0.03 260);
+  --muted-foreground: oklch(0.72 0.03 256);
+  --accent: oklch(0.28 0.045 35);
+  --accent-foreground: oklch(0.9 0.06 35);
   --destructive: oklch(0.704 0.191 22.216);
   --border: oklch(1 0 0 / 10%);
   --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.551 0.027 264.364);
-  --chart-1: oklch(0.488 0.243 264.376);
-  --chart-2: oklch(0.696 0.17 162.48);
-  --chart-3: oklch(0.769 0.188 70.08);
-  --chart-4: oklch(0.627 0.265 303.9);
-  --chart-5: oklch(0.645 0.246 16.439);
-  --sidebar: oklch(0.208 0.042 265.755);
-  --sidebar-foreground: oklch(0.984 0.003 247.858);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.984 0.003 247.858);
-  --sidebar-accent: oklch(0.279 0.041 260.031);
-  --sidebar-accent-foreground: oklch(0.984 0.003 247.858);
+  --ring: oklch(0.7 0.14 35);
+  --success: oklch(0.68 0.14 150);
+  --success-foreground: oklch(0.85 0.09 150);
+  --success-muted: oklch(0.26 0.05 150);
+  --warning: oklch(0.72 0.13 75);
+  --warning-foreground: oklch(0.85 0.09 75);
+  --warning-muted: oklch(0.27 0.05 75);
+  --teal-brand: oklch(0.68 0.09 180);
+  --teal-muted: oklch(0.25 0.04 180);
+  --chart-1: oklch(0.7 0.14 35);
+  --chart-2: oklch(0.68 0.09 180);
+  --chart-3: oklch(0.68 0.14 150);
+  --chart-4: oklch(0.72 0.13 75);
+  --chart-5: oklch(0.78 0.12 35);
+  --sidebar: oklch(0.19 0.028 260);
+  --sidebar-foreground: oklch(0.96 0.005 250);
+  --sidebar-primary: oklch(0.7 0.14 35);
+  --sidebar-primary-foreground: oklch(0.18 0.05 35);
+  --sidebar-accent: oklch(0.28 0.045 35);
+  --sidebar-accent-foreground: oklch(0.9 0.06 35);
   --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.551 0.027 264.364);
+  --sidebar-ring: oklch(0.7 0.14 35);
 }
 
 @layer base {
@@ -118,6 +160,11 @@
   }
   body {
     @apply bg-background text-foreground;
+  }
+  h1,
+  h2,
+  h3 {
+    text-wrap: balance;
   }
 }
 
@@ -131,5 +178,26 @@
   .scrollbar-hide {
     -ms-overflow-style: none;
     scrollbar-width: none;
+  }
+
+  /* The vote/commit "moment": a single brief settle when state lands */
+  .moment-pop {
+    animation: moment-pop 200ms cubic-bezier(0.25, 1, 0.5, 1);
+  }
+  @keyframes moment-pop {
+    0% {
+      transform: scale(0.9);
+    }
+    60% {
+      transform: scale(1.06);
+    }
+    100% {
+      transform: scale(1);
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .moment-pop {
+      animation: none;
+    }
   }
 }

@@ -236,3 +236,11 @@ export function ActivityForm({ onSuccess }: { onSuccess?: () => void }) {
 - Keep PRs small and reviewable.
 - Default to this document as the source of truth until updated.
 
+
+---
+
+## 23. Design Context
+
+- **PRODUCT.md** (repo root) — strategic design context: register (product), users, brand personality ("warm & playful"), anti-references, and the five design principles. Read it before any UI work.
+- **DESIGN.md** (repo root) — the visual system: Sunset Coral / Sea Teal palette (OKLCH), Geist type scale, flat-bordered elevation, component doctrine, and named rules (One Warm Voice, Gradient Ban, Overlay-Only). Tokens in its YAML frontmatter are normative.
+- Current code still carries legacy `blue-600` accents and blue→purple gradients — migrate to DESIGN.md tokens on touch; never imitate the legacy gradients.

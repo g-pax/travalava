@@ -141,7 +141,7 @@ export function EnhancedActivityDetailView({
 
   if (isLoading || isRestaurantsLoading || !isMounted) {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-background">
         <div className="mx-auto max-w-6xl px-6 py-8">
           <InlineLoader message="Loading activity details..." />
         </div>
@@ -151,13 +151,13 @@ export function EnhancedActivityDetailView({
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-background">
         <div className="mx-auto max-w-6xl px-6 py-8">
           <Card>
             <CardContent className="flex items-center justify-center py-8">
               <div className="text-center">
-                <p className="text-red-600 mb-2">Failed to load activity</p>
-                <p className="text-sm text-gray-500">
+                <p className="text-destructive mb-2">Failed to load activity</p>
+                <p className="text-sm text-muted-foreground">
                   {error instanceof Error ? error.message : "Unknown error"}
                 </p>
                 <Button variant="outline" className="mt-4" asChild>
@@ -176,12 +176,12 @@ export function EnhancedActivityDetailView({
 
   if (!activity) {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-background">
         <div className="mx-auto max-w-6xl px-6 py-8">
           <Card>
             <CardContent className="flex items-center justify-center py-8">
               <div className="text-center">
-                <p className="text-gray-600 mb-2">Activity not found</p>
+                <p className="text-foreground/70 mb-2">Activity not found</p>
                 <Button variant="outline" asChild>
                   <Link href={`/trips/${tripId}/activities`}>
                     <ArrowLeft className="h-4 w-4 mr-2" />
@@ -197,7 +197,7 @@ export function EnhancedActivityDetailView({
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-background">
       <div className="mx-auto max-w-6xl px-6 py-8">
         {/* Header with Navigation and Actions */}
         <div className="flex items-center justify-between mb-8">
@@ -313,9 +313,9 @@ export function EnhancedActivityDetailView({
                       {activity.block_proposals.map((proposal: any) => (
                         <div
                           key={proposal.id}
-                          className="flex items-center gap-2 p-3 bg-blue-50 rounded-lg"
+                          className="flex items-center gap-2 p-3 bg-accent rounded-lg"
                         >
-                          <span className="text-sm font-medium text-blue-900">
+                          <span className="text-sm font-medium text-accent-foreground">
                             {new Date(
                               proposal.block?.day?.date || "",
                             ).toLocaleDateString(undefined, {

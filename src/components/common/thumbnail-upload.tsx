@@ -131,14 +131,14 @@ export function ThumbnailUpload({
                 type="button"
                 onClick={handleRemovePreview}
                 disabled={isUploading}
-                className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center hover:bg-red-600 transition-colors disabled:opacity-50"
+                className="absolute -top-1 -right-1 bg-destructive text-white rounded-full w-6 h-6 flex items-center justify-center hover:bg-destructive transition-colors disabled:opacity-50"
               >
                 <X className="h-3 w-3" />
               </button>
             )}
           </div>
           {previewFile && (
-            <p className="text-xs text-gray-500">
+            <p className="text-xs text-muted-foreground">
               File size: {(previewFile.size / 1024).toFixed(1)} KB
             </p>
           )}
@@ -153,8 +153,8 @@ export function ThumbnailUpload({
             border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-colors
             ${
               isDragActive
-                ? "border-blue-400 bg-blue-50"
-                : "border-gray-300 hover:border-gray-400"
+                ? "border-primary bg-accent"
+                : "border-border hover:border-primary/40"
             }
             ${disabled || isUploading ? "opacity-50 cursor-not-allowed" : ""}
           `}
@@ -162,14 +162,14 @@ export function ThumbnailUpload({
           <input {...getInputProps()} />
           <div className="flex flex-col items-center gap-2">
             {isDragActive ? (
-              <Upload className="h-8 w-8 text-blue-500" />
+              <Upload className="h-8 w-8 text-primary-deep" />
             ) : (
-              <Camera className="h-8 w-8 text-gray-400" />
+              <Camera className="h-8 w-8 text-muted-foreground/70" />
             )}
-            <p className="text-sm text-gray-600">
+            <p className="text-sm text-foreground/70">
               {isDragActive ? "Drop the image here" : placeholder}
             </p>
-            <p className="text-xs text-gray-500">
+            <p className="text-xs text-muted-foreground">
               JPEG, PNG, or WebP up to 10MB (will be compressed to 1.5MB)
             </p>
           </div>

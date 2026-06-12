@@ -136,7 +136,7 @@ export function ActivityLinkManager({
                 {activitiesLoading ? (
                   <div className="text-center py-4">Loading activities...</div>
                 ) : availableActivities.length === 0 ? (
-                  <div className="text-center py-4 text-gray-600">
+                  <div className="text-center py-4 text-foreground/70">
                     {activities.length === 0
                       ? "No activities found for this trip"
                       : "Already linked to all activities"}
@@ -146,12 +146,12 @@ export function ActivityLinkManager({
                     {availableActivities.map((activity) => (
                       <div
                         key={activity.id}
-                        className="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50"
+                        className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted"
                       >
                         <div>
                           <h4 className="font-medium">{activity.title}</h4>
                           {activity.category && (
-                            <p className="text-sm text-gray-600">
+                            <p className="text-sm text-foreground/70">
                               {activity.category}
                             </p>
                           )}
@@ -176,7 +176,7 @@ export function ActivityLinkManager({
       </CardHeader>
       <CardContent>
         {linkedActivities.length === 0 ? (
-          <div className="text-center py-6 text-gray-600">
+          <div className="text-center py-6 text-foreground/70">
             <ActivityIcon className="h-8 w-8 mx-auto mb-2 opacity-40" />
             <p className="text-sm">Not linked to any activities yet</p>
           </div>
@@ -185,12 +185,14 @@ export function ActivityLinkManager({
             {linkedActivities.map((activity) => (
               <div
                 key={activity.id}
-                className="flex items-center justify-between p-2 bg-gray-50 rounded-lg"
+                className="flex items-center justify-between p-2 bg-muted rounded-lg"
               >
                 <div>
                   <h4 className="font-medium text-sm">{activity.title}</h4>
                   {activity.category && (
-                    <p className="text-xs text-gray-600">{activity.category}</p>
+                    <p className="text-xs text-foreground/70">
+                      {activity.category}
+                    </p>
                   )}
                 </div>
                 <Button
@@ -198,7 +200,7 @@ export function ActivityLinkManager({
                   size="sm"
                   onClick={() => handleUnlinkActivity(activity.id)}
                   disabled={unlinkRestaurant.isPending}
-                  className="h-6 w-6 p-0 text-red-600 hover:text-red-700"
+                  className="h-6 w-6 p-0 text-destructive hover:text-destructive"
                 >
                   <Unlink className="h-3 w-3" />
                 </Button>

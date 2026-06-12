@@ -1,0 +1,217 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-06-12T09:30:00Z",
+  "title": "Design System: Travalava",
+  "extensions": {
+    "colorMeta": {
+      "sunset-coral": {
+        "role": "primary",
+        "displayName": "Sunset Coral",
+        "canonical": "oklch(0.66 0.15 35)",
+        "tonalRamp": [
+          "oklch(0.20 0.08 35)",
+          "oklch(0.32 0.11 35)",
+          "oklch(0.44 0.13 35)",
+          "oklch(0.54 0.14 35)",
+          "oklch(0.66 0.15 35)",
+          "oklch(0.76 0.12 35)",
+          "oklch(0.86 0.08 35)",
+          "oklch(0.95 0.03 35)"
+        ]
+      },
+      "sea-teal": {
+        "role": "secondary",
+        "displayName": "Sea Teal",
+        "canonical": "oklch(0.55 0.095 180)",
+        "tonalRamp": [
+          "oklch(0.18 0.05 180)",
+          "oklch(0.28 0.07 180)",
+          "oklch(0.40 0.085 180)",
+          "oklch(0.55 0.095 180)",
+          "oklch(0.66 0.09 180)",
+          "oklch(0.78 0.07 180)",
+          "oklch(0.88 0.05 180)",
+          "oklch(0.96 0.02 180)"
+        ]
+      },
+      "ink": {
+        "role": "neutral",
+        "displayName": "Ink",
+        "canonical": "oklch(0.129 0.042 264.7)",
+        "tonalRamp": [
+          "oklch(0.129 0.042 264.7)",
+          "oklch(0.21 0.04 265)",
+          "oklch(0.35 0.04 262)",
+          "oklch(0.45 0.045 260)",
+          "oklch(0.554 0.046 257.4)",
+          "oklch(0.70 0.04 257)",
+          "oklch(0.85 0.02 256)",
+          "oklch(0.968 0.007 247.9)"
+        ]
+      },
+      "success": {
+        "role": "state",
+        "displayName": "Committed Green",
+        "canonical": "oklch(0.55 0.15 150)",
+        "tonalRamp": [
+          "oklch(0.22 0.07 150)",
+          "oklch(0.33 0.10 150)",
+          "oklch(0.44 0.13 150)",
+          "oklch(0.55 0.15 150)",
+          "oklch(0.67 0.13 150)",
+          "oklch(0.78 0.10 150)",
+          "oklch(0.88 0.06 150)",
+          "oklch(0.96 0.025 150)"
+        ]
+      },
+      "warning": {
+        "role": "state",
+        "displayName": "Pending Amber",
+        "canonical": "oklch(0.62 0.14 75)",
+        "tonalRamp": [
+          "oklch(0.25 0.06 75)",
+          "oklch(0.37 0.09 75)",
+          "oklch(0.50 0.12 75)",
+          "oklch(0.62 0.14 75)",
+          "oklch(0.73 0.12 75)",
+          "oklch(0.83 0.09 75)",
+          "oklch(0.91 0.06 75)",
+          "oklch(0.97 0.02 75)"
+        ]
+      },
+      "destructive": {
+        "role": "state",
+        "displayName": "Error Red",
+        "canonical": "oklch(0.577 0.245 27.3)",
+        "tonalRamp": [
+          "oklch(0.22 0.10 27)",
+          "oklch(0.34 0.15 27)",
+          "oklch(0.46 0.20 27)",
+          "oklch(0.577 0.245 27.3)",
+          "oklch(0.68 0.19 27)",
+          "oklch(0.79 0.13 27)",
+          "oklch(0.89 0.07 27)",
+          "oklch(0.96 0.025 27)"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Display", "purpose": "Trip names and page heroes only." },
+      "headline": { "displayName": "Headline", "purpose": "Section heads: Itinerary, day headings." },
+      "title": { "displayName": "Title", "purpose": "Card titles, block labels, dialog headers." },
+      "body": { "displayName": "Body", "purpose": "Workhorse text; prose capped at 65-75ch." },
+      "label": { "displayName": "Label", "purpose": "Form labels, badges, metadata." }
+    },
+    "shadows": [
+      {
+        "name": "overlay",
+        "value": "0 10px 30px -10px rgb(0 0 0 / 0.15)",
+        "purpose": "Dialogs, dropdowns, popovers, toasts only. Surfaces at rest are flat (The Overlay-Only Rule)."
+      }
+    ],
+    "motion": [
+      {
+        "name": "ease-standard",
+        "value": "cubic-bezier(0.25, 1, 0.5, 1)",
+        "purpose": "Ease-out-quart for state transitions, 150-250ms. No bounce, no choreography."
+      }
+    ],
+    "breakpoints": [
+      { "name": "sm", "value": "640px" },
+      { "name": "md", "value": "768px" },
+      { "name": "lg", "value": "1024px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "The main action: Sunset Coral with Ink text, never white.",
+      "html": "<button class=\"ds-btn-primary\">Create Trip</button>",
+      "css": ".ds-btn-primary { background: oklch(0.66 0.15 35); color: oklch(0.129 0.042 264.7); height: 40px; padding: 8px 16px; border: none; border-radius: 8px; font: 500 0.875rem/1 Geist, system-ui, sans-serif; cursor: pointer; transition: background 150ms cubic-bezier(0.25,1,0.5,1); } .ds-btn-primary:hover { background: oklch(0.60 0.15 35); } .ds-btn-primary:focus-visible { outline: 2px solid oklch(0.50 0.13 35); outline-offset: 2px; }"
+    },
+    {
+      "name": "Outline Button",
+      "kind": "button",
+      "refersTo": "button-outline",
+      "description": "Quiet secondary action on Paper with a 1px border.",
+      "html": "<button class=\"ds-btn-outline\">Cancel</button>",
+      "css": ".ds-btn-outline { background: oklch(1 0 0); color: oklch(0.129 0.042 264.7); height: 40px; padding: 8px 16px; border: 1px solid oklch(0.929 0.013 255.5); border-radius: 8px; font: 500 0.875rem/1 Geist, system-ui, sans-serif; cursor: pointer; transition: background 150ms cubic-bezier(0.25,1,0.5,1); } .ds-btn-outline:hover { background: oklch(0.968 0.007 247.9); } .ds-btn-outline:focus-visible { outline: 2px solid oklch(0.50 0.13 35); outline-offset: 2px; }"
+    },
+    {
+      "name": "Text Input",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "Standard field: 1px border, ring focus.",
+      "html": "<input class=\"ds-input\" placeholder=\"Trip name\" />",
+      "css": ".ds-input { background: oklch(1 0 0); color: oklch(0.129 0.042 264.7); height: 40px; padding: 8px 12px; border: 1px solid oklch(0.929 0.013 255.5); border-radius: 8px; font: 400 0.875rem/1.5 Geist, system-ui, sans-serif; width: 240px; } .ds-input::placeholder { color: oklch(0.45 0.045 260); } .ds-input:focus-visible { outline: 2px solid oklch(0.50 0.13 35); outline-offset: 1px; border-color: oklch(0.50 0.13 35); }"
+    },
+    {
+      "name": "Card",
+      "kind": "card",
+      "refersTo": "card",
+      "description": "Flat bordered container; no shadow at rest.",
+      "html": "<div class=\"ds-card\"><h3 class=\"ds-card-title\">Day 1 — Morning</h3><p class=\"ds-card-body\">Sunset Sailing · 2 votes</p></div>",
+      "css": ".ds-card { background: oklch(1 0 0); border: 1px solid oklch(0.929 0.013 255.5); border-radius: 14px; padding: 24px; max-width: 320px; } .ds-card-title { font: 600 1.125rem/1.3 Geist, system-ui, sans-serif; color: oklch(0.129 0.042 264.7); margin: 0 0 8px; } .ds-card-body { font: 400 0.875rem/1.5 Geist, system-ui, sans-serif; color: oklch(0.554 0.046 257.4); margin: 0; }"
+    },
+    {
+      "name": "Vote Chip",
+      "kind": "chip",
+      "refersTo": "button-primary",
+      "description": "Signature component: the unit of group decision-making. Coral fill = your vote.",
+      "html": "<span class=\"ds-chip-vote ds-chip-vote--mine\"><svg width=\"14\" height=\"14\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M20 6 9 17l-5-5\"/></svg> 2 votes</span> <span class=\"ds-chip-vote\">0 votes</span>",
+      "css": ".ds-chip-vote { display: inline-flex; align-items: center; gap: 6px; background: oklch(0.968 0.007 247.9); color: oklch(0.129 0.042 264.7); border: none; border-radius: 999px; padding: 4px 12px; font: 500 0.75rem/1.3 Geist, system-ui, sans-serif; transition: transform 200ms cubic-bezier(0.25,1,0.5,1); } .ds-chip-vote--mine { background: oklch(0.66 0.15 35); } .ds-chip-vote:hover { transform: scale(1.04); }"
+    },
+    {
+      "name": "Committed Badge",
+      "kind": "chip",
+      "refersTo": "card",
+      "description": "Locked state for a committed block — color plus icon plus word, never color alone.",
+      "html": "<span class=\"ds-badge-committed\"><svg width=\"12\" height=\"12\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><rect width=\"18\" height=\"11\" x=\"3\" y=\"11\" rx=\"2\"/><path d=\"M7 11V7a5 5 0 0 1 10 0v4\"/></svg> Committed</span>",
+      "css": ".ds-badge-committed { display: inline-flex; align-items: center; gap: 5px; background: oklch(0.96 0.025 150); color: oklch(0.33 0.10 150); border-radius: 999px; padding: 3px 10px; font: 500 0.75rem/1.3 Geist, system-ui, sans-serif; }"
+    },
+    {
+      "name": "Tab Nav",
+      "kind": "nav",
+      "refersTo": "button-outline",
+      "description": "Trip section tabs; active marked by Coral Deep text + underline.",
+      "html": "<nav class=\"ds-tabs\"><a class=\"ds-tab ds-tab--active\" href=\"#\">Itinerary</a><a class=\"ds-tab\" href=\"#\">Activities</a><a class=\"ds-tab\" href=\"#\">Restaurants</a></nav>",
+      "css": ".ds-tabs { display: flex; gap: 4px; border-bottom: 1px solid oklch(0.929 0.013 255.5); } .ds-tab { font: 500 0.875rem/1 Geist, system-ui, sans-serif; color: oklch(0.45 0.045 260); text-decoration: none; padding: 10px 14px; border-bottom: 2px solid transparent; margin-bottom: -1px; transition: color 150ms cubic-bezier(0.25,1,0.5,1); } .ds-tab:hover { color: oklch(0.129 0.042 264.7); } .ds-tab--active { color: oklch(0.50 0.13 35); border-bottom-color: oklch(0.50 0.13 35); } .ds-tab:focus-visible { outline: 2px solid oklch(0.50 0.13 35); outline-offset: -2px; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Group Table",
+    "overview": "Travalava's interface is the table a group of friends gathers around the night they decide the trip is really happening — maps unfolded, everyone's hands in the plan, snacks at the edges. It is a product surface: standard, trustworthy controls (shadcn/ui vocabulary, one sans family, flat bordered surfaces) carry the work, while warmth lives in deliberate moments — a vote landing, a block committing, a friend joining. The tool stays quiet so the group's energy is the loudest thing on screen.",
+    "keyCharacteristics": [
+      "Warm coral accent on a calm, bordered, paper-white surface",
+      "One type family (Geist) at a tight product scale",
+      "Group state — who voted, what's winning, what's locked — always legible at a glance",
+      "Delight reserved for moments (vote, commit, join), never ambient decoration",
+      "Mobile-first: planned on a laptop, checked from a beach"
+    ],
+    "rules": [
+      { "name": "The One Warm Voice Rule", "body": "Sunset Coral is the only saturated color on any screen and covers ≤10% of it. Its rarity is what makes a vote landing feel like something.", "section": "colors" },
+      { "name": "The Gradient Ban", "body": "Color gradients are prohibited — on text, buttons, avatars, icons, everywhere. The legacy blue→purple avatar gradients are scheduled for removal, not imitation.", "section": "colors" },
+      { "name": "The State-Is-Sacred Rule", "body": "Green, amber, and red mean committed, pending, and error. They are never used decoratively, and color is never the sole carrier — always pair with an icon or a word.", "section": "colors" },
+      { "name": "The One Family Rule", "body": "Geist everywhere. No display fonts, no second sans, no script — at any size, for any occasion.", "section": "typography" },
+      { "name": "The Overlay-Only Rule", "body": "If it doesn't float above the page, it doesn't cast a shadow. A card with a shadow at rest is a bug.", "section": "elevation" }
+    ],
+    "dos": [
+      "Do pair Sunset Coral exclusively with Ink text (white-on-coral fails AA at this lightness).",
+      "Do make group state instantly scannable: voter names beside counts, a green Committed badge with a lock icon, member avatars with initials.",
+      "Do use skeletons that mirror layout while loading — never a lone centered spinner inside content.",
+      "Do keep motion 150-250ms, ease-out, state-driven, with a prefers-reduced-motion fallback for every animation.",
+      "Do design empty states that teach: a new trip's itinerary should invite \"create your days,\" not say \"no data.\""
+    ],
+    "donts": [
+      "Don't build corporate SaaS dashboards — no KPI stat cards, no gray enterprise density.",
+      "Don't imitate Booking.com / Expedia conversion UI — no urgency banners, deal badges, or countdown timers.",
+      "Don't ship the generic AI template — no purple-gradient heroes, no glassmorphism, no identical icon-card grids.",
+      "Don't use gradients anywhere (The Gradient Ban) — including the legacy blue→purple avatar gradients still in the code.",
+      "Don't use border-left thicker than 1px as a colored accent stripe on cards, list items, or alerts.",
+      "Don't put Muted Text in body copy or placeholders that must be read — it is metadata-only.",
+      "Don't reinvent standard controls for flavor; if shadcn/ui has it, use it."
+    ]
+  }
+}

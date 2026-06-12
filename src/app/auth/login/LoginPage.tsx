@@ -61,7 +61,7 @@ export default function LoginPage() {
 
   return (
     <RequireGuest>
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4 py-12">
+      <div className="min-h-screen flex items-center justify-center bg-muted px-4 py-12">
         <Card className="w-full max-w-md">
           <CardHeader className="space-y-1">
             <CardTitle className="text-2xl text-center">Welcome back</CardTitle>
@@ -81,7 +81,7 @@ export default function LoginPage() {
                   disabled={isLoading}
                 />
                 {form.formState.errors.email && (
-                  <p className="text-sm text-red-600">
+                  <p className="text-sm text-destructive">
                     {form.formState.errors.email.message}
                   </p>
                 )}
@@ -100,7 +100,7 @@ export default function LoginPage() {
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                     disabled={isLoading}
                   >
                     {showPassword ? (
@@ -111,7 +111,7 @@ export default function LoginPage() {
                   </button>
                 </div>
                 {form.formState.errors.password && (
-                  <p className="text-sm text-red-600">
+                  <p className="text-sm text-destructive">
                     {form.formState.errors.password.message}
                   </p>
                 )}
@@ -120,7 +120,7 @@ export default function LoginPage() {
               <div className="flex items-center justify-between">
                 <Link
                   href="/auth/reset-password"
-                  className="text-sm text-blue-600 hover:text-blue-800"
+                  className="text-sm text-primary-deep hover:text-primary-deep/80"
                 >
                   Forgot password?
                 </Link>
@@ -138,10 +138,12 @@ export default function LoginPage() {
             </form>
 
             <div className="mt-6 text-center text-sm">
-              <span className="text-gray-600">Don't have an account? </span>
+              <span className="text-foreground/70">
+                Don't have an account?{" "}
+              </span>
               <Link
                 href={`/auth/register${redirectTo !== "/" ? `?redirectTo=${encodeURIComponent(redirectTo)}` : ""}`}
-                className="text-blue-600 hover:text-blue-800 font-medium"
+                className="text-primary-deep hover:text-primary-deep/80 font-medium"
               >
                 Sign up
               </Link>

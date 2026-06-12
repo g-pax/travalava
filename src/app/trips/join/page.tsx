@@ -27,13 +27,13 @@ function JoinPageContent() {
 
   if (!tripId) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-950 py-12 flex items-center justify-center">
+      <div className="min-h-screen bg-background py-12 flex items-center justify-center">
         <div className="container mx-auto px-4">
           <div className="max-w-md mx-auto">
-            <Card className="border-2 shadow-lg">
+            <Card>
               <CardHeader className="text-center pb-4">
-                <div className="mx-auto h-16 w-16 rounded-full bg-red-100 dark:bg-red-900 flex items-center justify-center mb-4">
-                  <Users className="h-8 w-8 text-red-600 dark:text-red-400" />
+                <div className="mx-auto h-16 w-16 rounded-full bg-destructive/10 flex items-center justify-center mb-4">
+                  <Users className="h-8 w-8 text-destructive" />
                 </div>
                 <CardTitle className="text-2xl">Trip ID Required</CardTitle>
                 <CardDescription className="text-base mt-2">
@@ -41,7 +41,7 @@ function JoinPageContent() {
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                <p className="text-sm text-gray-600 dark:text-gray-400 text-center">
+                <p className="text-sm text-foreground/70 text-center">
                   The trip ID should be included in your invite link. If you
                   received an invite, please click on that link.
                 </p>
@@ -64,13 +64,13 @@ function JoinPageContent() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-950 py-12 flex items-center justify-center">
+    <div className="min-h-screen bg-background py-12 flex items-center justify-center">
       <div className="container mx-auto px-4">
         <div className="max-w-md mx-auto">
-          <Card className="border-2 shadow-lg">
+          <Card>
             <CardHeader className="text-center pb-6">
-              <div className="mx-auto h-16 w-16 rounded-full bg-gradient-to-br from-purple-500 to-purple-600 dark:from-purple-600 dark:to-purple-700 flex items-center justify-center mb-4 shadow-lg">
-                <Users className="h-8 w-8 text-white" />
+              <div className="mx-auto h-16 w-16 rounded-full bg-teal-muted flex items-center justify-center mb-4">
+                <Users className="h-8 w-8 text-teal-brand" />
               </div>
               <CardTitle className="text-2xl">Join Trip</CardTitle>
               <CardDescription className="text-base mt-2">

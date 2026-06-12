@@ -130,21 +130,19 @@ export function VotingWindowManager({
       <div className="flex items-center gap-2 text-sm">
         <Clock className="h-4 w-4" />
         {!voteOpenTs ? (
-          <span className="text-gray-600 dark:text-gray-400">
-            No voting window set
-          </span>
+          <span className="text-foreground/70">No voting window set</span>
         ) : votingNotStarted ? (
-          <span className="text-amber-600 dark:text-amber-500">
+          <span className="text-warning-foreground">
             Voting starts {voteOpenTs.toLocaleDateString()} at{" "}
             {voteOpenTs.toLocaleTimeString()}
           </span>
         ) : votingActive ? (
-          <span className="text-green-600 dark:text-green-500">
+          <span className="text-success-foreground">
             Voting active until {voteCloseTs?.toLocaleDateString()} at{" "}
             {voteCloseTs?.toLocaleTimeString()}
           </span>
         ) : votingEnded ? (
-          <span className="text-red-600 dark:text-red-500">
+          <span className="text-destructive dark:text-destructive">
             Voting ended {voteCloseTs?.toLocaleDateString()}
           </span>
         ) : null}
@@ -172,7 +170,7 @@ export function VotingWindowManager({
                 min={DateTime.now().toFormat("yyyy-MM-dd'T'HH:mm")}
               />
               {form.formState.errors.vote_open_ts && (
-                <p className="text-sm text-red-600 dark:text-red-400">
+                <p className="text-sm text-destructive">
                   {form.formState.errors.vote_open_ts.message}
                 </p>
               )}
@@ -187,13 +185,13 @@ export function VotingWindowManager({
                 min={form.watch("vote_open_ts")}
               />
               {form.formState.errors.vote_close_ts && (
-                <p className="text-sm text-red-600 dark:text-red-400">
+                <p className="text-sm text-destructive">
                   {form.formState.errors.vote_close_ts.message}
                 </p>
               )}
             </div>
 
-            <div className="text-sm text-gray-600 dark:text-gray-400 p-3 bg-blue-50 dark:bg-blue-950/30 rounded-lg">
+            <div className="text-sm text-foreground/70 p-3 bg-accent rounded-lg">
               <p className="mb-1">
                 💡 <strong>Tips:</strong>
               </p>

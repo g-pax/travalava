@@ -123,7 +123,7 @@ export function ActivitySelectorDialog({
                 key={activity.id}
                 onClick={() => handleAddActivity(activity.id)}
                 disabled={createProposal.isPending}
-                className="w-full text-left p-4 rounded-lg border border-gray-200 hover:border-gray-300 hover:bg-gray-50 dark:border-gray-800 dark:hover:border-gray-700 dark:hover:bg-gray-900 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full text-left p-4 rounded-lg border border-border hover:border-primary/40 hover:bg-muted dark:hover:bg-foreground transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex-1 min-w-0">
@@ -141,7 +141,7 @@ export function ActivitySelectorDialog({
                       </p>
                     )}
                   </div>
-                  <Plus className="h-5 w-5 text-gray-400 flex-shrink-0 mt-0.5" />
+                  <Plus className="h-5 w-5 text-muted-foreground/70 flex-shrink-0 mt-0.5" />
                 </div>
               </button>
             ))

@@ -58,7 +58,7 @@ export function ActivityPhotoPreview({
 
   return (
     <div className="space-y-2">
-      <div className="flex items-center gap-2 text-sm font-medium text-gray-700">
+      <div className="flex items-center gap-2 text-sm font-medium text-foreground/80">
         <Camera className="h-4 w-4" />
         <span>
           {photos.length} {photos.length === 1 ? "photo" : "photos"}
@@ -71,7 +71,7 @@ export function ActivityPhotoPreview({
             key={photo.id}
             type="button"
             onClick={() => setSelectedPhoto(photo)}
-            className="relative flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden border hover:ring-2 hover:ring-blue-500 transition-all"
+            className="relative flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden border hover:ring-2 hover:ring-ring transition-all"
           >
             <Image
               src={photo.url}
@@ -87,7 +87,7 @@ export function ActivityPhotoPreview({
         ))}
 
         {remainingCount > 0 && (
-          <div className="flex-shrink-0 w-16 h-16 rounded-lg border border-dashed border-gray-300 flex items-center justify-center text-xs text-gray-500">
+          <div className="flex-shrink-0 w-16 h-16 rounded-lg border border-dashed border-border flex items-center justify-center text-xs text-muted-foreground">
             +{remainingCount}
           </div>
         )}
@@ -154,7 +154,7 @@ export function ActivityPhotoGallery({
 
       {/* Photo Grid */}
       {photos.length === 0 ? (
-        <div className="text-center py-8 text-gray-500">
+        <div className="text-center py-8 text-muted-foreground">
           <Camera className="h-8 w-8 mx-auto mb-2 opacity-50" />
           <p className="text-sm">No photos yet</p>
           {!readonly && showUpload && (
@@ -168,7 +168,7 @@ export function ActivityPhotoGallery({
               <button
                 type="button"
                 onClick={() => setSelectedPhoto(photo)}
-                className="w-full aspect-square rounded-lg overflow-hidden border hover:ring-2 hover:ring-blue-500 transition-all"
+                className="w-full aspect-square rounded-lg overflow-hidden border hover:ring-2 hover:ring-ring transition-all"
               >
                 <Image
                   src={photo.url}
@@ -187,7 +187,7 @@ export function ActivityPhotoGallery({
                 <button
                   type="button"
                   onClick={() => onPhotoDelete(photo.id)}
-                  className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-600"
+                  className="absolute -top-1 -right-1 bg-destructive text-white rounded-full w-6 h-6 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-destructive"
                 >
                   <X className="h-3 w-3" />
                 </button>

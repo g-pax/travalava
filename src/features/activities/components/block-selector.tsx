@@ -58,8 +58,8 @@ function BlockCard({
         disabled
           ? "opacity-50 cursor-not-allowed"
           : isSelected
-            ? "ring-2 ring-blue-500 bg-blue-50"
-            : "hover:bg-gray-50"
+            ? "ring-2 ring-ring bg-accent"
+            : "hover:bg-muted"
       }`}
       onClick={() => !disabled && onSelect(block.id)}
     >
@@ -75,14 +75,14 @@ function BlockCard({
         </div>
 
         {block.hasProposal && (
-          <div className="flex items-center gap-1 text-xs text-amber-600">
+          <div className="flex items-center gap-1 text-xs text-warning-foreground">
             <AlertCircle className="h-3 w-3" />
             <span>Already proposed</span>
           </div>
         )}
 
         {block.proposalCount > 0 && !block.hasProposal && (
-          <div className="text-xs text-gray-500">
+          <div className="text-xs text-muted-foreground">
             {block.proposalCount} other{" "}
             {block.proposalCount === 1 ? "proposal" : "proposals"}
           </div>
@@ -181,7 +181,7 @@ export function BlockSelector({
         {Object.entries(blocksByDay).map(([date, blocks]) => (
           <div key={date} className="space-y-3">
             <div className="flex items-center gap-2">
-              <Calendar className="h-4 w-4 text-gray-500" />
+              <Calendar className="h-4 w-4 text-muted-foreground" />
               <h3 className="font-medium">{formatDate(date)}</h3>
             </div>
 
