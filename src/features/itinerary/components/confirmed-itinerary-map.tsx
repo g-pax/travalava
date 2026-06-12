@@ -194,7 +194,7 @@ export function ConfirmedItineraryMap({
         scrollwheel={true}
         mapTypeId="roadmap"
       >
-        {activities.map((activity, index) => {
+        {activities.map((activity, _index) => {
           const coords = activity.location.coordinates;
 
           if (

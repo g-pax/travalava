@@ -1,7 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Calendar, Clock } from "lucide-react";
+import { Calendar } from "lucide-react";
 import { DateTime } from "luxon";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
@@ -125,35 +125,16 @@ export function VotingWindowManager({
   const isLoading = updateVotingWindow.isPending || clearVotingWindow.isPending;
 
   return (
-    <div className="space-y-2">
-      {/* Current status */}
-      <div className="flex items-center gap-2 text-sm">
-        <Clock className="h-4 w-4" />
-        {!voteOpenTs ? (
-          <span className="text-foreground/70">No voting window set</span>
-        ) : votingNotStarted ? (
-          <span className="text-warning-foreground">
-            Voting starts {voteOpenTs.toLocaleDateString()} at{" "}
-            {voteOpenTs.toLocaleTimeString()}
-          </span>
-        ) : votingActive ? (
-          <span className="text-success-foreground">
-            Voting active until {voteCloseTs?.toLocaleDateString()} at{" "}
-            {voteCloseTs?.toLocaleTimeString()}
-          </span>
-        ) : votingEnded ? (
-          <span className="text-destructive dark:text-destructive">
-            Voting ended {voteCloseTs?.toLocaleDateString()}
-          </span>
-        ) : null}
-      </div>
-
-      {/* Management button */}
+    <div>
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogTrigger asChild>
-          <Button variant="outline" size="sm" className="w-full">
-            <Calendar className="h-4 w-4 mr-2" />
-            {voteOpenTs ? "Update" : "Set"} Voting Window
+          <Button
+            variant="ghost"
+            size="sm"
+            className="gap-1.5 text-muted-foreground hover:text-foreground"
+          >
+            <Calendar className="h-4 w-4" />
+            {voteOpenTs ? "Window" : "Set window"}
           </Button>
         </DialogTrigger>
         <DialogContent>

@@ -55,8 +55,8 @@
 
 /*
  * Travalava — "The Sunset-and-Sea Palette" (DESIGN.md is normative).
- * Sunset Coral is the one warm voice; it always carries Ink-warm text,
- * never white. Sea Teal is the sparing secondary. Surfaces are flat and
+ * Sunset Coral (terracotta depth) is the one warm voice; at L 0.55 it
+ * carries white text at AA contrast. Sea Teal is the sparing secondary. Surfaces are flat and
  * bordered; state colors (success / warning / destructive) are sacred.
  */
 :root {
@@ -68,9 +68,9 @@
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.129 0.042 264.695);
   /* Sunset Coral + warm near-black text (white-on-coral fails AA) */
-  --primary: oklch(0.66 0.15 35);
-  --primary-foreground: oklch(0.18 0.05 35);
-  --primary-hover: oklch(0.6 0.15 35);
+  --primary: oklch(0.55 0.15 35);
+  --primary-foreground: oklch(1 0 0);
+  --primary-hover: oklch(0.5 0.14 35);
   /* Coral Deep: links/accent text on light surfaces (>=4.5:1 on white) */
   --primary-deep: oklch(0.5 0.13 35);
   --secondary: oklch(0.968 0.007 247.896);
@@ -78,12 +78,12 @@
   --muted: oklch(0.968 0.007 247.896);
   --muted-foreground: oklch(0.554 0.046 257.417);
   /* Warm coral tint for hover wells and quiet emphasis surfaces */
-  --accent: oklch(0.96 0.02 35);
+  --accent: oklch(0.97 0.012 35);
   --accent-foreground: oklch(0.35 0.09 35);
   --destructive: oklch(0.577 0.245 27.325);
   --border: oklch(0.929 0.013 255.508);
   --input: oklch(0.929 0.013 255.508);
-  --ring: oklch(0.5 0.13 35);
+  --ring: oklch(0.55 0.15 35);
   /* State colors — committed / pending / error, never decorative */
   --success: oklch(0.55 0.15 150);
   --success-foreground: oklch(0.33 0.1 150);
@@ -94,15 +94,15 @@
   /* Sea Teal — sparing, informational (maps, locations) */
   --teal-brand: oklch(0.55 0.095 180);
   --teal-muted: oklch(0.96 0.02 180);
-  --chart-1: oklch(0.66 0.15 35);
+  --chart-1: oklch(0.55 0.15 35);
   --chart-2: oklch(0.55 0.095 180);
   --chart-3: oklch(0.55 0.15 150);
   --chart-4: oklch(0.62 0.14 75);
   --chart-5: oklch(0.5 0.13 35);
   --sidebar: oklch(0.984 0.003 247.858);
   --sidebar-foreground: oklch(0.129 0.042 264.695);
-  --sidebar-primary: oklch(0.66 0.15 35);
-  --sidebar-primary-foreground: oklch(0.18 0.05 35);
+  --sidebar-primary: oklch(0.55 0.15 35);
+  --sidebar-primary-foreground: oklch(1 0 0);
   --sidebar-accent: oklch(0.96 0.02 35);
   --sidebar-accent-foreground: oklch(0.35 0.09 35);
   --sidebar-border: oklch(0.929 0.013 255.508);
@@ -117,9 +117,9 @@
   --popover: oklch(0.19 0.028 260);
   --popover-foreground: oklch(0.96 0.005 250);
   /* Coral brightens slightly in the dark; text stays warm near-black */
-  --primary: oklch(0.7 0.14 35);
-  --primary-foreground: oklch(0.18 0.05 35);
-  --primary-hover: oklch(0.75 0.13 35);
+  --primary: oklch(0.68 0.14 35);
+  --primary-foreground: oklch(0.16 0.04 35);
+  --primary-hover: oklch(0.73 0.13 35);
   --primary-deep: oklch(0.78 0.12 35);
   --secondary: oklch(0.26 0.03 260);
   --secondary-foreground: oklch(0.96 0.005 250);
@@ -146,8 +146,8 @@
   --chart-5: oklch(0.78 0.12 35);
   --sidebar: oklch(0.19 0.028 260);
   --sidebar-foreground: oklch(0.96 0.005 250);
-  --sidebar-primary: oklch(0.7 0.14 35);
-  --sidebar-primary-foreground: oklch(0.18 0.05 35);
+  --sidebar-primary: oklch(0.68 0.14 35);
+  --sidebar-primary-foreground: oklch(0.16 0.04 35);
   --sidebar-accent: oklch(0.28 0.045 35);
   --sidebar-accent-foreground: oklch(0.9 0.06 35);
   --sidebar-border: oklch(1 0 0 / 10%);

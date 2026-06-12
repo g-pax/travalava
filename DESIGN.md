@@ -2,8 +2,8 @@
 name: Travalava
 description: Group trip planning that feels like the trip already started — propose, vote, commit.
 colors:
-  sunset-coral: "oklch(0.66 0.15 35)"
-  coral-hover: "oklch(0.60 0.15 35)"
+  sunset-coral: "oklch(0.55 0.15 35)"
+  coral-hover: "oklch(0.50 0.14 35)"
   coral-deep: "oklch(0.50 0.13 35)"
   sea-teal: "oklch(0.55 0.095 180)"
   ink: "oklch(0.129 0.042 264.7)"
@@ -55,13 +55,13 @@ spacing:
 components:
   button-primary:
     backgroundColor: "{colors.sunset-coral}"
-    textColor: "{colors.ink}"
+    textColor: "#ffffff"
     rounded: "{rounded.md}"
     padding: "8px 16px"
     height: "40px"
   button-primary-hover:
     backgroundColor: "{colors.coral-hover}"
-    textColor: "{colors.ink}"
+    textColor: "#ffffff"
   button-secondary:
     backgroundColor: "{colors.surface-muted}"
     textColor: "{colors.ink}"
@@ -109,7 +109,7 @@ The system explicitly rejects corporate SaaS density (KPI cards, gray enterprise
 A retro travel-poster pairing — one warm voice over cool, quiet neutrals.
 
 ### Primary
-- **Sunset Coral** (oklch(0.66 0.15 35)): the single saturated voice. Primary buttons, the current selection, active vote states, progress moments. Always paired with **Ink** text — never white. Hover deepens to **Coral Hover** (oklch(0.60 0.15 35)); on light backgrounds, links and accents use **Coral Deep** (oklch(0.50 0.13 35)), which holds ≥4.5:1 on white.
+- **Sunset Coral** (oklch(0.55 0.15 35)): the single saturated voice, at terracotta depth so **white text holds ≥4.5:1** on it. Primary buttons, the current selection, vote moments. Hover deepens to **Coral Hover** (oklch(0.50 0.14 35)); on light backgrounds, links and accents use **Coral Deep** (oklch(0.50 0.13 35)). Light coral tints (Accent) carry ink text.
 
 ### Secondary
 - **Sea Teal** (oklch(0.55 0.095 180)): sparing, informational. Location/map touches, the occasional secondary highlight. Never competes with coral on the same component.
@@ -189,7 +189,7 @@ The unit of group decision-making. A pill showing an activity's vote count and t
 ## 6. Do's and Don'ts
 
 ### Do:
-- **Do** pair Sunset Coral exclusively with Ink text (white-on-coral fails AA at this lightness).
+- **Do** keep Sunset Coral at terracotta depth (L ≤ 0.55) wherever it carries white text; tints carry ink.
 - **Do** make group state instantly scannable: voter names beside counts, a green Committed badge with a lock icon, member avatars with initials.
 - **Do** use skeletons that mirror layout while loading — never a lone centered spinner inside content.
 - **Do** keep motion 150–250ms, ease-out, state-driven, with a `prefers-reduced-motion` fallback for every animation.

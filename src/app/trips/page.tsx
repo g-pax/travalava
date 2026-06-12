@@ -42,10 +42,7 @@ function TripCard({ trip, role }: { trip: any; role: string }) {
                 <span className="line-clamp-1">{trip.destination_text}</span>
               </CardDescription>
             </div>
-            <Badge
-              variant={role === "organizer" ? "default" : "secondary"}
-              className="capitalize flex-shrink-0"
-            >
+            <Badge variant="outline" className="capitalize flex-shrink-0">
               {role}
             </Badge>
           </div>
@@ -80,7 +77,7 @@ function TripCard({ trip, role }: { trip: any; role: string }) {
               {trip.currency}
             </span>
             <Badge
-              variant={isUpcoming ? "default" : "secondary"}
+              variant={isUpcoming ? "outline" : "secondary"}
               className="text-xs"
             >
               {isUpcoming ? "Upcoming" : "Past"}

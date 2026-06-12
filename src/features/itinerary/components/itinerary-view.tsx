@@ -40,18 +40,14 @@ export function ItineraryView({
   const createDays = useCreateDays();
 
   const [activeDayId, setActiveDayId] = useState<string | null>(null);
-  const [expandedDays, setExpandedDays] = useState<Set<string>>(new Set());
 
   // Refs for scroll-to functionality
   const dayRefs = useRef<Map<string, HTMLDivElement>>(new Map());
 
-  // Initialize: set first day as active and expanded once days load.
-  // Must depend on `days` — with an empty dep array this ran while the query
-  // was still loading and never initialized anything.
+  // Highlight the first day in the index once days load
   useEffect(() => {
     if (days && days.length > 0 && !activeDayId) {
       setActiveDayId(days[0].id);
-      setExpandedDays(new Set([days[0].id]));
     }
   }, [days, activeDayId]);
 
@@ -74,21 +70,7 @@ export function ItineraryView({
     if (element) {
       element.scrollIntoView({ behavior: "smooth", block: "start" });
       setActiveDayId(dayId);
-      // Expand the day when navigating to it
-      setExpandedDays((prev) => new Set(prev).add(dayId));
     }
-  }, []);
-
-  const toggleDay = useCallback((dayId: string) => {
-    setExpandedDays((prev) => {
-      const newSet = new Set(prev);
-      if (newSet.has(dayId)) {
-        newSet.delete(dayId);
-      } else {
-        newSet.add(dayId);
-      }
-      return newSet;
-    });
   }, []);
 
   const setDayRef = useCallback(
@@ -185,7 +167,7 @@ export function ItineraryView({
           <TabsTrigger value="confirmed">
             Final Itinerary
             {committedBlocks.length > 0 && (
-              <span className="ml-2 bg-success-muted text-success-foreground text-white text-xs px-2 py-0.5 rounded-full">
+              <span className="ml-2 rounded-full bg-success-muted px-2 py-0.5 text-xs text-success-foreground">
                 {committedBlocks.length}
               </span>
             )}
@@ -203,7 +185,7 @@ export function ItineraryView({
             />
 
             {/* Main Content */}
-            <div className="flex-1 min-w-0 space-y-12">
+            <div className="flex-1 min-w-0 space-y-10">
               {days?.map((day, index) => (
                 <DayCard
                   key={day.id}
@@ -213,8 +195,6 @@ export function ItineraryView({
                   dayNumber={index + 1}
                   currentMember={currentMember}
                   dayId={day.id}
-                  isExpanded={expandedDays.has(day.id)}
-                  onToggle={() => toggleDay(day.id)}
                 />
               ))}
             </div>

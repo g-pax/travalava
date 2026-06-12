@@ -4,7 +4,6 @@ import {
   AlertTriangle,
   CheckCircle2,
   Clock,
-  Gavel,
   Trophy,
   Users,
 } from "lucide-react";
@@ -176,8 +175,8 @@ export function CommitPanel({ block, tripId, isOrganizer }: CommitPanelProps) {
 
   if (votesLoading || commitLoading) {
     return (
-      <Card>
-        <CardContent className="p-6">
+      <Card className="border-0 shadow-none">
+        <CardContent className="p-0">
           <InlineLoader message="Loading vote data..." />
         </CardContent>
       </Card>
@@ -187,7 +186,7 @@ export function CommitPanel({ block, tripId, isOrganizer }: CommitPanelProps) {
   // If already committed, show commit status
   if (existingCommit) {
     return (
-      <Card className="border-success/30 bg-success-muted">
+      <Card className="border-0 shadow-none bg-success-muted">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-success-foreground">
             <CheckCircle2 className="h-4 w-4" />
@@ -245,8 +244,8 @@ export function CommitPanel({ block, tripId, isOrganizer }: CommitPanelProps) {
 
   if (!isOrganizer) {
     return (
-      <Card>
-        <CardContent className="p-6">
+      <Card className="border-0 shadow-none">
+        <CardContent className="p-0">
           <div className="text-center text-muted-foreground">
             Only trip organizers can commit blocks
           </div>
@@ -256,14 +255,8 @@ export function CommitPanel({ block, tripId, isOrganizer }: CommitPanelProps) {
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Gavel className="h-4 w-4" />
-          Commit Block: {block.label}
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-4">
+    <Card className="border-0 shadow-none">
+      <CardContent className="space-y-4 p-0">
         {/* Voting summary */}
         <div className="p-3 rounded-lg bg-muted">
           <div className="flex items-center gap-2 text-sm text-foreground/70 mb-2">

@@ -1,42 +1,36 @@
 "use client";
 
-import {
-  Check,
-  ChevronDown,
-  ChevronRight,
-  Clock,
-  DollarSign,
-  Edit2,
-  Gavel,
-  MapPin,
-  Plus,
-  Trash2,
-  Vote,
-  X,
-} from "lucide-react";
+import { Check, Edit2, Gavel, Lock, Plus, Trash2, Vote, X } from "lucide-react";
 import Image from "next/image";
 import { useState } from "react";
 import { toast } from "sonner";
-import { InlineLoader } from "@/components/loading";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
 import { ActivitySelectorDialog } from "@/features/activities/components/activity-selector-dialog";
 import {
+  type BlockProposal,
   useBlockProposals,
   useRemoveProposal,
 } from "@/features/activities/hooks/use-proposals";
 import { CommitPanel } from "@/features/voting/components/commit-panel";
-import { VotingPanel } from "@/features/voting/components/voting-panel";
 import { VotingWindowManager } from "@/features/voting/components/voting-window-manager";
-import { useBlockCommitQuery } from "@/features/voting/hooks/use-block-commit";
+import {
+  useBlockCommitQuery,
+  useBlockUncommit,
+} from "@/features/voting/hooks/use-block-commit";
+import {
+  useVoteCast,
+  useVoteRemove,
+} from "@/features/voting/hooks/use-vote-mutation";
+import { useVoteTally } from "@/features/voting/hooks/use-votes";
 import { formatCurrency, formatDuration } from "@/lib/utils";
 import { useUpdateBlockLabel } from "../hooks/use-update-block-label";
 
@@ -53,6 +47,11 @@ interface BlockCardProps {
   isOrganizer?: boolean;
 }
 
+/**
+ * One time block (Morning / Afternoon / Evening). The whole propose -> vote ->
+ * commit flow is visible at a glance: proposals are listed inline with voter
+ * avatars and a one-tap vote toggle; committing happens in a focused dialog.
+ */
 export function BlockCard({
   block,
   tripId,
@@ -61,23 +60,40 @@ export function BlockCard({
 }: BlockCardProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [editLabel, setEditLabel] = useState(block.label);
-  const [showProposals, setShowProposals] = useState(false);
-  const [showVoting, setShowVoting] = useState(false);
-  const [showCommit, setShowCommit] = useState(false);
   const [showActivitySelector, setShowActivitySelector] = useState(false);
+  const [showCommitDialog, setShowCommitDialog] = useState(false);
 
   const updateBlockLabel = useUpdateBlockLabel();
-  const { data: proposals = [], isLoading: proposalsLoading } =
-    useBlockProposals(block.id);
+  const { data: proposals = [] } = useBlockProposals(block.id);
   const { data: existingCommit } = useBlockCommitQuery(block.id);
+  const { tally } = useVoteTally(block.id);
+  const voteCast = useVoteCast();
+  const voteRemove = useVoteRemove();
   const removeProposal = useRemoveProposal();
+  const blockUncommit = useBlockUncommit();
 
-  const handleSave = async () => {
+  // Voting window state (no window set = voting open)
+  const now = new Date();
+  const opensAt = block.vote_open_ts ? new Date(block.vote_open_ts) : null;
+  const closesAt = block.vote_close_ts ? new Date(block.vote_close_ts) : null;
+  const windowStatus = !opensAt
+    ? null
+    : now < opensAt
+      ? "soon"
+      : closesAt && now > closesAt
+        ? "ended"
+        : "active";
+  const votingOpen =
+    !existingCommit && windowStatus !== "soon" && windowStatus !== "ended";
+
+  const tallyByActivity = new Map(tally.map((t) => [t.activityId, t]));
+  const totalVotes = tally.reduce((sum, t) => sum + t.voteCount, 0);
+
+  const handleSaveLabel = async () => {
     if (editLabel.trim() === "") {
       toast.error("Block label cannot be empty");
       return;
     }
-
     try {
       await updateBlockLabel.mutateAsync({
         blockId: block.id,
@@ -85,364 +101,242 @@ export function BlockCard({
         label: editLabel.trim(),
       });
       setIsEditing(false);
-      toast.success("Block label updated!");
-    } catch (error) {
+    } catch {
       toast.error("Failed to update block label");
-      console.error("Update block label error:", error);
     }
   };
 
-  const handleCancel = () => {
-    setEditLabel(block.label);
-    setIsEditing(false);
-  };
-
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter") {
-      handleSave();
-    } else if (e.key === "Escape") {
-      handleCancel();
+  const handleVoteToggle = async (activityId: string, hasVoted: boolean) => {
+    if (!currentMemberId) {
+      toast.error("You must be a trip member to vote");
+      return;
+    }
+    try {
+      const params = {
+        tripId,
+        blockId: block.id,
+        activityId,
+        memberId: currentMemberId,
+      };
+      if (hasVoted) {
+        await voteRemove.mutateAsync(params);
+      } else {
+        await voteCast.mutateAsync(params);
+      }
+    } catch {
+      toast.error("Failed to update vote");
     }
   };
 
   const handleRemoveProposal = async (proposalId: string) => {
-    if (!confirm("Remove this activity from the block?")) {
-      return;
-    }
-
+    if (!confirm("Remove this activity from the block?")) return;
     try {
       await removeProposal.mutateAsync({ proposalId });
-    } catch (error) {
-      // Error handled by mutation
-      console.error("Failed to remove proposal:", error);
+    } catch {
+      // surfaced by the mutation's own toast
     }
   };
 
-  // Determine voting status
-  const getVotingStatus = () => {
-    if (!block.vote_open_ts) return null;
-    const now = new Date();
-    const voteOpenTs = new Date(block.vote_open_ts);
-    const voteCloseTs = block.vote_close_ts
-      ? new Date(block.vote_close_ts)
-      : null;
-
-    if (now < voteOpenTs) return "soon";
-    if (voteCloseTs && now >= voteOpenTs && now <= voteCloseTs) return "active";
-    if (voteCloseTs && now > voteCloseTs) return "ended";
-    return "open";
+  const handleUncommit = async () => {
+    if (!confirm("Unlock this block? Voting will reopen.")) return;
+    try {
+      await blockUncommit.mutateAsync({ tripId, blockId: block.id });
+      toast.success("Block unlocked - voting is open again");
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : "Failed to uncommit",
+      );
+    }
   };
 
-  const votingStatus = getVotingStatus();
+  const committedActivityId = existingCommit?.activity?.id;
 
   return (
-    <Card className="overflow-hidden ">
-      <CardContent className="p-4 sm:p-6">
-        {/* Block Header with inline edit */}
-        <div className="flex items-start justify-between gap-4 mb-6">
-          <div className="flex-1">
-            {isEditing ? (
-              <div className="flex items-center gap-2">
-                <Input
-                  value={editLabel}
-                  onChange={(e) => setEditLabel(e.target.value)}
-                  onKeyDown={handleKeyPress}
-                  className="text-base font-semibold"
-                  autoFocus
-                />
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  onClick={handleSave}
-                  disabled={updateBlockLabel.isPending}
-                  className="h-8 w-8 p-0"
-                >
-                  <Check className="h-4 w-4" />
-                </Button>
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  onClick={handleCancel}
-                  disabled={updateBlockLabel.isPending}
-                  className="h-8 w-8 p-0"
-                >
-                  <X className="h-4 w-4" />
-                </Button>
-              </div>
-            ) : (
-              <div className="flex items-center gap-2">
-                <h4 className="text-lg font-bold text-foreground">
-                  {block.label}
-                </h4>
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  onClick={() => setIsEditing(true)}
-                  className="h-7 w-7 p-0"
-                >
-                  <Edit2 className="h-3.5 w-3.5" />
-                </Button>
-              </div>
+    <section className="rounded-xl border border-border bg-card">
+      {/* Block header */}
+      <div className="flex items-center justify-between gap-3 px-4 py-3">
+        {isEditing ? (
+          <div className="flex flex-1 items-center gap-2">
+            <Input
+              value={editLabel}
+              onChange={(e) => setEditLabel(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") handleSaveLabel();
+                if (e.key === "Escape") {
+                  setEditLabel(block.label);
+                  setIsEditing(false);
+                }
+              }}
+              className="h-8 max-w-48 text-sm font-semibold"
+              autoFocus
+            />
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={handleSaveLabel}
+              disabled={updateBlockLabel.isPending}
+              className="h-8 w-8 p-0"
+            >
+              <Check className="h-4 w-4" />
+            </Button>
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={() => {
+                setEditLabel(block.label);
+                setIsEditing(false);
+              }}
+              className="h-8 w-8 p-0"
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          </div>
+        ) : (
+          <div className="flex min-w-0 items-center gap-1.5">
+            <h4 className="truncate font-semibold text-foreground">
+              {block.label}
+            </h4>
+            {isOrganizer && (
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={() => setIsEditing(true)}
+                className="h-6 w-6 p-0 text-muted-foreground/70 hover:text-foreground"
+                aria-label={`Rename ${block.label}`}
+              >
+                <Edit2 className="h-3 w-3" />
+              </Button>
             )}
           </div>
+        )}
 
-          {/* Status badges */}
-          <div className="flex items-center gap-2 flex-shrink-0">
-            <TooltipProvider>
-              {proposals.length > 0 && (
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Badge variant="secondary" className="gap-1">
-                      <Clock className="h-3 w-3" />
-                      {proposals.length}
-                    </Badge>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    {proposals.length} proposal
-                    {proposals.length !== 1 ? "s" : ""}
-                  </TooltipContent>
-                </Tooltip>
-              )}
-
-              {votingStatus && (
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Badge
-                      variant={
-                        votingStatus === "active" ? "default" : "secondary"
-                      }
-                      className="gap-1"
-                    >
-                      <Vote className="h-3 w-3" />
-                      {votingStatus === "active"
-                        ? "Active"
-                        : votingStatus === "ended"
-                          ? "Ended"
-                          : votingStatus === "soon"
-                            ? "Soon"
-                            : "Open"}
-                    </Badge>
-                  </TooltipTrigger>
-                  <TooltipContent>Voting {votingStatus}</TooltipContent>
-                </Tooltip>
-              )}
-
-              {existingCommit && (
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Badge className="gap-1 bg-success-muted text-success-foreground moment-pop">
-                      <Gavel className="h-3 w-3" />
-                      Committed
-                    </Badge>
-                  </TooltipTrigger>
-                  <TooltipContent>Activity committed</TooltipContent>
-                </Tooltip>
-              )}
-            </TooltipProvider>
-          </div>
+        <div className="flex shrink-0 items-center gap-2">
+          {existingCommit ? (
+            <Badge className="moment-pop gap-1 bg-success-muted text-success-foreground">
+              <Lock className="h-3 w-3" />
+              Committed
+            </Badge>
+          ) : windowStatus === "active" ? (
+            <Badge className="gap-1 bg-success-muted text-success-foreground">
+              <Vote className="h-3 w-3" />
+              Voting open
+            </Badge>
+          ) : windowStatus === "soon" && opensAt ? (
+            <Badge className="bg-warning-muted text-warning-foreground">
+              Opens {opensAt.toLocaleDateString()}
+            </Badge>
+          ) : windowStatus === "ended" ? (
+            <Badge variant="secondary" className="text-muted-foreground">
+              Voting closed
+            </Badge>
+          ) : null}
         </div>
+      </div>
 
-        {/* Proposals Section */}
-        <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <button
-              type="button"
-              onClick={() => setShowProposals(!showProposals)}
-              className="flex items-center gap-2 text-sm font-semibold text-foreground/80 hover:text-foreground transition-colors"
-            >
-              {showProposals ? (
-                <ChevronDown className="h-4 w-4" />
-              ) : (
-                <ChevronRight className="h-4 w-4" />
-              )}
-              Proposals {proposals.length > 0 && `(${proposals.length})`}
-            </button>
-            {showProposals && (
+      {/* Proposals */}
+      {proposals.length === 0 ? (
+        <div className="border-t border-border px-4 py-8 text-center">
+          <p className="mb-3 text-sm text-muted-foreground">
+            No ideas for {block.label.toLowerCase()} yet.
+          </p>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => setShowActivitySelector(true)}
+            className="gap-1.5"
+          >
+            <Plus className="h-4 w-4" />
+            Propose the first activity
+          </Button>
+        </div>
+      ) : (
+        <ul className="divide-y divide-border border-t border-border">
+          {proposals.map((proposal) => (
+            <ProposalRow
+              key={proposal.id}
+              proposal={proposal}
+              tally={tallyByActivity.get(proposal.activity_id)}
+              isCommitted={committedActivityId === proposal.activity_id}
+              dimmed={
+                !!existingCommit && committedActivityId !== proposal.activity_id
+              }
+              votingOpen={votingOpen}
+              currentMemberId={currentMemberId}
+              voting={voteCast.isPending || voteRemove.isPending}
+              onVoteToggle={handleVoteToggle}
+              onRemove={handleRemoveProposal}
+              canRemove={!existingCommit}
+            />
+          ))}
+        </ul>
+      )}
+
+      {/* Footer actions */}
+      {(proposals.length > 0 || isOrganizer) && (
+        <div className="flex items-center justify-between gap-2 border-t border-border px-2.5 py-2">
+          <div>
+            {!existingCommit && proposals.length > 0 && (
               <Button
-                onClick={() => setShowActivitySelector(true)}
-                variant="outline"
                 size="sm"
-                className="gap-2"
+                variant="ghost"
+                onClick={() => setShowActivitySelector(true)}
+                className="gap-1.5 text-muted-foreground hover:text-foreground"
               >
                 <Plus className="h-4 w-4" />
-                <span className="hidden sm:inline">Add Activity</span>
+                Propose activity
               </Button>
             )}
           </div>
 
-          {showProposals && (
-            <div className="space-y-3 pl-6 border-l-2 border-border">
-              {proposalsLoading ? (
-                <InlineLoader message="Loading proposals..." />
-              ) : proposals.length === 0 ? (
-                <div className="border-2 border-dashed border-border rounded-lg p-6 text-center">
-                  <Clock className="h-8 w-8 mx-auto mb-2 opacity-40" />
-                  <p className="text-sm text-muted-foreground">
-                    No activities yet
-                  </p>
-                  <Button
-                    onClick={() => setShowActivitySelector(true)}
-                    variant="link"
-                    size="sm"
-                    className="mt-2"
-                  >
-                    Add your first activity
-                  </Button>
-                </div>
-              ) : (
-                proposals.map((proposal) => (
-                  <div
-                    key={proposal.id}
-                    className="flex items-start gap-3 p-3 rounded-lg border border-border bg-muted/50 dark:bg-foreground/90/50 hover:bg-muted dark:hover:bg-foreground/90 transition-colors group"
-                  >
-                    {(proposal.activity as any)?.src && (
-                      <div className="relative h-16 w-16 flex-shrink-0 overflow-hidden rounded-md">
-                        <Image
-                          src={(proposal.activity as any).src}
-                          alt={proposal.activity?.title || "Activity"}
-                          fill
-                          className="object-cover"
-                          sizes="64px"
-                        />
-                      </div>
-                    )}
-
-                    <div className="flex-1 min-w-0">
-                      <h5 className="font-semibold text-sm text-foreground line-clamp-1 mb-1">
-                        {proposal.activity?.title}
-                      </h5>
-
-                      <div className="flex flex-wrap gap-2 mb-2">
-                        {proposal.activity?.category && (
-                          <Badge variant="secondary" className="text-xs">
-                            {proposal.activity.category}
-                          </Badge>
-                        )}
-
-                        {proposal.activity?.cost_amount !== null &&
-                          proposal.activity?.cost_amount !== undefined && (
-                            <span className="flex items-center gap-1 text-xs text-foreground/70">
-                              <DollarSign className="h-3 w-3" />
-                              {formatCurrency(
-                                proposal.activity.cost_amount,
-                                proposal.activity.cost_currency || "USD",
-                              )}
-                            </span>
-                          )}
-
-                        {proposal.activity?.duration_min && (
-                          <span className="flex items-center gap-1 text-xs text-foreground/70">
-                            <Clock className="h-3 w-3" />
-                            {formatDuration(proposal.activity.duration_min)}
-                          </span>
-                        )}
-                      </div>
-
-                      {proposal.activity?.location && (
-                        <div className="flex items-center gap-1 text-xs text-foreground/70">
-                          <MapPin className="h-3 w-3 flex-shrink-0" />
-                          <span className="truncate">
-                            {proposal.activity.location.name}
-                          </span>
-                        </div>
-                      )}
-                    </div>
-
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      onClick={() => handleRemoveProposal(proposal.id)}
-                      disabled={removeProposal.isPending}
-                      className="h-8 w-8 p-0 opacity-0 group-hover:opacity-100 transition-opacity text-destructive hover:text-destructive hover:bg-destructive/10"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
-                ))
-              )}
-            </div>
-          )}
-        </div>
-
-        {/* Voting Section — visible to every member; the panel itself
-            communicates window state (not started / active / ended) */}
-        {(votingStatus || isOrganizer || proposals.length > 0) && (
-          <div className="space-y-4 mt-6 pt-6 border-t border-border">
-            <button
-              type="button"
-              onClick={() => setShowVoting(!showVoting)}
-              className="flex items-center gap-2 text-sm font-semibold text-foreground/80 hover:text-foreground transition-colors w-full"
-            >
-              {showVoting ? (
-                <ChevronDown className="h-4 w-4" />
-              ) : (
-                <ChevronRight className="h-4 w-4" />
-              )}
-              <Vote className="h-4 w-4" />
-              Voting
-              {votingStatus && (
-                <Badge
-                  variant={votingStatus === "active" ? "default" : "secondary"}
-                  className="ml-2"
+          {isOrganizer && (
+            <div className="flex items-center gap-1">
+              {existingCommit ? (
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={handleUncommit}
+                  disabled={blockUncommit.isPending}
+                  className="gap-1.5 text-muted-foreground hover:text-foreground"
                 >
-                  {votingStatus}
-                </Badge>
-              )}
-            </button>
-
-            {showVoting && (
-              <div className="pl-6 space-y-4">
-                {isOrganizer && (
+                  Unlock
+                </Button>
+              ) : (
+                <>
                   <VotingWindowManager
                     block={block}
                     tripId={tripId}
                     isOrganizer={isOrganizer}
                   />
-                )}
-                <VotingPanel
-                  block={block}
-                  tripId={tripId}
-                  proposals={proposals}
-                  currentMemberId={currentMemberId}
-                  isOrganizer={isOrganizer}
-                />
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* Commit Section */}
-        <div className="space-y-4 mt-6 pt-6 border-t border-border">
-          <button
-            type="button"
-            onClick={() => setShowCommit(!showCommit)}
-            className="flex items-center gap-2 text-sm font-semibold text-foreground/80 hover:text-foreground transition-colors w-full"
-          >
-            {showCommit ? (
-              <ChevronDown className="h-4 w-4" />
-            ) : (
-              <ChevronRight className="h-4 w-4" />
-            )}
-            <Gavel className="h-4 w-4" />
-            Commit
-            {existingCommit && (
-              <Badge className="ml-2 bg-success-muted text-success-foreground">
-                Committed
-              </Badge>
-            )}
-          </button>
-
-          {showCommit && (
-            <div className="pl-6">
-              <CommitPanel
-                block={block}
-                tripId={tripId}
-                isOrganizer={isOrganizer}
-              />
+                  {totalVotes > 0 && (
+                    <Button
+                      size="sm"
+                      onClick={() => setShowCommitDialog(true)}
+                      className="gap-1.5"
+                    >
+                      <Gavel className="h-4 w-4" />
+                      Commit
+                    </Button>
+                  )}
+                </>
+              )}
             </div>
           )}
         </div>
-      </CardContent>
+      )}
+
+      {/* Commit dialog (organizer): tally, tie-break, duplicate handling */}
+      <Dialog open={showCommitDialog} onOpenChange={setShowCommitDialog}>
+        <DialogContent className="max-h-[85vh] max-w-lg overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Commit "{block.label}"</DialogTitle>
+          </DialogHeader>
+          <CommitPanel
+            block={block}
+            tripId={tripId}
+            isOrganizer={isOrganizer}
+          />
+        </DialogContent>
+      </Dialog>
 
       {/* Activity Selector Dialog */}
       <ActivitySelectorDialog
@@ -452,8 +346,161 @@ export function BlockCard({
         blockId={block.id}
         blockLabel={block.label}
         currentMemberId={currentMemberId}
-        existingActivityIds={proposals.map((p) => p.activity_id)}
       />
-    </Card>
+    </section>
+  );
+}
+
+interface ProposalRowProps {
+  proposal: BlockProposal;
+  tally?: {
+    voteCount: number;
+    votes: Array<{
+      member_id: string;
+      member?: { display_name?: string } | null;
+    }>;
+  };
+  isCommitted: boolean;
+  dimmed: boolean;
+  votingOpen: boolean;
+  currentMemberId?: string;
+  voting: boolean;
+  onVoteToggle: (activityId: string, hasVoted: boolean) => void;
+  onRemove: (proposalId: string) => void;
+  canRemove: boolean;
+}
+
+function ProposalRow({
+  proposal,
+  tally,
+  isCommitted,
+  dimmed,
+  votingOpen,
+  currentMemberId,
+  voting,
+  onVoteToggle,
+  onRemove,
+  canRemove,
+}: ProposalRowProps) {
+  const activity = proposal.activity;
+  const voteCount = tally?.voteCount ?? 0;
+  const voters = (tally?.votes ?? [])
+    .map((v) => v.member?.display_name)
+    .filter((name): name is string => !!name);
+  const hasVoted = (tally?.votes ?? []).some(
+    (v) => v.member_id === currentMemberId,
+  );
+  // biome-ignore lint/suspicious/noExplicitAny: src column exists; app type lags
+  const thumb = (activity as any)?.src as string | undefined;
+
+  const meta = [
+    activity?.category,
+    activity?.cost_amount != null
+      ? formatCurrency(activity.cost_amount, activity.cost_currency || "EUR")
+      : null,
+    activity?.duration_min != null
+      ? formatDuration(activity.duration_min)
+      : null,
+  ].filter(Boolean);
+
+  return (
+    <li
+      className={`group flex items-center gap-3 px-4 py-3 ${
+        isCommitted ? "bg-success-muted/60" : dimmed ? "opacity-50" : ""
+      }`}
+    >
+      {thumb && (
+        <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-md">
+          <Image
+            src={thumb}
+            alt=""
+            fill
+            className="object-cover"
+            sizes="40px"
+          />
+        </div>
+      )}
+
+      <div className="min-w-0 flex-1">
+        <div className="flex items-center gap-1.5">
+          {isCommitted && (
+            <Lock className="h-3.5 w-3.5 shrink-0 text-success-foreground" />
+          )}
+          <p className="truncate text-sm font-medium text-foreground">
+            {activity?.title || "Unknown activity"}
+          </p>
+        </div>
+        {meta.length > 0 && (
+          <p className="mt-0.5 truncate text-xs text-muted-foreground">
+            {meta.join(" - ")}
+          </p>
+        )}
+      </div>
+
+      {/* Voters + count + vote toggle */}
+      <div className="flex shrink-0 items-center gap-2">
+        {voters.length > 0 && (
+          <div
+            className="-space-x-1.5 hidden sm:flex"
+            title={voters.join(", ")}
+          >
+            {voters.slice(0, 4).map((name, i) => (
+              <Avatar
+                key={`${name}-${i}`}
+                className="h-6 w-6 border-2 border-card"
+              >
+                <AvatarFallback className="bg-muted text-[10px] font-semibold text-foreground/80">
+                  {name.charAt(0).toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
+            ))}
+            {voters.length > 4 && (
+              <Avatar className="h-6 w-6 border-2 border-card">
+                <AvatarFallback className="bg-muted text-[10px] text-muted-foreground">
+                  +{voters.length - 4}
+                </AvatarFallback>
+              </Avatar>
+            )}
+          </div>
+        )}
+
+        {voteCount > 0 && (
+          <Badge key={voteCount} className="moment-pop tabular-nums">
+            {voteCount}
+          </Badge>
+        )}
+
+        {votingOpen && currentMemberId && (
+          <Button
+            size="sm"
+            variant={hasVoted ? "default" : "outline"}
+            onClick={() => onVoteToggle(proposal.activity_id, hasVoted)}
+            disabled={voting}
+            className="h-8 min-w-[4.5rem] gap-1"
+          >
+            {hasVoted ? (
+              <>
+                <Check className="h-3.5 w-3.5" />
+                Voted
+              </>
+            ) : (
+              "Vote"
+            )}
+          </Button>
+        )}
+
+        {canRemove && (
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={() => onRemove(proposal.id)}
+            className="h-8 w-8 p-0 text-muted-foreground/50 opacity-0 transition-opacity duration-150 hover:text-destructive focus-visible:opacity-100 group-hover:opacity-100"
+            aria-label={`Remove ${activity?.title || "proposal"}`}
+          >
+            <Trash2 className="h-3.5 w-3.5" />
+          </Button>
+        )}
+      </div>
+    </li>
   );
 }
