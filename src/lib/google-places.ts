@@ -1,11 +1,13 @@
 /**
- * Google Places API utilities for cost-efficient place searching
- * Optimized for minimal API usage with caching and debouncing
+ * Place search service. Backed by OpenStreetMap Nominatim via our /api/places
+ * routes (free, keyless). The interface and PlaceSearchResult shape are kept
+ * stable so callers didn't change when we moved off Google Places. OSM provides
+ * no photos/ratings/price levels, so those fields are simply absent.
  */
 
 import { type DBSchema, type IDBPDatabase, openDB } from "idb";
 
-// Types for Google Places API
+// Place result shape consumed across the app (provider-agnostic).
 export interface PlaceSearchResult {
   place_id: string;
   name: string;
@@ -295,12 +297,11 @@ class GooglePlacesService {
   }
 
   /**
-   * Get optimized photo URL for a place using our Next.js API route
+   * Photo URLs are unavailable on OpenStreetMap; always empty. Kept so callers
+   * that optionally render a place photo degrade gracefully.
    */
-  getPhotoUrl(photoReference: string, maxWidth = 400): string {
-    if (!photoReference) return "";
-
-    return `${API_BASE_URL}/api/places/photo?photo_reference=${encodeURIComponent(photoReference)}&maxwidth=${maxWidth}`;
+  getPhotoUrl(_photoReference: string, _maxWidth = 400): string {
+    return "";
   }
 
   /**
@@ -396,25 +397,16 @@ class GooglePlacesService {
   }
 
   /**
-   * Convert PlaceSearchResult to RestaurantInput format
-   *
-   * IMPORTANT: Per Google's Terms of Service, only these fields should be stored:
-   * - place_id (required for fetching fresh data)
-   * - lat/lon (cached coordinates, must be refreshed every 30 days)
-   * - name (optional, for convenience)
-   *
-   * All other fields are for DISPLAY ONLY and should be fetched fresh each time
-   * using the place_id. This ensures compliance with Google's caching restrictions.
+   * Convert PlaceSearchResult to RestaurantInput format. OSM data is ODbL —
+   * free to store; richer details (phone/website/description) come from the
+   * details lookup when present.
    */
   toRestaurantInput(place: PlaceSearchResult, details?: PlaceDetails) {
     return {
-      // Fields allowed to be stored (Google ToS compliant)
       name: place.name,
       place_id: place.place_id,
       lat: place.geometry.location.lat,
       lon: place.geometry.location.lng,
-
-      // Fields for DISPLAY ONLY (do not cache in database)
       location_updated_at: new Date().toISOString(),
       cuisine_type: this.getCuisineFromTypes(place.types),
       price_range: this.toPriceRange(place.price_level),

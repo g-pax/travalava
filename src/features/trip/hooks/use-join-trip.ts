@@ -25,6 +25,8 @@ export function useTripJoinInfo(tripId: string | null) {
 }
 
 function mapJoinError(message: string): string {
+  if (message.includes("TOO_MANY_ATTEMPTS"))
+    return "Too many incorrect PIN attempts. Please wait a few minutes and try again.";
   if (message.includes("INVALID_PIN")) return "Invalid PIN";
   if (message.includes("TRIP_NOT_FOUND")) return "Trip not found";
   if (message.includes("AUTH_REQUIRED")) return "You must be signed in to join";

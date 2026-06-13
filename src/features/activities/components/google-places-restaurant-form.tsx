@@ -146,7 +146,7 @@ export function GooglePlacesRestaurantForm({
                   {displayData.name}
                 </CardTitle>
                 <CardDescription>
-                  Information from Google Places (refreshed on each view)
+                  Information from OpenStreetMap
                 </CardDescription>
               </div>
               <Button
@@ -255,10 +255,7 @@ export function GooglePlacesRestaurantForm({
             <div className="rounded-lg bg-muted p-3">
               <p className="text-xs text-muted-foreground">
                 <strong>Note:</strong> Only place ID and location coordinates
-                are stored. All other data is fetched fresh from Google Places
-                when viewing this restaurant, ensuring compliance with Google's
-                Terms of Service.
-              </p>
+                are stored from OpenStreetMap. </p>
             </div>
 
             {/* Form with hidden fields */}

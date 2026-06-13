@@ -41,7 +41,7 @@ export function ActivityEntryModeToggle({
               className="flex items-center gap-2"
             >
               <Search className="h-4 w-4" />
-              Google Places
+              Search places
             </TabsTrigger>
             <TabsTrigger
               value="manual"
@@ -56,9 +56,7 @@ export function ActivityEntryModeToggle({
           <TabsContent value="google" className="mt-6">
             <div className="space-y-4">
               <div className="text-sm text-muted-foreground bg-accent p-3 rounded-md">
-                🔍 Search for activities, attractions, and restaurants using
-                Google Places data. Get verified information including ratings,
-                photos, and contact details.
+                🔍 Search OpenStreetMap for activities, attractions, and restaurants. Picks up the name and location automatically.
               </div>
               {googlePlacesComponent}
             </div>
@@ -105,7 +103,7 @@ export function RestaurantEntryModeToggle({
               className="flex items-center gap-2"
             >
               <Search className="h-4 w-4" />
-              Google Places
+              Search places
             </TabsTrigger>
             <TabsTrigger
               value="manual"
@@ -120,9 +118,7 @@ export function RestaurantEntryModeToggle({
           <TabsContent value="google" className="mt-6">
             <div className="space-y-4">
               <div className="text-sm text-muted-foreground bg-accent p-3 rounded-md">
-                🍽️ Search for restaurants using Google Places data. Get verified
-                information including ratings, reviews, photos, and contact
-                details.
+                🍽️ Search OpenStreetMap for restaurants. Picks up the name and location automatically.
               </div>
               {googlePlacesComponent}
             </div>

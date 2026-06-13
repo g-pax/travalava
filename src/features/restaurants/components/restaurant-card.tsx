@@ -83,7 +83,7 @@ export function RestaurantCard({
 
   return (
     <>
-      <Card className="group hover:shadow-lg transition-shadow duration-200">
+      <Card className="group transition-colors duration-150 hover:border-primary/40">
         <CardHeader className="pb-3">
           <div className="flex items-start justify-between">
             <div className="flex-1 min-w-0">

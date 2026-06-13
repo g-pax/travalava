@@ -1,9 +1,12 @@
 import { type NextRequest, NextResponse } from "next/server";
+import { nominatimSearch, toPlaceSearchResults } from "@/lib/nominatim";
 import { createClient } from "@/lib/supabaseServer";
 
-// Server-side API key - not exposed to browser
-const GOOGLE_PLACES_API_KEY = process.env.GOOGLE_PLACES_API_KEY;
-
+/**
+ * Place search backed by OpenStreetMap Nominatim (free, no API key / billing).
+ * Returns the same PlaceSearchResult shape the app already consumes, so the
+ * client-side places service and forms are unchanged.
+ */
 export async function GET(request: NextRequest) {
   try {
     // Same-origin API: require an authenticated Supabase user
@@ -16,18 +19,9 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    if (!GOOGLE_PLACES_API_KEY) {
-      return NextResponse.json(
-        { error: "Google Places API key not configured" },
-        { status: 500 },
-      );
-    }
-
     const { searchParams } = new URL(request.url);
     const query = searchParams.get("query");
-    const location = searchParams.get("location");
-    const radius = searchParams.get("radius");
-    const type = searchParams.get("type");
+    const location = searchParams.get("location"); // "lat,lng"
 
     if (!query) {
       return NextResponse.json(
@@ -36,40 +30,23 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Build Google Places API URL (legacy Text Search; no `fields` support)
-    const placesUrl = new URL(
-      "https://maps.googleapis.com/maps/api/place/textsearch/json",
-    );
-    placesUrl.searchParams.set("query", query);
-    placesUrl.searchParams.set("key", GOOGLE_PLACES_API_KEY);
-
+    // Bias results around the trip location when provided
+    let viewbox: string | undefined;
     if (location) {
-      placesUrl.searchParams.set("location", location);
-      placesUrl.searchParams.set("radius", radius || "5000");
+      const [lat, lng] = location.split(",").map(Number);
+      if (Number.isFinite(lat) && Number.isFinite(lng)) {
+        const d = 0.15; // ~15km box
+        viewbox = `${lng - d},${lat - d},${lng + d},${lat + d}`;
+      }
     }
 
-    if (type) {
-      placesUrl.searchParams.set("type", type);
-    }
-
-    // Call Google Places API
-    const response = await fetch(placesUrl.toString());
-    const data = await response.json();
-
-    if (data.status !== "OK" && data.status !== "ZERO_RESULTS") {
-      console.error("Places API error:", data);
-      return NextResponse.json(
-        { error: `Places API error: ${data.status}` },
-        { status: 500 },
-      );
-    }
-
-    return NextResponse.json({ results: data.results || [] });
+    const raw = await nominatimSearch(query, { viewbox });
+    return NextResponse.json({ results: toPlaceSearchResults(raw) });
   } catch (error) {
     console.error("Places search error:", error);
     return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 },
+      { error: "Search is temporarily unavailable" },
+      { status: 502 },
     );
   }
 }

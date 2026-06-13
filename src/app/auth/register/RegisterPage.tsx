@@ -27,6 +27,11 @@ import { useAuth } from "@/lib/auth-context";
 import { supabase } from "@/lib/supabase";
 import { type SignUpInput, SignUpSchema } from "@/schemas";
 
+// Standalone registration is gated by an invite code so the public URL can't
+// be used to spam accounts. Friends never see this page — they create accounts
+// through the trip invite link (join flow), which has its own PIN gate.
+const SIGNUP_CODE = process.env.NEXT_PUBLIC_SIGNUP_CODE;
+
 export default function RegisterPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -37,6 +42,13 @@ export default function RegisterPage() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [emailSent, setEmailSent] = useState(false);
+
+  // Unlocked when no code is configured (open mode) or the URL/typed code matches.
+  const [codeInput, setCodeInput] = useState("");
+  const codeUnlocked =
+    !SIGNUP_CODE ||
+    searchParams.get("code") === SIGNUP_CODE ||
+    codeInput === SIGNUP_CODE;
 
   const form = useForm<SignUpInput>({
     resolver: zodResolver(SignUpSchema),
@@ -77,6 +89,48 @@ export default function RegisterPage() {
       setIsLoading(false);
     }
   };
+
+  if (!codeUnlocked) {
+    return (
+      <RequireGuest>
+        <div className="min-h-screen flex items-center justify-center bg-muted px-4 py-12">
+          <Card className="w-full max-w-md">
+            <CardHeader className="space-y-1">
+              <CardTitle className="text-2xl text-center">
+                Invite required
+              </CardTitle>
+              <CardDescription className="text-center">
+                Travalava is invite-only. If a friend shared a trip link, open
+                that link to join. To start your own trips, enter your invite
+                code.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="invite-code">Invite code</Label>
+                  <Input
+                    id="invite-code"
+                    placeholder="Enter your invite code"
+                    value={codeInput}
+                    onChange={(e) => setCodeInput(e.target.value)}
+                  />
+                </div>
+                <p className="text-center text-sm">
+                  <Link
+                    href="/auth/login"
+                    className="text-primary-deep hover:text-primary-deep/80"
+                  >
+                    Already have an account? Sign in
+                  </Link>
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </RequireGuest>
+    );
+  }
 
   if (emailSent) {
     return (

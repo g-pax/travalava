@@ -82,7 +82,7 @@ export default function RestaurantDetailPage() {
 
   if (isLoading) {
     return (
-      <div className="container mx-auto py-8">
+      <div>
         <Card>
           <CardContent className="pt-6">
             <div className="animate-pulse space-y-4">
@@ -98,7 +98,7 @@ export default function RestaurantDetailPage() {
 
   if (error || !restaurant) {
     return (
-      <div className="container mx-auto py-8">
+      <div>
         <Card>
           <CardContent className="pt-6">
             <div className="text-center text-destructive">
@@ -122,7 +122,7 @@ export default function RestaurantDetailPage() {
   }
 
   return (
-    <div className="container mx-auto py-8 space-y-6">
+    <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">

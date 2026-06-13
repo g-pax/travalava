@@ -48,7 +48,7 @@ function ActivityCard({
 
   return (
     <Link href={`/trips/${tripId}/activities/${activity.id}`}>
-      <Card className="relative flex h-full flex-col overflow-hidden cursor-pointer hover:shadow-lg hover:border-primary/40 transition-all group">
+      <Card className="group relative flex h-full cursor-pointer flex-col overflow-hidden transition-colors duration-150 hover:border-primary/40">
         {coverImage && (
           <div className="relative w-full aspect-video bg-muted overflow-hidden">
             <Image

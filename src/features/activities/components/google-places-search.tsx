@@ -164,7 +164,7 @@ export function GooglePlacesSearch({
                 Selected Place
               </CardTitle>
               <CardDescription>
-                {getPlaceTypeLabel(selectedPlace.types)} from Google Places
+                {getPlaceTypeLabel(selectedPlace.types)} from OpenStreetMap
               </CardDescription>
             </div>
             <Button variant="outline" size="sm" onClick={clearSelection}>
@@ -247,7 +247,7 @@ export function GooglePlacesSearch({
     <div className="space-y-4">
       <div className="space-y-2">
         <Label htmlFor="places-search">
-          Search Google Places
+          Search places
           {searchType === "restaurant" && " - Restaurants"}
           {searchType === "activity" && " - Activities & Attractions"}
         </Label>

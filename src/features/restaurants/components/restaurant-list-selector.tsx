@@ -88,7 +88,7 @@ export function RestaurantListSelector({
           filteredRestaurants.map((restaurant) => (
             <Card
               key={restaurant.id}
-              className={`cursor-pointer transition-all hover:shadow-md ${
+              className={`cursor-pointer transition-colors duration-150 hover:border-primary/40 ${
                 selectedRestaurantId === restaurant.id
                   ? "ring-2 ring-primary"
                   : ""

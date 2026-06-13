@@ -8,11 +8,11 @@
  * - Link restaurants to activities
  */
 
-import { Filter, Plus, Search, Utensils } from "lucide-react";
+import { Plus, Utensils, X } from "lucide-react";
 import { useParams } from "next/navigation";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardTitle } from "@/components/ui/card";
 
 import { Input } from "@/components/ui/input";
 import {
@@ -106,112 +106,93 @@ export default function RestaurantsPage() {
 
   if (error) {
     return (
-      <div className="container mx-auto py-8">
-        <Card>
-          <CardContent className="pt-6">
-            <div className="text-center text-destructive">
-              <p>Failed to load restaurants: {error.message}</p>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+      <Card>
+        <CardContent className="pt-6">
+          <div className="text-center text-destructive">
+            <p>Failed to load restaurants: {error.message}</p>
+          </div>
+        </CardContent>
+      </Card>
     );
   }
 
+  // Filters only matter once there's something to filter
+  const showFilters = restaurants.length > 0 || hasActiveFilters;
+
   return (
-    <div className="container mx-auto py-8 space-y-6">
+    <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold flex items-center gap-3">
-            <Utensils className="h-8 w-8" />
+          <h2 className="flex items-center gap-2 text-2xl font-bold text-foreground">
+            <Utensils className="h-6 w-6 text-teal-brand" />
             Restaurants
-          </h1>
-          <p className="text-foreground/70 mt-2">
-            Manage dining recommendations for your trip
+          </h2>
+          <p className="mt-1 text-sm text-foreground/70">
+            {restaurants.length === 0
+              ? "Dining ideas for the trip"
+              : `${restaurants.length} ${restaurants.length === 1 ? "spot" : "spots"}`}
           </p>
         </div>
-        <Button
-          onClick={() => setIsCreateDialogOpen(true)}
-          className="flex items-center gap-2"
-        >
+        <Button onClick={() => setIsCreateDialogOpen(true)} className="gap-2">
           <Plus className="h-4 w-4" />
           Add Restaurant
         </Button>
       </div>
 
-      {/* Search and Filters */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Search className="h-5 w-5" />
-            Search & Filter
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div className="md:col-span-2">
-              <Input
-                placeholder="Search restaurants..."
-                value={filters.search || ""}
-                onChange={(e) => handleSearchChange(e.target.value)}
-                className="w-full"
-              />
-            </div>
-
-            <Select
-              value={filters.cuisine_type || undefined}
-              onValueChange={handleCuisineTypeChange}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Cuisine type" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="Any cuisine">Any cuisine</SelectItem>
-                {cuisineTypes.map((cuisine) => (
-                  <SelectItem key={cuisine} value={cuisine}>
-                    {cuisine}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-
-            <Select
-              value={filters.price_range || undefined}
-              onValueChange={handlePriceRangeChange}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Price range" />
-              </SelectTrigger>
-              <SelectContent>
-                {priceRangeOptions.map((option) => (
-                  <SelectItem key={option.value} value={option.value}>
-                    {option.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
+      {/* Inline filter toolbar */}
+      {showFilters && (
+        <div className="flex flex-wrap items-center gap-3">
+          <Input
+            placeholder="Search restaurants…"
+            value={filters.search || ""}
+            onChange={(e) => handleSearchChange(e.target.value)}
+            className="h-10 w-full sm:max-w-xs"
+          />
+          <Select
+            value={filters.cuisine_type || undefined}
+            onValueChange={handleCuisineTypeChange}
+          >
+            <SelectTrigger className="h-10 w-40">
+              <SelectValue placeholder="Cuisine" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="Any cuisine">Any cuisine</SelectItem>
+              {cuisineTypes.map((cuisine) => (
+                <SelectItem key={cuisine} value={cuisine}>
+                  {cuisine}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Select
+            value={filters.price_range || undefined}
+            onValueChange={handlePriceRangeChange}
+          >
+            <SelectTrigger className="h-10 w-40">
+              <SelectValue placeholder="Price" />
+            </SelectTrigger>
+            <SelectContent>
+              {priceRangeOptions.map((option) => (
+                <SelectItem key={option.value} value={option.value}>
+                  {option.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
           {hasActiveFilters && (
-            <div className="mt-4 flex items-center gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={clearFilters}
-                className="flex items-center gap-2"
-              >
-                <Filter className="h-4 w-4" />
-                Clear Filters
-              </Button>
-              <span className="text-sm text-foreground/70">
-                {restaurants.length} restaurant
-                {restaurants.length !== 1 ? "s" : ""} found
-              </span>
-            </div>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={clearFilters}
+              className="gap-1.5 text-muted-foreground hover:text-foreground"
+            >
+              <X className="h-4 w-4" />
+              Clear
+            </Button>
           )}
-        </CardContent>
-      </Card>
+        </div>
+      )}
 
       {/* Restaurant Grid */}
       {isLoading ? (
@@ -240,32 +221,36 @@ export default function RestaurantsPage() {
           ))}
         </div>
       ) : (
-        <Card>
-          <CardContent className="pt-6">
-            <div className="text-center py-12">
-              <Utensils className="h-16 w-16 text-muted-foreground/70 mx-auto mb-4" />
-              <h3 className="text-xl font-semibold text-foreground mb-2">
-                {hasActiveFilters
-                  ? "No restaurants match your filters"
-                  : "No restaurants added yet"}
-              </h3>
-              <p className="text-foreground/70 mb-6 max-w-md mx-auto">
-                {hasActiveFilters
-                  ? "Try adjusting your search criteria or clearing filters to see more results."
-                  : "Start building your dining guide by adding restaurant recommendations for your trip."}
-              </p>
-              {!hasActiveFilters && (
-                <Button
-                  onClick={() => setIsCreateDialogOpen(true)}
-                  className="flex items-center gap-2"
-                >
-                  <Plus className="h-4 w-4" />
-                  Add Your First Restaurant
-                </Button>
-              )}
-            </div>
-          </CardContent>
-        </Card>
+        <div className="flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-border py-16 text-center">
+          <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-muted">
+            <Utensils className="h-8 w-8 text-muted-foreground/70" />
+          </div>
+          <CardTitle className="mb-2 text-foreground">
+            {hasActiveFilters
+              ? "No restaurants match your filters"
+              : "No restaurants yet"}
+          </CardTitle>
+          <p className="mb-6 max-w-md text-sm text-foreground/70">
+            {hasActiveFilters
+              ? "Try adjusting your search or clearing the filters."
+              : "Build your dining shortlist — search a place and add it, so the group knows where to eat."}
+          </p>
+          {hasActiveFilters ? (
+            <Button variant="outline" onClick={clearFilters} className="gap-2">
+              <X className="h-4 w-4" />
+              Clear filters
+            </Button>
+          ) : (
+            <Button
+              onClick={() => setIsCreateDialogOpen(true)}
+              size="lg"
+              className="gap-2"
+            >
+              <Plus className="h-4 w-4" />
+              Add your first restaurant
+            </Button>
+          )}
+        </div>
       )}
 
       {/* Create Restaurant Dialog */}

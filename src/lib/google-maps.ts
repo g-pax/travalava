@@ -1,68 +1,37 @@
 /**
- * Google Maps configuration and utilities
+ * Map/location utilities.
+ *
+ * Display is handled by Leaflet + OpenStreetMap tiles (see components/common/
+ * leaflet-map). These helpers parse coordinates out of pasted Google Maps links
+ * (a convenience for users who copy a link) and build free OSM web URLs for
+ * "view on map" / "directions" — no API key or billing required.
  */
 
-export const GOOGLE_MAPS_API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
-
-// Default map configuration
-export const DEFAULT_MAP_CONFIG = {
-  center: { lat: 40.7128, lng: -74.006 }, // New York City default
-  zoom: 13,
-  mapId: "travalava-map", // You'll need to create this in Google Cloud Console
-} as const;
-
-// Map styling options - consistent across all maps
-// Only allow pan and zoom, disable all other controls
-export const MAP_OPTIONS = {
-  disableDefaultUI: false,
-  clickableIcons: true,
-  scrollwheel: true,
-  disableDoubleClickZoom: false,
-  fullscreenControl: false,
-  mapTypeControl: false,
-  streetViewControl: false,
-  zoomControl: true,
-} as const;
-
-// Custom marker icon configuration
-export const MARKER_CONFIG = {
-  default: {
-    fillColor: "#3b82f6",
-    fillOpacity: 1,
-    strokeColor: "#ffffff",
-    strokeWeight: 2,
-    scale: 1,
-  },
-  selected: {
-    fillColor: "#ef4444",
-    fillOpacity: 1,
-    strokeColor: "#ffffff",
-    strokeWeight: 3,
-    scale: 1.2,
-  },
-} as const;
+/** Fallback map center when no markers exist (Lisbon). */
+export const DEFAULT_MAP_CENTER = { lat: 38.7223, lng: -9.1393 } as const;
 
 /**
- * Validates if Google Maps API key is available
+ * Free web link to view a point on OpenStreetMap.
  */
-export function validateGoogleMapsKey(): boolean {
-  if (!GOOGLE_MAPS_API_KEY) {
-    console.warn(
-      "Google Maps API key not found. Please add NEXT_PUBLIC_GOOGLE_MAPS_API_KEY to your environment variables.",
-    );
-    return false;
-  }
-  return true;
+export function osmViewUrl(lat: number, lng: number, zoom = 16): string {
+  return `https://www.openstreetmap.org/?mlat=${lat}&mlon=${lng}#map=${zoom}/${lat}/${lng}`;
 }
 
 /**
- * Extracts coordinates from Google Maps URL
+ * Free web link to driving/walking directions to a point (OSM routing UI).
+ * No destination origin is assumed; OSM asks for the start.
+ */
+export function getDirectionsUrl(lat: number, lng: number): string {
+  return `https://www.openstreetmap.org/directions?engine=fossgis_osrm_car&route=;${lat},${lng}`;
+}
+
+/**
+ * Extracts coordinates from a Google Maps URL (several formats).
  */
 export function extractCoordinatesFromGoogleMapsUrl(
   url: string,
 ): { lat: number; lng: number } | null {
   try {
-    // Handle various Google Maps URL formats
     const patterns = [
       /@(-?\d+\.\d+),(-?\d+\.\d+)/,
       /q=(-?\d+\.\d+),(-?\d+\.\d+)/,
@@ -95,8 +64,8 @@ export function formatCoordinates(lat: number, lng: number): string {
 }
 
 /**
- * Extracts latitude and longitude from a Google Maps URL or iframe embed code
- * Supports multiple Google Maps URL formats:
+ * Extracts latitude and longitude from a Google Maps URL or iframe embed code.
+ * Supports:
  * - Pattern A: "!2d{lng}!3d{lat}" (embed URLs)
  * - Pattern B: "@lat,lng,zoom" (maps URLs)
  * - Pattern C: query "q=lat,lng" or "q=place+name@lat,lng"
@@ -106,14 +75,12 @@ export function extractLatLngFromGoogleMapsSrc(
 ): { lat: number; lng: number } | null {
   if (!input) return null;
 
-  // Extract src attribute if input is an iframe HTML string
   const src = input.includes("src=")
     ? input.match(/src="([^"]+)"/)?.[1] || input
     : input;
 
   if (!src) return null;
 
-  // Pattern A: "!2d{lng}!3d{lat}" (embed URLs)
   const patternA = src.match(/!2d([-0-9.]+)!3d([-0-9.]+)/);
   if (patternA) {
     return {
@@ -122,7 +89,6 @@ export function extractLatLngFromGoogleMapsSrc(
     };
   }
 
-  // Pattern B: "@lat,lng,zoom" (maps URLs)
   const patternB = src.match(/@([-0-9.]+),([-0-9.]+),/);
   if (patternB) {
     return {
@@ -131,7 +97,6 @@ export function extractLatLngFromGoogleMapsSrc(
     };
   }
 
-  // Pattern C: query "q=lat,lng" or "q=place+name@lat,lng"
   const patternC = src.match(/[?&]q=([-0-9.]+),([-0-9.]+)/);
   if (patternC) {
     return {

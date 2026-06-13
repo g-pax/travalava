@@ -1,18 +1,7 @@
 "use client";
 
-import {
-  APIProvider,
-  Map as GoogleMap,
-  InfoWindow,
-  Marker,
-} from "@vis.gl/react-google-maps";
 import { MapPin } from "lucide-react";
-import { useState } from "react";
-import {
-  DEFAULT_MAP_CONFIG,
-  GOOGLE_MAPS_API_KEY,
-  validateGoogleMapsKey,
-} from "@/lib/google-maps";
+import { LeafletMap, type MapMarker } from "@/components/common/leaflet-map";
 import { cn } from "@/lib/utils";
 
 interface ActivityLocation {
@@ -20,7 +9,7 @@ interface ActivityLocation {
   title: string;
   location: {
     name: string;
-    coordinates: [number, number]; // [lng, lat] format
+    coordinates: [number, number]; // [lng, lat]
   };
   dayDate: string;
   blockLabel: string;
@@ -31,262 +20,99 @@ interface ConfirmedItineraryMapProps {
   className?: string;
 }
 
+// Distinct but on-brand day colors (terracotta, teal, success, warning, plus
+// supporting hues) so each day's pins read as a group.
+const DAY_COLORS = [
+  "oklch(0.55 0.15 35)", // coral
+  "oklch(0.55 0.095 180)", // teal
+  "oklch(0.55 0.15 150)", // green
+  "oklch(0.62 0.14 75)", // amber
+  "oklch(0.5 0.12 280)", // violet
+  "oklch(0.55 0.13 320)", // magenta
+  "oklch(0.5 0.13 230)", // blue
+  "oklch(0.5 0.1 20)", // brick
+];
+
 export function ConfirmedItineraryMap({
   activities,
   className,
 }: ConfirmedItineraryMapProps) {
-  const [selectedMarker, setSelectedMarker] = useState<string | null>(null);
+  const withCoords = activities.filter((a) => {
+    const c = a.location?.coordinates;
+    return (
+      Array.isArray(c) &&
+      c.length === 2 &&
+      Number.isFinite(c[0]) &&
+      Number.isFinite(c[1])
+    );
+  });
 
-  // Calculate map center and zoom from activities
-  const calculateMapBounds = () => {
-    if (!validateGoogleMapsKey() || activities.length === 0) {
-      return {
-        center: { lat: 27.957990872954593, lng: -15.761245368059482 },
-        zoom: 12,
-      };
-    }
+  if (withCoords.length === 0) {
+    return (
+      <div
+        className={cn(
+          "flex items-center justify-center rounded-lg bg-muted",
+          className,
+        )}
+      >
+        <div className="p-6 text-center">
+          <MapPin className="mx-auto mb-2 h-12 w-12 text-muted-foreground/70" />
+          <p className="text-sm text-foreground/70">
+            No activities with locations to map yet
+          </p>
+          <p className="mt-1 text-xs text-muted-foreground">
+            Add a location to a committed activity to see it here
+          </p>
+        </div>
+      </div>
+    );
+  }
 
-    // Filter valid coordinates
-    const validCoordinates = activities.filter((activity) => {
-      const coords = activity.location.coordinates;
-      return (
-        Array.isArray(coords) &&
-        coords.length === 2 &&
-        typeof coords[1] === "number" &&
-        typeof coords[0] === "number" &&
-        !Number.isNaN(coords[1]) &&
-        !Number.isNaN(coords[0])
-      );
-    });
+  const uniqueDays = [...new Set(withCoords.map((a) => a.dayDate))].sort();
+  const colorForDay = (date: string) =>
+    DAY_COLORS[uniqueDays.indexOf(date) % DAY_COLORS.length];
 
-    if (validCoordinates.length === 0) {
-      return {
-        center: { lat: 27.957990872954593, lng: -15.761245368059482 },
-        zoom: 12,
-      };
-    }
-
-    if (validCoordinates.length === 1) {
-      // Single activity - center on it
-      const coords = validCoordinates[0].location.coordinates;
-      return {
-        center: { lat: coords[1], lng: coords[0] },
-        zoom: 15,
-      };
-    }
-
-    // Multiple activities - calculate center and appropriate zoom
-    let minLat = validCoordinates[0].location.coordinates[1];
-    let maxLat = validCoordinates[0].location.coordinates[1];
-    let minLng = validCoordinates[0].location.coordinates[0];
-    let maxLng = validCoordinates[0].location.coordinates[0];
-
-    validCoordinates.forEach((activity) => {
-      const [lng, lat] = activity.location.coordinates;
-      minLat = Math.min(minLat, lat);
-      maxLat = Math.max(maxLat, lat);
-      minLng = Math.min(minLng, lng);
-      maxLng = Math.max(maxLng, lng);
-    });
-
-    const centerLat = (minLat + maxLat) / 2;
-    const centerLng = (minLng + maxLng) / 2;
-
-    // Calculate appropriate zoom level based on bounds
-    const latDiff = maxLat - minLat;
-    const lngDiff = maxLng - minLng;
-    const maxDiff = Math.max(latDiff, lngDiff);
-
-    // More conservative zoom levels to ensure all pins are visible
-    let zoom = 13;
-    if (maxDiff > 1)
-      zoom = 6; // Very far apart (different cities/countries)
-    else if (maxDiff > 0.5)
-      zoom = 8; // Far apart
-    else if (maxDiff > 0.2)
-      zoom = 10; // Moderately apart
-    else if (maxDiff > 0.1)
-      zoom = 11; // Closer together
-    else if (maxDiff > 0.05)
-      zoom = 12; // Close together
-    else if (maxDiff > 0.01) zoom = 13; // Very close
-
+  const markers: MapMarker[] = withCoords.map((a) => {
+    const [lng, lat] = a.location.coordinates;
     return {
-      center: { lat: centerLat, lng: centerLng },
-      zoom,
+      id: a.id,
+      lat,
+      lng,
+      title: a.title,
+      color: colorForDay(a.dayDate),
+      popup: (
+        <div className="min-w-[8rem]">
+          <p className="text-sm font-semibold">{a.title}</p>
+          <p className="text-xs text-foreground/70">{a.location.name}</p>
+          <p className="mt-1 text-xs text-muted-foreground">{a.blockLabel}</p>
+        </div>
+      ),
     };
-  };
-
-  const mapBounds = calculateMapBounds();
-
-  if (!GOOGLE_MAPS_API_KEY) {
-    return (
-      <div
-        className={cn(
-          "rounded-lg bg-muted flex items-center justify-center",
-          className,
-        )}
-      >
-        <div className="text-center p-6">
-          <MapPin className="h-12 w-12 text-muted-foreground/70 mx-auto mb-2" />
-          <p className="text-foreground/70 text-sm">
-            Google Maps API key not configured
-          </p>
-          <p className="text-muted-foreground text-xs mt-1">
-            Add NEXT_PUBLIC_GOOGLE_MAPS_API_KEY to environment variables
-          </p>
-        </div>
-      </div>
-    );
-  }
-
-  if (activities.length === 0) {
-    return (
-      <div
-        className={cn(
-          "rounded-lg bg-muted flex items-center justify-center",
-          className,
-        )}
-      >
-        <div className="text-center p-6">
-          <MapPin className="h-12 w-12 text-muted-foreground/70 mx-auto mb-2" />
-          <p className="text-foreground/70 text-sm">
-            No activities with locations to display
-          </p>
-        </div>
-      </div>
-    );
-  }
-
-  // Create day-based color mapping for markers
-  const uniqueDays = [...new Set(activities.map((a) => a.dayDate))].sort();
-  const dayColors = [
-    "#ef4444",
-    "#f97316",
-    "#eab308",
-    "#22c55e",
-    "#06b6d4",
-    "#3b82f6",
-    "#8b5cf6",
-    "#ec4899",
-  ];
-
-  const getDayColor = (dayDate: string) => {
-    const dayIndex = uniqueDays.indexOf(dayDate);
-    return dayColors[dayIndex % dayColors.length];
-  };
+  });
 
   return (
-    <APIProvider apiKey={GOOGLE_MAPS_API_KEY}>
-      <GoogleMap
-        key={`map-${activities.length}-${JSON.stringify(mapBounds.center)}`}
-        mapId={DEFAULT_MAP_CONFIG.mapId}
-        defaultCenter={mapBounds.center}
-        defaultZoom={mapBounds.zoom}
-        className={cn("rounded-lg overflow-hidden", className)}
-        gestureHandling="greedy"
-        disableDefaultUI={false}
-        zoomControl={true}
-        mapTypeControl={false}
-        streetViewControl={false}
-        fullscreenControl={false}
-        clickableIcons={true}
-        scrollwheel={true}
-        mapTypeId="roadmap"
-      >
-        {activities.map((activity, _index) => {
-          const coords = activity.location.coordinates;
-
-          if (
-            !Array.isArray(coords) ||
-            coords.length !== 2 ||
-            typeof coords[1] !== "number" ||
-            typeof coords[0] !== "number" ||
-            Number.isNaN(coords[1]) ||
-            Number.isNaN(coords[0])
-          ) {
-            return null;
-          }
-
-          const position = { lat: coords[1], lng: coords[0] };
-          const dayColor = getDayColor(activity.dayDate);
-
-          return (
-            <div key={activity.id}>
-              <Marker
-                position={position}
-                title={activity.title}
-                onClick={() => {
-                  setSelectedMarker(
-                    selectedMarker === activity.id ? null : activity.id,
-                  );
-                }}
-              />
-              {selectedMarker === activity.id && (
-                <InfoWindow
-                  position={position}
-                  onCloseClick={() => setSelectedMarker(null)}
-                >
-                  <div className="p-2 max-w-xs">
-                    <h4 className="font-semibold text-sm mb-1">
-                      {activity.title}
-                    </h4>
-                    <p className="text-xs text-foreground/70 mb-1">
-                      {activity.location.name}
-                    </p>
-                    <div className="flex items-center justify-between text-xs">
-                      <span className="text-muted-foreground">
-                        {new Date(
-                          `${activity.dayDate}T00:00:00`,
-                        ).toLocaleDateString(undefined, {
-                          month: "short",
-                          day: "numeric",
-                        })}
-                      </span>
-                      <span
-                        className="px-2 py-1 rounded text-white text-xs font-medium"
-                        style={{ backgroundColor: dayColor }}
-                      >
-                        {activity.blockLabel}
-                      </span>
-                    </div>
-                  </div>
-                </InfoWindow>
-              )}
-            </div>
-          );
-        })}
-      </GoogleMap>
-
-      {/* Legend */}
-      <div className="mt-4 flex flex-wrap gap-2">
+    <div>
+      <LeafletMap markers={markers} className={cn("h-[400px]", className)} />
+      <div className="mt-4 flex flex-wrap gap-3">
         {uniqueDays.map((day) => {
-          const dayLabel = new Date(`${day}T00:00:00`).toLocaleDateString(
+          const label = new Date(`${day}T00:00:00`).toLocaleDateString(
             undefined,
-            {
-              weekday: "short",
-              month: "short",
-              day: "numeric",
-            },
+            { weekday: "short", month: "short", day: "numeric" },
           );
-          const color = getDayColor(day);
-          const activitiesCount = activities.filter(
-            (a) => a.dayDate === day,
-          ).length;
-
+          const count = withCoords.filter((a) => a.dayDate === day).length;
           return (
             <div key={day} className="flex items-center gap-2 text-xs">
-              <div
-                className="w-3 h-3 rounded-full border-2 border-white shadow-sm"
-                style={{ backgroundColor: color }}
+              <span
+                className="h-3 w-3 rounded-full"
+                style={{ backgroundColor: colorForDay(day) }}
               />
               <span className="text-foreground/70">
-                {dayLabel} ({activitiesCount})
+                {label} ({count})
               </span>
             </div>
           );
         })}
       </div>
-    </APIProvider>
+    </div>
   );
 }

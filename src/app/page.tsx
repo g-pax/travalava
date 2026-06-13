@@ -33,11 +33,11 @@ function LandingPage() {
           <span className="text-xl font-bold text-foreground">Travalava</span>
         </div>
         <div className="flex items-center space-x-4">
-          <Link href="/auth/login">
-            <Button variant="ghost">Sign In</Button>
+          <Link href="/trips/join">
+            <Button variant="ghost">Join a trip</Button>
           </Link>
-          <Link href="/auth/register">
-            <Button>Get Started</Button>
+          <Link href="/auth/login">
+            <Button>Sign In</Button>
           </Link>
         </div>
       </nav>
@@ -54,16 +54,16 @@ function LandingPage() {
             everyone actually agreed on.
           </p>
           <div className="mt-10 flex items-center justify-center gap-x-6">
-            <Link href="/auth/register">
+            <Link href="/auth/login">
               <Button size="lg" className="px-8">
-                Start Planning
+                Sign In
               </Button>
             </Link>
             <Link
-              href="/auth/login"
+              href="/trips/join"
               className="text-sm font-semibold leading-6 text-foreground hover:text-primary-deep transition-colors"
             >
-              Already have an account? <span aria-hidden="true">→</span>
+              Have an invite link? <span aria-hidden="true">→</span>
             </Link>
           </div>
         </div>
